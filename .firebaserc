@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "boomarang-ac130"
+  },
+  "targets": {},
+  "etags": {
+    "boomarang-ac130": {
+      "extensionInstances": {}
+    }
+  },
+  "dataconnectEmulatorConfig": {}
+}
