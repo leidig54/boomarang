@@ -3,15 +3,15 @@ import 'package:boomarang/screens/sandbox.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_vertexai/firebase_vertexai.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions = FirebaseFunctions.instance;
-FirebaseStorage storage = FirebaseStorage.instance;
+final model =
+    FirebaseVertexAI.instance.generativeModel(model: 'gemini-1.5-flash');
 
-GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   runApp(const MainApp());
 }
@@ -27,7 +27,6 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      navigatorKey: navigatorKey,
       home: FutureBuilder(
           future: Firebase.initializeApp(
             options: DefaultFirebaseOptions.currentPlatform,
@@ -132,7 +131,10 @@ class _HomeState extends State<Home> {
         NavigationRail(
           leading: const Padding(
             padding: EdgeInsets.all(8.0),
-            //Boomerang
+            child: CircleAvatar(
+              backgroundImage: NetworkImage(
+                  'https://avatars.githubusercontent.com/u/57899020?v=4'),
+            ),
           ),
           destinations: const [
             NavigationRailDestination(
@@ -161,7 +163,7 @@ class _HomeState extends State<Home> {
               selectedIndex = index;
             });
           },
-          extended: false,
+          extended: true,
         ),
         const VerticalDivider(
           thickness: 1,
