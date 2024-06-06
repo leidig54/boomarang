@@ -1,134 +1,130 @@
 import 'package:boomarang/main.dart';
-import 'package:boomarang/providers/user_provider.dart';
-import 'package:boomarang_shared/models/user.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:boomarang/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:provider/provider.dart';
 
-class BoomarangProfileScreen extends StatefulWidget {
-  const BoomarangProfileScreen({super.key});
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
 
   @override
-  State<BoomarangProfileScreen> createState() => _BoomarangProfileScreenState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _BoomarangProfileScreenState extends State<BoomarangProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> {
   final _userFormKey = GlobalKey<FormBuilderState>();
-  bool _formChanged = false;
 
   @override
   Widget build(BuildContext context) {
-    BoomarangUser? user = context.watch<UserProvider>().user;
-
-    return FormBuilder(
-      key: _userFormKey,
-      onChanged: () {
-        if (!_formChanged) {
-          setState(() {
-            _formChanged = true;
-          });
-        }
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Container(
-              constraints: const BoxConstraints(
-                maxWidth: 600,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Profile',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 32),
-                  FormBuilderTextField(
-                    name: 'title',
-                    autofocus: user?.title == null,
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(),
-                    ]),
-                    initialValue: user?.title,
-                    decoration: const InputDecoration(
-                      labelText: 'Title',
-                      hintText: 'Mr, Mrs, Dr, etc.',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  FormBuilderTextField(
-                    name: 'firstName',
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(),
-                      FormBuilderValidators.minLength(2),
-                    ]),
-                    initialValue: user?.firstName,
-                    decoration: const InputDecoration(
-                      labelText: 'First Name',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  FormBuilderTextField(
-                    name: 'lastName',
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(),
-                      FormBuilderValidators.minLength(2),
-                    ]),
-                    initialValue: user?.lastName,
-                    decoration: const InputDecoration(
-                      labelText: 'Last Name',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-                  //verify email
-                  FormBuilderTextField(
-                    name: 'email',
-                    readOnly: true,
-                    enableInteractiveSelection: false,
-                    enabled: false,
-                    initialValue: user?.email,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                      helperText: 'Email cannot be changed',
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.save),
-                    onPressed: !_formChanged
-                        ? null
-                        : () async {
-                            if (_userFormKey.currentState!.saveAndValidate()) {
-                              final data = _userFormKey.currentState!.value;
-                              await firestore
-                                  .collection('users')
-                                  .doc(auth.currentUser!.uid)
-                                  .set(data, SetOptions(merge: true));
-                              if (mounted) {
-                                setState(() {
-                                  _formChanged = false;
-                                });
-                              }
-                            }
-                          },
-                    label: const Text('Save'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+        centerTitle: false,
       ),
+      body: FutureBuilder(
+          future:
+              firestore.collection('users').doc(auth.currentUser!.uid).get(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text('Error: ${snapshot.error}'),
+              );
+            }
+
+            BoomarangUser? user;
+
+            if (snapshot.hasData && snapshot.data!.exists) {
+              user = BoomarangUser.fromMap(
+                  snapshot.data!.data() as Map<String, dynamic>);
+            }
+
+            return FormBuilder(
+              key: _userFormKey,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  child: Column(
+                    children: [
+                      FormBuilderTextField(
+                        name: 'title',
+                        initialValue: user?.title,
+                        decoration: const InputDecoration(
+                          labelText: 'Title',
+                          hintText: 'Mr, Mrs, Dr, etc.',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      FormBuilderTextField(
+                        name: 'firstName',
+                        initialValue: user?.firstName,
+                        decoration: const InputDecoration(
+                          labelText: 'First Name',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      FormBuilderTextField(
+                        name: 'lastName',
+                        initialValue: user?.lastName,
+                        decoration: const InputDecoration(
+                          labelText: 'Last Name',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      Row(
+                        children: [
+                          ElevatedButton(
+                            onPressed: () async {
+                              if (_userFormKey.currentState!
+                                  .saveAndValidate()) {
+                                final data = _userFormKey.currentState!.value;
+                                await firestore
+                                    .collection('users')
+                                    .doc(auth.currentUser!.uid)
+                                    .set(data);
+                                setState(() {});
+                                showAdaptiveDialog(
+                                    context: navigatorKey.currentContext!,
+                                    builder: (context) {
+                                      return AlertDialog.adaptive(
+                                        title: const Text('Profile Updated'),
+                                        content: const Text(
+                                            'Your profile has been updated.'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: const Text('OK'),
+                                          ),
+                                        ],
+                                      );
+                                    });
+                              }
+                            },
+                            child: const Text('Save'),
+                          ),
+                          const SizedBox(width: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              _userFormKey.currentState!.reset();
+                            },
+                            child: const Text('Discard Changes'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
     );
   }
 }

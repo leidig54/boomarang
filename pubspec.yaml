@@ -7,9 +7,7 @@ environment:
   sdk: ">=3.3.4 <4.0.0"
 
 dependencies:
-  boomarang_shared:
-    path: ../boomarang_shared
-  cloud_firestore: ^5.0.1
+  cloud_firestore: ^5.0.0
   cloud_functions: ^5.0.0
   file_picker: ^8.0.3
   firebase_auth: ^5.0.0
@@ -17,29 +15,13 @@ dependencies:
   firebase_storage: ^12.0.0
   flutter:
     sdk: flutter
-  flutter_localizations: # Add this line
-    sdk: flutter # Add this line
-  flutter_form_builder: ^9.3.0
-  flutter_quill: ^10.5.9
-  form_builder_validators: ^11.0.0
-  intl: ^0.19.0
+  flutter_quill: ^9.3.21
   uuid: ^4.4.0
-  firebase_ui_auth: ^1.15.0
-  collection: ^1.18.0
-  package_info_plus: ^8.0.0
-  syncfusion_flutter_datagrid: ^26.1.39
-  provider: ^6.1.2
-  syncfusion_flutter_core: ^26.1.40
-  form_builder_file_picker: ^4.2.0
-  form_builder_extra_fields: ^11.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
-
-dependency_overrides:
-  device_info_plus: ^10.0.1
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
