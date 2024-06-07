@@ -29,6 +29,7 @@ Future<Document> generateReport({
             ))
         .catchError((error) {
       debugPrint('Error uploading file: $error');
+      throw error;
     }).then((value) {
       debugPrint('File uploaded successfully');
     });
@@ -49,6 +50,7 @@ Future<Document> generateReport({
             ))
         .catchError((error) {
       debugPrint('Error uploading file: $error');
+      throw error;
     }).then((value) {
       debugPrint('File uploaded successfully');
     });
