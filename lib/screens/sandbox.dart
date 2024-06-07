@@ -1,14 +1,8 @@
 import 'package:boomarang/methods/generate_report.dart';
-import 'package:boomarang/misc/custom_stepper.dart' as custom_stepper;
-import 'package:boomarang/misc/custom_stepper.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' hide Stepper, StepperType;
+import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:htmltopdfwidgets/htmltopdfwidgets.dart' as pdf_thing;
-import 'package:quill_html_converter/quill_html_converter.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class SandboxScreen extends StatefulWidget {
   const SandboxScreen({super.key});
@@ -62,27 +56,20 @@ class _SandboxScreenState extends State<SandboxScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sandbox'),
-      ),
       body: Container(
         constraints: const BoxConstraints(maxWidth: 1200),
         child: ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-          child: custom_stepper.Stepper(
+          child: Stepper(
             controller: stepperScrollController,
             type: StepperType.vertical,
             currentStep: _currentStep,
-            onStepTapped: null,
-
             onStepContinue: (_currentStep == 0 &&
                         (requestFile == null &&
                             requestController.text.isEmpty)) ||
                     (_currentStep == 1 &&
                         (consultationsFile == null &&
-                            consultationsController.text.isEmpty)) ||
-                    (_currentStep == 2 &&
-                        reportQuillController.document.isEmpty())
+                            consultationsController.text.isEmpty))
                 ? null
                 : () {
                     if (_currentStep == 2) {
@@ -131,44 +118,8 @@ class _SandboxScreenState extends State<SandboxScreen> {
                       _currentStep--;
                     });
                   },
-            //change text to finish on the last step and disable if the reportQuillController is empty
-            controlsBuilder:
-                (BuildContext context, custom_stepper.ControlsDetails details) {
-              return Column(
-                children: [
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    children: [
-                      OutlinedButton(
-                        onPressed: details.onStepCancel,
-                        //rectangle
-                        style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                        ),
-                        child: const Text('Back'),
-                      ),
-                      const SizedBox(width: 10),
-                      OutlinedButton(
-                        onPressed: details.onStepContinue,
-                        //rectangle
-                        style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                        ),
-                        child: Text(_currentStep == 2 ? 'Finish' : 'Next'),
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            },
             steps: [
-              custom_stepper.Step(
+              Step(
                 title: const Text('Request'),
                 isActive: _currentStep == 0,
                 content: Column(
@@ -216,13 +167,11 @@ class _SandboxScreenState extends State<SandboxScreen> {
                             allowMultiple: false,
                             type: FileType.custom,
                             allowedExtensions: ['pdf'],
-                            withData: true,
                           );
                           setState(() {
                             requestHintText =
                                 'Add any additional context here...';
-                            requestHelperText =
-                                'Request uploaded successfully.';
+                            requestHelperText = 'Request form added.';
                           });
                         },
                         icon: const Icon(Icons.upload_file),
@@ -231,7 +180,7 @@ class _SandboxScreenState extends State<SandboxScreen> {
                   ],
                 ),
               ),
-              custom_stepper.Step(
+              Step(
                 title: const Text('Consultations'),
                 content: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,54 +196,26 @@ class _SandboxScreenState extends State<SandboxScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    if (consultationsFile != null)
-                      Row(
-                        children: [
-                          const SizedBox(
-                            width: 20,
-                          ),
-                          Text(consultationsFile!.files.single.name),
-                          const SizedBox(width: 20),
-                          TextButton.icon(
-                            iconAlignment: IconAlignment.end,
-                            onPressed: () {
-                              setState(() {
-                                consultationsFile = null;
-                                consultationsHintText =
-                                    'Copy and paste your consultations here...';
-                                consultationsHelperText =
-                                    'If you have a file with consultations, you can use the button below to upload it.';
-                              });
-                            },
-                            icon: const Icon(Icons.delete),
-                            label: const Text('Remove'),
-                          ),
-                        ],
-                      )
-                    else
-                      TextButton.icon(
-                        onPressed: () async {
-                          consultationsFile =
-                              await FilePicker.platform.pickFiles(
-                            allowMultiple: false,
-                            type: FileType.custom,
-                            allowedExtensions: ['pdf'],
-                            withData: true,
-                          );
-                          setState(() {
-                            consultationsHintText =
-                                'Add any additional context here...';
-                            consultationsHelperText =
-                                'Consultations uploaded successfully.';
-                          });
-                        },
-                        icon: const Icon(Icons.upload_file),
-                        label: const Text('Upload Consultations'),
-                      ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        consultationsFile = await FilePicker.platform.pickFiles(
+                          allowMultiple: false,
+                          type: FileType.custom,
+                          allowedExtensions: ['pdf'],
+                        );
+                        setState(() {
+                          consultationsHintText =
+                              'Add any additional context here...';
+                          consultationsHelperText = 'Consultations added.';
+                        });
+                      },
+                      icon: const Icon(Icons.upload_file),
+                      label: const Text('Upload Consultations'),
+                    ),
                   ],
                 ),
               ),
-              custom_stepper.Step(
+              Step(
                 title: const Text('Report'),
                 content: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -381,58 +302,12 @@ class _SandboxScreenState extends State<SandboxScreen> {
                           ),
                           //download report button
                           const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton.icon(
-                                onPressed: () async {
-                                  //download the report as a pdf
-                                  final String report = reportQuillController
-                                      .document
-                                      .toPlainText();
-
-                                  launchUrl(
-                                    Uri.parse(
-                                        'mailto:?subject=Report&body=$report'),
-                                  );
-                                },
-                                icon: const Icon(Icons.email),
-                                label: const Text('Email Report'),
-                              ),
-                              const SizedBox(width: 20),
-                              TextButton.icon(
-                                onPressed: () async {
-                                  final newPdf = pdf_thing.Document();
-
-                                  //download the report as a pdf
-                                  final dynamic widgets =
-                                      await pdf_thing.HTMLToPdf().convert(
-                                          reportQuillController.document
-                                              .toDelta()
-                                              .toHtml());
-
-                                  newPdf.addPage(
-                                    pdf_thing.MultiPage(
-                                      build: (context) {
-                                        return widgets;
-                                      },
-                                      maxPages: 200,
-                                    ),
-                                  );
-
-                                  //download file
-                                  final pdf = await newPdf.save();
-
-                                  await FileSaver.instance.saveFile(
-                                    name: 'example.pdf',
-                                    mimeType: MimeType.pdf,
-                                    bytes: pdf,
-                                  );
-                                },
-                                icon: const Icon(Icons.download),
-                                label: const Text('Download as PDF'),
-                              ),
-                            ],
+                          TextButton.icon(
+                            onPressed: () async {
+                              //download the report
+                            },
+                            icon: const Icon(Icons.download),
+                            label: const Text('Download Report'),
                           )
                         ],
                       ),
