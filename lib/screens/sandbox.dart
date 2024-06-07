@@ -1,9 +1,6 @@
-import 'package:boomarang/main.dart';
-import 'package:boomarang/methods/generate_report.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_vertexai/firebase_vertexai.dart';
-import 'package:flutter/foundation.dart';
+import 'package:boomarang/methods/extract_quill_delta_from_file.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 
 class SandboxScreen extends StatefulWidget {
   const SandboxScreen({super.key});
@@ -13,230 +10,205 @@ class SandboxScreen extends StatefulWidget {
 }
 
 class _SandboxScreenState extends State<SandboxScreen> {
-  TextEditingController requestController = TextEditingController();
-  TextEditingController consultationsController = TextEditingController();
-  TextEditingController reportController = TextEditingController();
+  QuillController requestQuillController = QuillController.basic();
+  QuillController consultationsQuillController = QuillController.basic();
+  QuillController reportQuillController = QuillController.basic();
+
+  ScrollController requestScrollController = ScrollController();
+  ScrollController consultationsScrollController = ScrollController();
+  ScrollController reportScrollController = ScrollController();
+
+  ScrollController stepperScrollController = ScrollController();
 
   bool isGeneratingReport = false;
   bool isExtractingRequest = false;
   bool isExtractingConsultations = false;
 
-  @override
-  void initState() {
-    //use emulators if in debug mode
+  // @override
+  // void initState() {
+  //   requestQuillController.addListener(() {
+  //     setState(() {});
+  //   });
 
-    if (kDebugMode) {
-      requestController.text =
-          'Confirm if this patient has diverticulitis for which they take antibiotics.';
-      consultationsController.text =
-          'Consultation: This patient has diverticulitis and is on antibiotics.';
-    }
+  //   consultationsQuillController.addListener(() {
+  //     setState(() {});
+  //   });
 
-    requestController.addListener(() {
-      setState(() {});
-    });
+  //   reportQuillController.addListener(() {
+  //     setState(() {});
+  //   });
+  //   super.initState();
+  // }
 
-    consultationsController.addListener(() {
-      setState(() {});
-    });
-
-    reportController.addListener(() {
-      setState(() {});
-    });
-    super.initState();
-  }
+  int _currentStep = 0;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 800),
-          child: ListView(
-            children: [
-              Text(
-                'Request',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                maxLines: 5,
-                controller: requestController,
-                decoration: const InputDecoration(
-                  helperText:
-                      'Copy and paste your request, or use the button below to upload a file.',
-                  alignLabelWithHint: true,
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 20),
-              isExtractingRequest
-                  ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton.icon(
-                      onPressed: () async {
-                        setState(() {
-                          isExtractingRequest = true;
-                        });
-
-                        await extractTextFromFile(context).then((value) {
-                          if (value != null) {
-                            requestController.text = value;
-                          }
-                        }).whenComplete(() {
-                          setState(() {
-                            isExtractingRequest = false;
-                          });
-                        });
-                      },
-                      icon: const Icon(Icons.upload_file),
-                      label: const Text('Upload Request'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Sandbox'),
+      ),
+      body: Container(
+        constraints: const BoxConstraints(maxWidth: 1200),
+        child: Stepper(
+          controller: stepperScrollController,
+          type: StepperType.vertical,
+          onStepTapped: (step) {
+            setState(() {
+              _currentStep = step;
+            });
+          },
+          currentStep: _currentStep,
+          onStepContinue: _currentStep == 2
+              ? null
+              : () {
+                  setState(() {
+                    _currentStep++;
+                  });
+                },
+          onStepCancel: _currentStep == 0
+              ? null
+              : () {
+                  setState(() {
+                    _currentStep--;
+                  });
+                },
+          steps: [
+            Step(
+              title: const Text('Request'),
+              isActive: _currentStep == 0,
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  QuillToolbar.simple(
+                    configurations: QuillSimpleToolbarConfigurations(
+                      controller: requestQuillController,
+                      showInlineCode: false,
+                      showColorButton: false,
+                      showCodeBlock: false,
+                      showSubscript: false,
+                      showSuperscript: false,
+                      showLink: false,
+                      showFontFamily: false,
+                      showSearchButton: false,
+                      showClipboardCopy: false,
+                      showClipboardCut: false,
+                      showClipboardPaste: false,
+                      showQuote: false,
+                      showBackgroundColorButton: false,
+                      showStrikeThrough: false,
                     ),
-              //upload consultations area
-              const SizedBox(height: 20),
-              Text(
-                'Consultations',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                maxLines: 5,
-                controller: consultationsController,
-                decoration: const InputDecoration(
-                  helperText:
-                      'Copy and paste your consultations, or use the button below to upload a file.',
-                  alignLabelWithHint: true,
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 20),
-              isExtractingConsultations
-                  ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton.icon(
-                      onPressed: () async {
-                        setState(() {
-                          isExtractingConsultations = true;
-                        });
-                        await extractTextFromFile(context).then((value) {
-                          if (value != null) {
-                            consultationsController.text = value;
-                          }
-                        }).whenComplete(() {
-                          setState(() {
-                            isExtractingConsultations = false;
-                          });
-                        });
-                      },
-                      icon: const Icon(Icons.upload_file),
-                      label: const Text('Upload Consultations'),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    height: 300,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.grey,
+                      ),
+                      borderRadius: BorderRadius.circular(5),
                     ),
-              //show generated report area
-              const SizedBox(height: 20),
-              Text(
-                'Report',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                maxLines: 5,
-                controller: reportController,
-                decoration: const InputDecoration(
-                  alignLabelWithHint: true,
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              //download report button
-              const SizedBox(height: 20),
-              if (reportController.text.isNotEmpty)
-                TextButton.icon(
-                  onPressed: null,
-                  icon: const Icon(Icons.download),
-                  label: const Text('Download Report'),
-                )
-              else
-                isGeneratingReport
-                    ? const Center(child: CircularProgressIndicator())
-                    : ElevatedButton.icon(
-                        onPressed: consultationsController.text.isNotEmpty &&
-                                requestController.text.isNotEmpty
-                            ? () async {
-                                setState(() {
-                                  isGeneratingReport = true;
-                                });
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: QuillEditor.basic(
+                        configurations: QuillEditorConfigurations(
+                          controller: requestQuillController,
+                          showCursor: true,
+                        ),
+                        // scrollController: requestScrollController,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  //export document as json
 
-                                await generateReport(requestController.text,
-                                        consultationsController.text)
-                                    .then((value) {
-                                  reportController.text = value;
-                                }).whenComplete(() {
-                                  setState(() {
-                                    isGeneratingReport = false;
-                                  });
-                                });
-                              }
-                            : null,
-                        icon: const Icon(Icons.create),
-                        label: const Text('Generate Report'),
-                      )
-            ],
-          ),
+                  isExtractingRequest
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton.icon(
+                          onPressed: () async {
+                            setState(() {
+                              isExtractingRequest = true;
+                            });
+                            Document? document =
+                                await extractQuillDeltaFromFile(context)
+                                    .whenComplete(() {
+                              setState(() {
+                                isExtractingRequest = false;
+                              });
+                            });
+
+                            if (document != null) {
+                              requestQuillController.document = document;
+                            }
+
+                            setState(() {
+                              isExtractingRequest = false;
+                            });
+                          },
+                          icon: const Icon(Icons.upload_file),
+                          label: const Text('Upload Request'),
+                        ),
+                ],
+              ),
+            ),
+            Step(
+              title: const Text('Consultations'),
+              content: Column(
+                children: [
+                  const TextField(
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      helperText:
+                          'Copy and paste your consultations, or use the button below to upload a file.',
+                      alignLabelWithHint: true,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  isExtractingConsultations
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton.icon(
+                          onPressed: () async {
+                            setState(() {
+                              isExtractingConsultations = true;
+                            });
+                            Document? document =
+                                await extractQuillDeltaFromFile(context);
+
+                            if (document != null) {
+                              consultationsQuillController.document = document;
+                            }
+                          },
+                          icon: const Icon(Icons.upload_file),
+                          label: const Text('Upload Consultations'),
+                        ),
+                ],
+              ),
+            ),
+            Step(
+              title: const Text('Report'),
+              content: Column(
+                children: [
+                  const TextField(
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      alignLabelWithHint: true,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  //download report button
+                  const SizedBox(height: 20),
+                  TextButton.icon(
+                    onPressed: null,
+                    icon: const Icon(Icons.download),
+                    label: const Text('Download Report'),
+                  )
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
-  }
-
-  Future<String?> extractTextFromFile(BuildContext context) async {
-    FilePickerResult? file = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['png', 'jpg', 'jpeg', 'pdf'],
-      allowMultiple: false,
-    );
-
-    if (file == null) {
-      return null;
-    } else {
-      //get the file extension / mime type
-      String? extension = file.files.single.extension;
-
-      //format the extension as a mime type
-      String mimeType =
-          extension == 'pdf' ? 'application/pdf' : 'image/$extension';
-
-      debugPrint('Mime type: $mimeType');
-
-      //get the file as a byte array
-      Uint8List bytes = file.files.single.bytes!;
-
-      debugPrint('File size: ${bytes.length} bytes');
-
-      TextPart prompt = TextPart('Extract text');
-      DataPart data = DataPart(mimeType, bytes);
-
-      //upload the file to the model
-      GenerateContentResponse response = await model.generateContent([
-        Content.multi([prompt, data])
-      ]).catchError((error) {
-        showAdaptiveDialog(
-          context: context,
-          barrierDismissible: true,
-          builder: (context) => AlertDialog.adaptive(
-            title: const Text('Error'),
-            content: SelectableText(error.toString()),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              )
-            ],
-          ),
-        );
-        throw error;
-      });
-
-      //return the extracted text
-      return response.text;
-    }
   }
 }
