@@ -161,7 +161,7 @@ class _HomeState extends State<Home> {
               selectedIndex = index;
             });
           },
-          extended: false,
+          extended: true,
         ),
         const VerticalDivider(
           thickness: 1,
