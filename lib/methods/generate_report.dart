@@ -1,11 +1,8 @@
-import 'package:boomarang/main.dart';
-import 'package:boomarang/methods/error_dialog.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:uuid/uuid.dart';
 
 Future<Document> generateReport({
   required RequestData requestData,
@@ -16,47 +13,18 @@ Future<Document> generateReport({
   String? consultationDataFileUrl;
 
   if (requestData.file != null) {
-    //get a uuid for the file
-    String uuid = const Uuid().v4();
     final Reference ref = FirebaseStorage.instance.ref().child(
-          'uploads/${auth.currentUser!.uid}/$uuid',
+          'requestData/${requestData.file!.files.single.name}',
         );
-    await ref
-        .putData(
-            requestData.file!.files.single.bytes!,
-            SettableMetadata(
-              contentType:
-                  'application/${requestData.file!.files.single.extension}',
-            ))
-        .catchError((error) {
-      debugPrint('Error uploading file: $error');
-      showErrorDialog('Error uploading file: $error');
-      throw error;
-    }).then((value) {
-      debugPrint('File uploaded successfully');
-    });
+    await ref.putData(requestData.file!.files.single.bytes!);
     requestDataFileUrl = await ref.getDownloadURL();
   }
 
   if (consultationData.file != null) {
-    String uuid = const Uuid().v4();
     final Reference ref = FirebaseStorage.instance.ref().child(
-          'uploads/${auth.currentUser!.uid}/$uuid',
+          'consultationData/${consultationData.file!.files.single.name}',
         );
-    await ref
-        .putData(
-            consultationData.file!.files.single.bytes!,
-            SettableMetadata(
-              contentType:
-                  'application/${consultationData.file!.files.single.extension}',
-            ))
-        .catchError((error) {
-      debugPrint('Error uploading file: $error');
-      showErrorDialog('Error uploading file: $error');
-      throw error;
-    }).then((value) {
-      debugPrint('File uploaded successfully');
-    });
+    await ref.putData(consultationData.file!.files.single.bytes!);
     consultationDataFileUrl = await ref.getDownloadURL();
   }
 
@@ -75,19 +43,15 @@ Future<Document> generateReport({
         'fileUrl': consultationDataFileUrl,
       },
     },
-  ).catchError((error) {
-    String errorText = "Error generating report: $error";
-    debugPrint(errorText);
-    showErrorDialog(errorText);
-    throw error;
-  });
+  );
 
   //return the generated report
   String reportText = results.data;
 
   debugPrint('Generated report: $reportText');
 
-  return Document.fromHtml(reportText);
+  //
+  return Document();
 }
 
 class RequestData {

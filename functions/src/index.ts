@@ -27,9 +27,6 @@ configureGenkit({
 
 export const generateReport = onFlow({
   name: "generateReport",
-  httpsOptions: {
-    cors: true,
-  },
   inputSchema: z.object({
     requestData: z.object({
       text: z.string().nullable(),
@@ -67,19 +64,10 @@ async (subject) => {
   prompt.push({ text: "Respond in raw html. Do not use ** etc. Make good use of headings or bold text to separate the components." });
 
 
-  let result;
-  try {
-    result = await generate({
-      model: gemini15ProPreview,
-      prompt: prompt,
-    });
-  } catch (error) {
-    console.error("Error generating report:", error);
-    // Handle the error here
-    // For example, you can throw a custom error or return an error message
-    throw new Error("Failed to generate report");
-  }
-
+  const result = await generate({
+    model: gemini15ProPreview,
+    prompt: prompt,
+  });
   return result.text();
 }
 );
