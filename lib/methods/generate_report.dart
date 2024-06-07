@@ -1,5 +1,5 @@
 import 'package:boomarang/main.dart';
-import 'package:boomarang/misc/alert_dialog.dart';
+import 'package:boomarang/methods/error_dialog.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -30,7 +30,7 @@ Future<Document> generateReport({
             ))
         .catchError((error) {
       debugPrint('Error uploading file: $error');
-      buildErrorAlertDialog('Error uploading file: $error');
+      showErrorDialog('Error uploading file: $error');
       throw error;
     }).then((value) {
       debugPrint('File uploaded successfully');
@@ -52,7 +52,7 @@ Future<Document> generateReport({
             ))
         .catchError((error) {
       debugPrint('Error uploading file: $error');
-      buildErrorAlertDialog('Error uploading file: $error');
+      showErrorDialog('Error uploading file: $error');
       throw error;
     }).then((value) {
       debugPrint('File uploaded successfully');
@@ -78,7 +78,7 @@ Future<Document> generateReport({
   ).catchError((error) {
     String errorText = "Error generating report: $error";
     debugPrint(errorText);
-    buildErrorAlertDialog(errorText);
+    showErrorDialog(errorText);
     throw error;
   });
 
