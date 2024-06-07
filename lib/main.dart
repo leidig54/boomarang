@@ -1,7 +1,8 @@
 import 'package:boomarang/firebase_options.dart';
-import 'package:boomarang/screens/add_request.dart';
+import 'package:boomarang/screens/add_request/shell.dart';
 import 'package:boomarang/screens/inbox.dart';
 import 'package:boomarang/screens/profile.dart';
+import 'package:boomarang/screens/sandbox.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,7 +10,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions =
@@ -37,14 +37,6 @@ class _MainAppState extends State<MainApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en', 'GB'), // English, UK
-      ],
       routes: {
         '/': (context) => const InitApp(),
         '/add-request': (context) => const AddRequestScreen(),
@@ -160,6 +152,7 @@ class _HomeState extends State<Home> {
   List<Widget> screens = [
     const InboxScreen(),
     const ProfileScreen(),
+    const SandboxScreen(),
     const Text('Settings'),
   ];
 
@@ -180,6 +173,10 @@ class _HomeState extends State<Home> {
             NavigationRailDestination(
               icon: Icon(Icons.account_circle),
               label: Text('Account'),
+            ),
+            NavigationRailDestination(
+              icon: Icon(Icons.person),
+              label: Text('Sandbox'),
             ),
             NavigationRailDestination(
               icon: Icon(Icons.settings),
