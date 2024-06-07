@@ -1,9 +1,8 @@
 import 'package:boomarang/main.dart';
-import 'package:boomarang/methods/error_dialog.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:uuid/uuid.dart';
 
@@ -30,7 +29,6 @@ Future<Document> generateReport({
             ))
         .catchError((error) {
       debugPrint('Error uploading file: $error');
-      showErrorDialog('Error uploading file: $error');
       throw error;
     }).then((value) {
       debugPrint('File uploaded successfully');
@@ -52,7 +50,6 @@ Future<Document> generateReport({
             ))
         .catchError((error) {
       debugPrint('Error uploading file: $error');
-      showErrorDialog('Error uploading file: $error');
       throw error;
     }).then((value) {
       debugPrint('File uploaded successfully');
@@ -75,12 +72,7 @@ Future<Document> generateReport({
         'fileUrl': consultationDataFileUrl,
       },
     },
-  ).catchError((error) {
-    String errorText = "Error generating report: $error";
-    debugPrint(errorText);
-    showErrorDialog(errorText);
-    throw error;
-  });
+  );
 
   //return the generated report
   String reportText = results.data;
