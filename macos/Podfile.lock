@@ -953,49 +953,17 @@ PODS:
     - BoringSSL-GRPC/Interface (= 0.0.32)
   - BoringSSL-GRPC/Interface (0.0.32)
   - cloud_firestore (5.0.0):
-    - Firebase/Firestore (= 10.27.0)
+    - Firebase/CoreOnly (~> 10.27.0)
+    - Firebase/Firestore (~> 10.27.0)
     - firebase_core
-    - Flutter
+    - FlutterMacOS
   - cloud_functions (5.0.0):
-    - Firebase/Functions (= 10.27.0)
+    - Firebase/CoreOnly (~> 10.27.0)
+    - Firebase/Functions (~> 10.27.0)
     - firebase_core
-    - Flutter
+    - FlutterMacOS
   - device_info_plus (0.0.1):
-    - Flutter
-  - DKImagePickerController/Core (4.3.9):
-    - DKImagePickerController/ImageDataManager
-    - DKImagePickerController/Resource
-  - DKImagePickerController/ImageDataManager (4.3.9)
-  - DKImagePickerController/PhotoGallery (4.3.9):
-    - DKImagePickerController/Core
-    - DKPhotoGallery
-  - DKImagePickerController/Resource (4.3.9)
-  - DKPhotoGallery (0.0.19):
-    - DKPhotoGallery/Core (= 0.0.19)
-    - DKPhotoGallery/Model (= 0.0.19)
-    - DKPhotoGallery/Preview (= 0.0.19)
-    - DKPhotoGallery/Resource (= 0.0.19)
-    - SDWebImage
-    - SwiftyGif
-  - DKPhotoGallery/Core (0.0.19):
-    - DKPhotoGallery/Model
-    - DKPhotoGallery/Preview
-    - SDWebImage
-    - SwiftyGif
-  - DKPhotoGallery/Model (0.0.19):
-    - SDWebImage
-    - SwiftyGif
-  - DKPhotoGallery/Preview (0.0.19):
-    - DKPhotoGallery/Model
-    - DKPhotoGallery/Resource
-    - SDWebImage
-    - SwiftyGif
-  - DKPhotoGallery/Resource (0.0.19):
-    - SDWebImage
-    - SwiftyGif
-  - file_picker (0.0.1):
-    - DKImagePickerController/PhotoGallery
-    - Flutter
+    - FlutterMacOS
   - Firebase/Auth (10.27.0):
     - Firebase/CoreOnly
     - FirebaseAuth (~> 10.27.0)
@@ -1011,16 +979,18 @@ PODS:
     - Firebase/CoreOnly
     - FirebaseStorage (~> 10.27.0)
   - firebase_auth (5.0.0):
-    - Firebase/Auth (= 10.27.0)
+    - Firebase/Auth (~> 10.27.0)
+    - Firebase/CoreOnly (~> 10.27.0)
     - firebase_core
-    - Flutter
+    - FlutterMacOS
   - firebase_core (3.0.0):
-    - Firebase/CoreOnly (= 10.27.0)
-    - Flutter
+    - Firebase/CoreOnly (~> 10.27.0)
+    - FlutterMacOS
   - firebase_storage (12.0.0):
-    - Firebase/Storage (= 10.27.0)
+    - Firebase/CoreOnly (~> 10.27.0)
+    - Firebase/Storage (~> 10.27.0)
     - firebase_core
-    - Flutter
+    - FlutterMacOS
   - FirebaseAppCheckInterop (10.27.0)
   - FirebaseAuth (10.27.0):
     - FirebaseAppCheckInterop (~> 10.17)
@@ -1075,9 +1045,7 @@ PODS:
     - FirebaseCoreExtension (~> 10.0)
     - GoogleUtilities/Environment (~> 7.12)
     - GTMSessionFetcher/Core (< 4.0, >= 2.1)
-  - Flutter (1.0.0)
-  - flutter_keyboard_visibility (0.0.1):
-    - Flutter
+  - FlutterMacOS (1.0.0)
   - GoogleUtilities/AppDelegateSwizzler (7.13.3):
     - GoogleUtilities/Environment
     - GoogleUtilities/Logger
@@ -1180,7 +1148,7 @@ PODS:
   - gRPC-Core/Privacy (1.62.5)
   - GTMSessionFetcher/Core (3.4.1)
   - irondash_engine_context (0.0.1):
-    - Flutter
+    - FlutterMacOS
   - leveldb-library (1.22.5)
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
@@ -1188,36 +1156,27 @@ PODS:
   - nanopb/decode (2.30910.0)
   - nanopb/encode (2.30910.0)
   - PromisesObjC (2.4.0)
-  - RecaptchaInterop (100.0.0)
-  - SDWebImage (5.19.2):
-    - SDWebImage/Core (= 5.19.2)
-  - SDWebImage/Core (5.19.2)
   - super_native_extensions (0.0.1):
-    - Flutter
-  - SwiftyGif (5.4.5)
-  - url_launcher_ios (0.0.1):
-    - Flutter
+    - FlutterMacOS
+  - url_launcher_macos (0.0.1):
+    - FlutterMacOS
 
 DEPENDENCIES:
-  - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
-  - cloud_functions (from `.symlinks/plugins/cloud_functions/ios`)
-  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
-  - file_picker (from `.symlinks/plugins/file_picker/ios`)
-  - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
-  - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
-  - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
-  - Flutter (from `Flutter`)
-  - flutter_keyboard_visibility (from `.symlinks/plugins/flutter_keyboard_visibility/ios`)
-  - irondash_engine_context (from `.symlinks/plugins/irondash_engine_context/ios`)
-  - super_native_extensions (from `.symlinks/plugins/super_native_extensions/ios`)
-  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
+  - cloud_firestore (from `Flutter/ephemeral/.symlinks/plugins/cloud_firestore/macos`)
+  - cloud_functions (from `Flutter/ephemeral/.symlinks/plugins/cloud_functions/macos`)
+  - device_info_plus (from `Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos`)
+  - firebase_auth (from `Flutter/ephemeral/.symlinks/plugins/firebase_auth/macos`)
+  - firebase_core (from `Flutter/ephemeral/.symlinks/plugins/firebase_core/macos`)
+  - firebase_storage (from `Flutter/ephemeral/.symlinks/plugins/firebase_storage/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - irondash_engine_context (from `Flutter/ephemeral/.symlinks/plugins/irondash_engine_context/macos`)
+  - super_native_extensions (from `Flutter/ephemeral/.symlinks/plugins/super_native_extensions/macos`)
+  - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
 
 SPEC REPOS:
   trunk:
     - abseil
     - BoringSSL-GRPC
-    - DKImagePickerController
-    - DKPhotoGallery
     - Firebase
     - FirebaseAppCheckInterop
     - FirebaseAuth
@@ -1238,49 +1197,39 @@ SPEC REPOS:
     - leveldb-library
     - nanopb
     - PromisesObjC
-    - RecaptchaInterop
-    - SDWebImage
-    - SwiftyGif
 
 EXTERNAL SOURCES:
   cloud_firestore:
-    :path: ".symlinks/plugins/cloud_firestore/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/cloud_firestore/macos
   cloud_functions:
-    :path: ".symlinks/plugins/cloud_functions/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/cloud_functions/macos
   device_info_plus:
-    :path: ".symlinks/plugins/device_info_plus/ios"
-  file_picker:
-    :path: ".symlinks/plugins/file_picker/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos
   firebase_auth:
-    :path: ".symlinks/plugins/firebase_auth/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/firebase_auth/macos
   firebase_core:
-    :path: ".symlinks/plugins/firebase_core/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/firebase_core/macos
   firebase_storage:
-    :path: ".symlinks/plugins/firebase_storage/ios"
-  Flutter:
-    :path: Flutter
-  flutter_keyboard_visibility:
-    :path: ".symlinks/plugins/flutter_keyboard_visibility/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/firebase_storage/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
   irondash_engine_context:
-    :path: ".symlinks/plugins/irondash_engine_context/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/irondash_engine_context/macos
   super_native_extensions:
-    :path: ".symlinks/plugins/super_native_extensions/ios"
-  url_launcher_ios:
-    :path: ".symlinks/plugins/url_launcher_ios/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/super_native_extensions/macos
+  url_launcher_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
 
 SPEC CHECKSUMS:
   abseil: d121da9ef7e2ff4cab7666e76c5a3e0915ae08c3
   BoringSSL-GRPC: 1e2348957acdbcad360b80a264a90799984b2ba6
-  cloud_firestore: 8cbdffc6eec66f2c2e67f19e4c6f9a872c222d19
-  cloud_functions: 800466fd033f2e623a27c006add7be953df28227
-  device_info_plus: 97af1d7e84681a90d0693e63169a5d50e0839a0d
-  DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
-  DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
-  file_picker: 09aa5ec1ab24135ccd7a1621c46c84134bfd6655
+  cloud_firestore: 66e4fdde53950750b7e64d3bc2d438dde81fe36f
+  cloud_functions: 1799b463187e0d2c0cfea9f53c6eba23e99ecaa3
+  device_info_plus: ce1b7762849d3ec103d0e0517299f2db7ad60720
   Firebase: 26b040b20866a55f55eb3611b9fcf3ae64816b86
-  firebase_auth: 17ce83d25a062b2a594e5dfce91a4ad36e3739d5
-  firebase_core: 5926464bbb028fef87d2443369b73ada2a8a3608
-  firebase_storage: ff66671828d524fc9e36f30cd7ed1909036324c7
+  firebase_auth: e5aa229f58913e922c26e9d3b37a4664adeb40f3
+  firebase_core: 0b3b9c6c93f774c7392f1f9a6712f0d9ce9b1771
+  firebase_storage: f378f2ac42dec6337440f7878a9788eeb8cd966e
   FirebaseAppCheckInterop: 0dd062c9926a76332ca5711dbed6f1a9ac540b54
   FirebaseAuth: 77a012b7e08042bf44d0db835ca2e86e6ca7bbd3
   FirebaseAuthInterop: 0344acef098654eaf59f6add4c93254349bc5de4
@@ -1293,22 +1242,18 @@ SPEC CHECKSUMS:
   FirebaseMessagingInterop: 8e911a5387664e849d316c5cd257c33fa1d37529
   FirebaseSharedSwift: a03fe7a59ee646fef71099a887f774fe25d745b8
   FirebaseStorage: 255526c3d04c49874d7a5e3886964a79f77d6f33
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  flutter_keyboard_visibility: 0339d06371254c3eb25eeb90ba8d17dca8f9c069
+  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
   "gRPC-C++": e725ef63c4475d7cdb7e2cf16eb0fde84bd9ee51
   gRPC-Core: eee4be35df218649fe66d721a05a7f27a28f069b
   GTMSessionFetcher: 8000756fc1c19d2e5697b90311f7832d2e33f6cd
-  irondash_engine_context: 3458bf979b90d616ffb8ae03a150bafe2e860cc9
+  irondash_engine_context: da62996ee25616d2f01bbeb85dc115d813359478
   leveldb-library: e8eadf9008a61f9e1dde3978c086d2b6d9b9dc28
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
-  SDWebImage: dfe95b2466a9823cf9f0c6d01217c06550d7b29a
-  super_native_extensions: 4916b3c627a9c7fffdc48a23a9eca0b1ac228fa7
-  SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
-  url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
+  super_native_extensions: 85efee3a7495b46b04befcfc86ed12069264ebf3
+  url_launcher_macos: 5f437abeda8c85500ceb03f5c1938a8c5a705399
 
-PODFILE CHECKSUM: a57f30d18f102dd3ce366b1d62a55ecbef2158e5
+PODFILE CHECKSUM: 236401fc2c932af29a9fcf0e97baeeb2d750d367
 
 COCOAPODS: 1.13.0
