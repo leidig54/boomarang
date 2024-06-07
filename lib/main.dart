@@ -8,11 +8,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
-FirebaseFunctions functions =
-    FirebaseFunctions.instanceFor(region: 'us-central1');
+FirebaseFunctions functions = FirebaseFunctions.instance;
 FirebaseStorage storage = FirebaseStorage.instance;
-
-bool useEmulators = false;
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
@@ -67,7 +64,7 @@ class AuthGate extends StatefulWidget {
 class _AuthGateState extends State<AuthGate> {
   @override
   void initState() {
-    if (kDebugMode && useEmulators) {
+    if (kDebugMode) {
       functions.useFunctionsEmulator('localhost', 5001);
       auth.useAuthEmulator('localhost', 9099);
     }
@@ -164,7 +161,7 @@ class _HomeState extends State<Home> {
               selectedIndex = index;
             });
           },
-          extended: true,
+          extended: false,
         ),
         const VerticalDivider(
           thickness: 1,
