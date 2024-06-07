@@ -1,5 +1,6 @@
 import 'package:boomarang/methods/generate_report.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
@@ -19,7 +20,7 @@ class _SandboxScreenState extends State<SandboxScreen> {
   ScrollController reportScrollController = ScrollController();
   ScrollController stepperScrollController = ScrollController();
 
-  int _currentStep = 2;
+  int _currentStep = 0;
 
   FilePickerResult? requestFile;
   FilePickerResult? consultationsFile;
@@ -36,6 +37,12 @@ class _SandboxScreenState extends State<SandboxScreen> {
 
   @override
   void initState() {
+    if (kDebugMode) {
+      requestController.text =
+          'Please confirm whether or not the patient: David Spacey, has diverticulitis and is taking antibiotics.';
+      consultationsController.text =
+          'The patient, David Spacey, has been diagnosed with diverticulitis and is currently taking antibiotics. The patient is also experiencing severe abdominal pain and has been advised to rest and take the antibiotics as prescribed.';
+    }
     requestController.addListener(() {
       setState(() {});
     });
@@ -49,9 +56,6 @@ class _SandboxScreenState extends State<SandboxScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sandbox'),
-      ),
       body: Container(
         constraints: const BoxConstraints(maxWidth: 1200),
         child: ScrollConfiguration(
@@ -60,8 +64,7 @@ class _SandboxScreenState extends State<SandboxScreen> {
             controller: stepperScrollController,
             type: StepperType.vertical,
             currentStep: _currentStep,
-            onStepContinue: _currentStep == 2 ||
-                    (_currentStep == 0 &&
+            onStepContinue: (_currentStep == 0 &&
                         (requestFile == null &&
                             requestController.text.isEmpty)) ||
                     (_currentStep == 1 &&
@@ -69,9 +72,44 @@ class _SandboxScreenState extends State<SandboxScreen> {
                             consultationsController.text.isEmpty))
                 ? null
                 : () {
-                    setState(() {
-                      _currentStep++;
-                    });
+                    if (_currentStep == 2) {
+                      //showDialog
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Finish'),
+                          content: const Text(
+                              'Are you sure you want to finish? This will close the window.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                setState(() {
+                                  _currentStep = 0;
+                                  requestController.clear();
+                                  consultationsController.clear();
+                                  requestFile = null;
+                                  consultationsFile = null;
+                                  requestHintText = 'Describe the request...';
+                                  requestHelperText =
+                                      'If you have a request form, you can use the button below to upload a PDF file.';
+                                  consultationsHintText =
+                                      'Copy and paste your consultations here...';
+                                  consultationsHelperText =
+                                      'If you have a file with consultations, you can use the button below to upload it.';
+                                  reportQuillController.document = Document();
+                                });
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      setState(() {
+                        _currentStep++;
+                      });
+                    }
                   },
             onStepCancel: _currentStep == 0
                 ? null
@@ -190,28 +228,34 @@ class _SandboxScreenState extends State<SandboxScreen> {
                             height: 20,
                           ),
                           FloatingActionButton.extended(
-                              icon: const Icon(Icons.create),
-                              onPressed: () async {
-                                setState(() {
-                                  isGeneratingReport = true;
-                                });
-                                reportQuillController.document =
-                                    await generateReport(
-                                  requestData: RequestData(
-                                    text: requestController.text,
-                                    file: requestFile,
-                                  ),
-                                  consultationData: ConsultationData(
-                                    text: consultationsController.text,
-                                    file: consultationsFile,
-                                  ),
-                                ).whenComplete(() {
-                                  setState(() {
-                                    isGeneratingReport = false;
-                                  });
-                                });
-                              },
-                              label: const Text('Generate Report')),
+                              icon: isGeneratingReport
+                                  ? const CircularProgressIndicator.adaptive()
+                                  : const Icon(Icons.create),
+                              onPressed: isGeneratingReport
+                                  ? null
+                                  : () async {
+                                      setState(() {
+                                        isGeneratingReport = true;
+                                      });
+                                      reportQuillController.document =
+                                          await generateReport(
+                                        requestData: RequestData(
+                                          text: requestController.text,
+                                          file: requestFile,
+                                        ),
+                                        consultationData: ConsultationData(
+                                          text: consultationsController.text,
+                                          file: consultationsFile,
+                                        ),
+                                      ).whenComplete(() {
+                                        setState(() {
+                                          isGeneratingReport = false;
+                                        });
+                                      });
+                                    },
+                              label: isGeneratingReport
+                                  ? const Text('Generating')
+                                  : const Text('Generate Report')),
                         ],
                       )
                     else
@@ -259,7 +303,9 @@ class _SandboxScreenState extends State<SandboxScreen> {
                           //download report button
                           const SizedBox(height: 20),
                           TextButton.icon(
-                            onPressed: null,
+                            onPressed: () async {
+                              //download the report
+                            },
                             icon: const Icon(Icons.download),
                             label: const Text('Download Report'),
                           )
