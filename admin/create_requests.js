@@ -13,32 +13,18 @@ const requestCollection = db.collection('requests');
 
 const createRequest = async () => {
     const request = {
-        id: faker.string.uuid(),
-        creatorId: faker.string.uuid(),
-        subjectFirstName: faker.person.firstName(),
-        subjectLastName: faker.person.lastName(),
-        subjectEmail: faker.internet.email(),
-        requesterUserId: faker.string.uuid(),
-        requesterOrgName: faker.company.name(),
-        holderUserId: faker.string.uuid(),
-        holderOrgId: faker.string.uuid(),
-        dateCreated: faker.date.past(),
+        id: faker.datatype.uuid(),
+        authoriserFirstName: faker.name.firstName(),
+        authoriserLastName: faker.name.lastName(),
+        authoriserEmail: faker.internet.email(),
+        authoriserPhoneNumber: faker.phone.number(),
+        requesterUserId: faker.datatype.uuid(),
+        holderUserId: faker.datatype.uuid(),
+        dateCreated: faker.date.recent(),
         dateUpdated: faker.date.recent(),
-        dateSubmitted: faker.date.recent(),
-        consentStatus: faker.helpers.arrayElement(['granted', 'denied', 'pending']),
+        consentStatus: faker.helpers.arrayElement(['granted', 'denied']),
         paymentStatus: faker.helpers.arrayElement(['paid', 'unpaid']),
-        requestStatus: faker.helpers.arrayElement(['completed', 'pending', 'cancelled']),
-        requestType: faker.helpers.arrayElement(['consent', 'payment', 'other']),
-        requestDetails: faker.lorem.sentence(),
-        requestFormRef: faker.string.uuid(),
-        consentTemplateId: faker.string.uuid(),
-        consentFormRef: faker.string.uuid(),
-        isSubmitted: faker.helpers.boolean(),
-        knowsHolder: faker.helpers.arrayElement(['yes', 'no', 'self']),
-        hasConsent: faker.helpers.boolean(),
-        
-        
-
+        requestStatus: faker.helpers.arrayElement(['pending', 'completed'])
     }
     await requestCollection.doc(request.id).set(request);
 }
@@ -54,21 +40,15 @@ for (let i = 0; i < 50; i++) {
 
 
 //request models (in Dart) 
-// String id;
-//   String subjectFirstName;
-//   String subjectLastName;
-//   String subjectEmail;
-//   String? requesterUserId;
-//   String? requesterOrgName;
-//   String? holderUserId;
-//   String? holderOrgId;
-//   DateTime dateCreated;
-//   DateTime dateUpdated;
-//   String consentStatus;
-//   String paymentStatus;
-//   String requestStatus;
-//   String requestType;
-//   String? requestDetails;
-//   String? requestFormRef;
-//   String? consentTemplateId;
-//   String? consentFormRef;
+    // String id;
+    // String authoriserFirstName;
+    // String authoriserLastName;
+    // String authoriserEmail;
+    // String authoriserPhoneNumber;
+    // String requesterUserId;
+    // String holderUserId;
+    // DateTime dateCreated;
+    // DateTime dateUpdated;
+    // String consentStatus;
+    // String paymentStatus;
+    // String requestStatus;

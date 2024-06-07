@@ -1,5 +1,5 @@
 import 'package:boomarang/firebase_options.dart';
-import 'package:boomarang/screens/add_request.dart';
+import 'package:boomarang/screens/add_request/shell.dart';
 import 'package:boomarang/screens/inbox.dart';
 import 'package:boomarang/screens/profile.dart';
 import 'package:boomarang/screens/sandbox.dart';
@@ -10,7 +10,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions =
@@ -38,14 +37,6 @@ class _MainAppState extends State<MainApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en', 'GB'), // English, UK
-      ],
       routes: {
         '/': (context) => const InitApp(),
         '/add-request': (context) => const AddRequestScreen(),
