@@ -25,63 +25,58 @@ configureGenkit({
   enableTracingAndMetrics: true,
 });
 
-export const generateReport = onFlow({
-  name: "generateReport",
-  httpsOptions: {
-    cors: true,
+
+export const extractQuillDeltaFromFile = onFlow(
+  {
+    name: "extractQuillDeltaFromFile",
+    inputSchema: z.object({
+      fileId: z.string(),
+      userId: z.string(),
+    }),
+    outputSchema: z.string(),
+    authPolicy: firebaseAuth((user) => {
+      if (user.uid === null) {
+        throw new Error("Verified email required to run flow");
+      }
+    }),
   },
-  inputSchema: z.object({
-    requestData: z.object({
-      text: z.string().nullable(),
-      fileUrl: z.string().nullable(),
-    }),
-    consultationData: z.object({
-      text: z.string().nullable(),
-      fileUrl: z.string().nullable(),
-    }),
-  }),
-  outputSchema: z.string(),
-  authPolicy: firebaseAuth((user) => {
-    if (user.uid === null) {
-      throw new Error("Verified email required to run flow");
-    }
-  }),
-},
-async (subject) => {
-  // create the prompt for the model, given the text or the urls can be null
-  const prompt = [];
-  prompt.push({ text: "You are a report writing assistant. You have to write a report based on the following request details:" });
-  if (subject.requestData.text) {
-    prompt.push({ text: subject.requestData.text });
-  }
-  if (subject.requestData.fileUrl) {
-    prompt.push({ media: { url: subject.requestData.fileUrl, contentType: "application/pdf" } });
-  }
-  prompt.push({ text: "You have to include the following consultation details in the report:" });
-  if (subject.consultationData.text) {
-    prompt.push({ text: subject.consultationData.text });
-  }
-  if (subject.consultationData.fileUrl) {
-    prompt.push({ media: { url: subject.consultationData.fileUrl, contentType: "application/pdf" } });
-  }
-  prompt.push({ text: "Respond in raw html. Do not use ** etc. Make good use of headings or bold text to separate the components." });
+  async (subject) => {
+    console.log(subject);
+    const fileId = subject.fileId;
+    const userId = subject.userId;
 
+    // get file url from storage. the ref is the user id and the file id separated by a slash
+    const bucket = admin.storage().bucket();
+    const fileRef = bucket.file(`${userId}/${fileId}`);
 
-  let result;
-  try {
-    result = await generate({
-      model: gemini15ProPreview,
-      prompt: prompt,
+    // get signed url
+    const [signedUrl] = await fileRef.getSignedUrl({
+      action: "read",
+      expires: Date.now() + 1000 * 60 * 5,
     });
-  } catch (error) {
-    console.error("Error generating report:", error);
-    // Handle the error here
-    // For example, you can throw a custom error or return an error message
-    throw new Error("Failed to generate report");
+
+    console.log(signedUrl);
+
+    // get file content type
+    const [metadata] = await fileRef.getMetadata();
+    const fileContentType = metadata.contentType;
+
+
+    const result = await generate({
+      model: gemini15ProPreview,
+      prompt: [
+        // eslint-disable-next-line max-len
+        { text: "Extract the text from this pdf and give it to me in a quill delta format (json)for use in my app. Do not include ```json etc, its gets plugged straight into a jsonDecoder: No need for the ops stuff either. Always end in a newline. Add some heading formatting etc so it looks nice." },
+        { media: { url: signedUrl, contentType: fileContentType } },
+      ],
+      config: {
+        temperature: 0.5,
+      },
+    });
+
+    console.log(result.text());
+
+    return result.text();
   }
-
-  return result.text();
-}
 );
-
 
