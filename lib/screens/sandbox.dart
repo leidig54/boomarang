@@ -1,8 +1,12 @@
 import 'package:boomarang/methods/generate_report.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:htmltopdfwidgets/htmltopdfwidgets.dart' as pdfThing;
+import 'package:quill_html_converter/quill_html_converter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SandboxScreen extends StatefulWidget {
   const SandboxScreen({super.key});
@@ -69,7 +73,9 @@ class _SandboxScreenState extends State<SandboxScreen> {
                             requestController.text.isEmpty)) ||
                     (_currentStep == 1 &&
                         (consultationsFile == null &&
-                            consultationsController.text.isEmpty))
+                            consultationsController.text.isEmpty)) ||
+                    (_currentStep == 2 &&
+                        reportQuillController.document.isEmpty())
                 ? null
                 : () {
                     if (_currentStep == 2) {
@@ -118,6 +124,41 @@ class _SandboxScreenState extends State<SandboxScreen> {
                       _currentStep--;
                     });
                   },
+            //change text to finish on the last step and disable if the reportQuillController is empty
+            controlsBuilder: (BuildContext context, ControlsDetails details) {
+              return Column(
+                children: [
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    children: [
+                      OutlinedButton(
+                        onPressed: details.onStepCancel,
+                        //rectangle
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        child: const Text('Back'),
+                      ),
+                      const SizedBox(width: 10),
+                      OutlinedButton(
+                        onPressed: details.onStepContinue,
+                        //rectangle
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        child: Text(_currentStep == 2 ? 'Finish' : 'Next'),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
             steps: [
               Step(
                 title: const Text('Request'),
@@ -171,7 +212,8 @@ class _SandboxScreenState extends State<SandboxScreen> {
                           setState(() {
                             requestHintText =
                                 'Add any additional context here...';
-                            requestHelperText = 'Request form added.';
+                            requestHelperText =
+                                'Request uploaded successfully.';
                           });
                         },
                         icon: const Icon(Icons.upload_file),
@@ -196,22 +238,49 @@ class _SandboxScreenState extends State<SandboxScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    TextButton.icon(
-                      onPressed: () async {
-                        consultationsFile = await FilePicker.platform.pickFiles(
-                          allowMultiple: false,
-                          type: FileType.custom,
-                          allowedExtensions: ['pdf'],
-                        );
-                        setState(() {
-                          consultationsHintText =
-                              'Add any additional context here...';
-                          consultationsHelperText = 'Consultations added.';
-                        });
-                      },
-                      icon: const Icon(Icons.upload_file),
-                      label: const Text('Upload Consultations'),
-                    ),
+                    if (consultationsFile != null)
+                      Row(
+                        children: [
+                          const SizedBox(
+                            width: 20,
+                          ),
+                          Text(consultationsFile!.files.single.name),
+                          const SizedBox(width: 20),
+                          TextButton.icon(
+                            iconAlignment: IconAlignment.end,
+                            onPressed: () {
+                              setState(() {
+                                consultationsFile = null;
+                                consultationsHintText =
+                                    'Copy and paste your consultations here...';
+                                consultationsHelperText =
+                                    'If you have a file with consultations, you can use the button below to upload it.';
+                              });
+                            },
+                            icon: const Icon(Icons.delete),
+                            label: const Text('Remove'),
+                          ),
+                        ],
+                      )
+                    else
+                      TextButton.icon(
+                        onPressed: () async {
+                          consultationsFile =
+                              await FilePicker.platform.pickFiles(
+                            allowMultiple: false,
+                            type: FileType.custom,
+                            allowedExtensions: ['pdf'],
+                          );
+                          setState(() {
+                            consultationsHintText =
+                                'Add any additional context here...';
+                            consultationsHelperText =
+                                'Consultations uploaded successfully.';
+                          });
+                        },
+                        icon: const Icon(Icons.upload_file),
+                        label: const Text('Upload Consultations'),
+                      ),
                   ],
                 ),
               ),
@@ -302,12 +371,54 @@ class _SandboxScreenState extends State<SandboxScreen> {
                           ),
                           //download report button
                           const SizedBox(height: 20),
-                          TextButton.icon(
-                            onPressed: () async {
-                              //download the report
-                            },
-                            icon: const Icon(Icons.download),
-                            label: const Text('Download Report'),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton.icon(
+                                onPressed: () async {
+                                  //download the report as a pdf
+                                  final String report = reportQuillController
+                                      .document
+                                      .toPlainText();
+
+                                  launchUrl(
+                                    Uri.parse(
+                                        'mailto:?subject=Report&body=$report'),
+                                  );
+                                },
+                                icon: const Icon(Icons.email),
+                                label: const Text('Email Report'),
+                              ),
+                              const SizedBox(width: 20),
+                              TextButton.icon(
+                                onPressed: () async {
+                                  final newPdf = pdfThing.Document();
+
+                                  //download the report as a pdf
+                                  final dynamic widgets =
+                                      await pdfThing.HTMLToPdf().convert(
+                                          reportQuillController.document
+                                              .toDelta()
+                                              .toHtml());
+
+                                  newPdf.addPage(
+                                      pdfThing.MultiPage(build: (context) {
+                                    return widgets;
+                                  }));
+
+                                  //download file
+                                  final pdf = await newPdf.save();
+
+                                  await FileSaver.instance.saveFile(
+                                    name: 'example.pdf',
+                                    mimeType: MimeType.pdf,
+                                    bytes: pdf,
+                                  );
+                                },
+                                icon: const Icon(Icons.download),
+                                label: const Text('Download as PDF'),
+                              ),
+                            ],
                           )
                         ],
                       ),
