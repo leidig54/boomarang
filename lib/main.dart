@@ -1,9 +1,5 @@
 import 'package:boomarang/firebase_options.dart';
-import 'package:boomarang/screens/add_request/shell.dart';
-import 'package:boomarang/screens/inbox.dart';
-import 'package:boomarang/screens/profile.dart';
 import 'package:boomarang/screens/sandbox.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -15,9 +11,8 @@ FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions =
     FirebaseFunctions.instanceFor(region: 'us-central1');
 FirebaseStorage storage = FirebaseStorage.instance;
-FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-bool useEmulators = true;
+bool useEmulators = false;
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
@@ -35,45 +30,28 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-      routes: {
-        '/': (context) => const InitApp(),
-        '/add-request': (context) => const AddRequestScreen(),
-      },
-      initialRoute: '/',
+      home: FutureBuilder(
+          future: Firebase.initializeApp(
+            options: DefaultFirebaseOptions.currentPlatform,
+          ),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            } else if (snapshot.hasError) {
+              return Scaffold(
+                body: Center(
+                  child: Text('Error: ${snapshot.error}'),
+                ),
+              );
+            }
+            return const AuthGate();
+          }),
     );
-  }
-}
-
-class InitApp extends StatelessWidget {
-  const InitApp({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: Firebase.initializeApp(
-          name: null,
-          options: DefaultFirebaseOptions.currentPlatform,
-        ),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          } else if (snapshot.hasError) {
-            return Scaffold(
-              body: Center(
-                child: Text('Error: ${snapshot.error}'),
-              ),
-            );
-          }
-          return const AuthGate();
-        });
   }
 }
 
@@ -89,15 +67,9 @@ class AuthGate extends StatefulWidget {
 class _AuthGateState extends State<AuthGate> {
   @override
   void initState() {
-    try {
-      if (kDebugMode && useEmulators) {
-        functions.useFunctionsEmulator('localhost', 5001);
-        auth.useAuthEmulator('localhost', 9099);
-        firestore.useFirestoreEmulator('localhost', 8080);
-        // storage.useStorageEmulator('localhost', 9199);
-      }
-    } on Exception catch (e) {
-      debugPrint('Error: $e');
+    if (kDebugMode && useEmulators) {
+      functions.useFunctionsEmulator('localhost', 5001);
+      auth.useAuthEmulator('localhost', 9099);
     }
     super.initState();
   }
@@ -147,11 +119,11 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int selectedIndex = 0;
+  int selectedIndex = 2;
 
   List<Widget> screens = [
-    const InboxScreen(),
-    const ProfileScreen(),
+    const Text('Inbox'),
+    const Text('Account'),
     const SandboxScreen(),
     const Text('Settings'),
   ];
@@ -169,10 +141,12 @@ class _HomeState extends State<Home> {
             NavigationRailDestination(
               icon: Icon(Icons.mail),
               label: Text('Inbox'),
+              disabled: true,
             ),
             NavigationRailDestination(
               icon: Icon(Icons.account_circle),
               label: Text('Account'),
+              disabled: true,
             ),
             NavigationRailDestination(
               icon: Icon(Icons.person),
