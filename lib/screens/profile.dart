@@ -1,5 +1,5 @@
 import 'package:boomarang/main.dart';
-import 'package:boomarang_shared/models/user.dart';
+import 'package:boomarang/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
@@ -18,7 +18,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        centerTitle: false,
       ),
       body: FutureBuilder(
           future:
