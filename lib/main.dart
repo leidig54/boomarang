@@ -8,8 +8,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
-FirebaseFunctions functions = FirebaseFunctions.instance;
+FirebaseFunctions functions =
+    FirebaseFunctions.instanceFor(region: 'us-central1');
 FirebaseStorage storage = FirebaseStorage.instance;
+
+bool useEmulators = false;
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
@@ -64,7 +67,7 @@ class AuthGate extends StatefulWidget {
 class _AuthGateState extends State<AuthGate> {
   @override
   void initState() {
-    if (kDebugMode) {
+    if (kDebugMode && useEmulators) {
       functions.useFunctionsEmulator('localhost', 5001);
       auth.useAuthEmulator('localhost', 9099);
     }
