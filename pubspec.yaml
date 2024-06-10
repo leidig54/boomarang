@@ -7,9 +7,8 @@ environment:
   sdk: ">=3.3.4 <4.0.0"
 
 dependencies:
-  cloud_firestore: ^5.0.1
+  cloud_firestore: ^5.0.0
   cloud_functions: ^5.0.0
-  data_table_2: ^2.5.15
   file_picker: ^8.0.3
   file_saver: ^0.2.13
   firebase_auth: ^5.0.0
@@ -17,13 +16,10 @@ dependencies:
   firebase_storage: ^12.0.0
   flutter:
     sdk: flutter
-  flutter_form_builder: ^9.3.0
   flutter_quill: ^9.3.21
   htmltopdfwidgets: ^1.0.3
-  intl: ^0.19.0
   quill_html_converter: ^9.3.21
   quill_pdf_converter: ^9.3.21
-  smooth_page_indicator: ^1.1.0
   url_launcher: ^6.3.0
   uuid: ^4.4.0
 
