@@ -1,10 +1,12 @@
 import 'package:boomarang/methods/generate_report.dart';
+import 'package:boomarang/misc/custom_stepper.dart' as custom_stepper;
+import 'package:boomarang/misc/custom_stepper.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Stepper, StepperType;
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:htmltopdfwidgets/htmltopdfwidgets.dart' as pdfThing;
+import 'package:htmltopdfwidgets/htmltopdfwidgets.dart' as pdf_thing;
 import 'package:quill_html_converter/quill_html_converter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -60,14 +62,19 @@ class _SandboxScreenState extends State<SandboxScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Sandbox'),
+      ),
       body: Container(
         constraints: const BoxConstraints(maxWidth: 1200),
         child: ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-          child: Stepper(
+          child: custom_stepper.Stepper(
             controller: stepperScrollController,
             type: StepperType.vertical,
             currentStep: _currentStep,
+            onStepTapped: null,
+
             onStepContinue: (_currentStep == 0 &&
                         (requestFile == null &&
                             requestController.text.isEmpty)) ||
@@ -125,7 +132,8 @@ class _SandboxScreenState extends State<SandboxScreen> {
                     });
                   },
             //change text to finish on the last step and disable if the reportQuillController is empty
-            controlsBuilder: (BuildContext context, ControlsDetails details) {
+            controlsBuilder:
+                (BuildContext context, custom_stepper.ControlsDetails details) {
               return Column(
                 children: [
                   const SizedBox(
@@ -160,7 +168,7 @@ class _SandboxScreenState extends State<SandboxScreen> {
               );
             },
             steps: [
-              Step(
+              custom_stepper.Step(
                 title: const Text('Request'),
                 isActive: _currentStep == 0,
                 content: Column(
@@ -208,6 +216,7 @@ class _SandboxScreenState extends State<SandboxScreen> {
                             allowMultiple: false,
                             type: FileType.custom,
                             allowedExtensions: ['pdf'],
+                            withData: true,
                           );
                           setState(() {
                             requestHintText =
@@ -222,7 +231,7 @@ class _SandboxScreenState extends State<SandboxScreen> {
                   ],
                 ),
               ),
-              Step(
+              custom_stepper.Step(
                 title: const Text('Consultations'),
                 content: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,6 +279,7 @@ class _SandboxScreenState extends State<SandboxScreen> {
                             allowMultiple: false,
                             type: FileType.custom,
                             allowedExtensions: ['pdf'],
+                            withData: true,
                           );
                           setState(() {
                             consultationsHintText =
@@ -284,7 +294,7 @@ class _SandboxScreenState extends State<SandboxScreen> {
                   ],
                 ),
               ),
-              Step(
+              custom_stepper.Step(
                 title: const Text('Report'),
                 content: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -392,19 +402,23 @@ class _SandboxScreenState extends State<SandboxScreen> {
                               const SizedBox(width: 20),
                               TextButton.icon(
                                 onPressed: () async {
-                                  final newPdf = pdfThing.Document();
+                                  final newPdf = pdf_thing.Document();
 
                                   //download the report as a pdf
                                   final dynamic widgets =
-                                      await pdfThing.HTMLToPdf().convert(
+                                      await pdf_thing.HTMLToPdf().convert(
                                           reportQuillController.document
                                               .toDelta()
                                               .toHtml());
 
                                   newPdf.addPage(
-                                      pdfThing.MultiPage(build: (context) {
-                                    return widgets;
-                                  }));
+                                    pdf_thing.MultiPage(
+                                      build: (context) {
+                                        return widgets;
+                                      },
+                                      maxPages: 200,
+                                    ),
+                                  );
 
                                   //download file
                                   final pdf = await newPdf.save();
