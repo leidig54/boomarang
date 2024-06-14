@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:boomarang/main.dart';
 import 'package:boomarang/models/request.dart';
-import 'package:boomarang/screens/add_request.dart';
-import 'package:boomarang/screens/view_request.dart';
+import 'package:boomarang/screens/add_request/shell.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 
@@ -116,7 +115,7 @@ class _InboxScreenState extends State<InboxScreen> {
               ),
               DataColumn(
                 label: Text("Actions"),
-              ),
+              )
             ],
             rows: _requests
                 .map((request) => DataRow(
@@ -137,26 +136,7 @@ class _InboxScreenState extends State<InboxScreen> {
                             builder: (context) {
                               if (request.isSubmitted == true) {
                                 return TextButton.icon(
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return Dialog(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                            ),
-                                            clipBehavior: Clip.antiAlias,
-                                            child: SizedBox(
-                                              width: 800,
-                                              height: 800,
-                                              child: ViewRequestScreen(
-                                                request: request,
-                                              ),
-                                            ),
-                                          );
-                                        });
-                                  },
+                                  onPressed: () {},
                                   label: const Text("View"),
                                 );
                               } else {
