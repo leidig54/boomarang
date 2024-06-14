@@ -1,4 +1,5 @@
 import 'package:boomarang/firebase_options.dart';
+import 'package:boomarang/screens/add_request/shell.dart';
 import 'package:boomarang/screens/inbox.dart';
 import 'package:boomarang/screens/profile.dart';
 import 'package:boomarang/screens/sandbox.dart';
@@ -34,29 +35,45 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-      home: FutureBuilder(
-          future: Firebase.initializeApp(
-            name: null,
-            options: DefaultFirebaseOptions.currentPlatform,
-          ),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                body: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            } else if (snapshot.hasError) {
-              return Scaffold(
-                body: Center(
-                  child: Text('Error: ${snapshot.error}'),
-                ),
-              );
-            }
-            return const AuthGate();
-          }),
+      routes: {
+        '/': (context) => const InitApp(),
+        '/add-request': (context) => const AddRequestScreen(),
+      },
+      initialRoute: '/',
     );
+  }
+}
+
+class InitApp extends StatelessWidget {
+  const InitApp({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: Firebase.initializeApp(
+          name: null,
+          options: DefaultFirebaseOptions.currentPlatform,
+        ),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return Scaffold(
+              body: Center(
+                child: Text('Error: ${snapshot.error}'),
+              ),
+            );
+          }
+          return const AuthGate();
+        });
   }
 }
 
@@ -77,9 +94,10 @@ class _AuthGateState extends State<AuthGate> {
         functions.useFunctionsEmulator('localhost', 5001);
         auth.useAuthEmulator('localhost', 9099);
         firestore.useFirestoreEmulator('localhost', 8080);
+        // storage.useStorageEmulator('localhost', 9199);
       }
     } on Exception catch (e) {
-      print('Error: $e');
+      debugPrint('Error: $e');
     }
     super.initState();
   }

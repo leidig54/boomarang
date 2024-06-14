@@ -1,17 +1,17 @@
 import 'package:boomarang/main.dart';
 import 'package:flutter/material.dart';
 
-Future<dynamic> showErrorDialog(String errorText) {
-  return showAdaptiveDialog(
+Future<dynamic> buildErrorAlertDialog(error) {
+  return showDialog(
       context: navigatorKey.currentContext!,
       builder: (context) {
-        return AlertDialog.adaptive(
+        return AlertDialog(
           title: const Text('Error'),
-          content: Text(errorText),
+          content: Text(error.toString()),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                navigatorKey.currentState!.pop();
               },
               child: const Text('OK'),
             ),
