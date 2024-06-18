@@ -25,7 +25,6 @@ class BoomarangRequest {
   String? requestType;
   String? requestDetails;
   String? requestFormRef;
-  String? requestEmail;
   String? consentTemplateId;
   String? consentFormRef;
   bool? isSubmitted;
@@ -54,7 +53,6 @@ class BoomarangRequest {
     required this.requestType,
     this.requestDetails,
     this.requestFormRef,
-    this.requestEmail,
     required this.consentTemplateId,
     this.consentFormRef,
     required this.isSubmitted,
@@ -89,7 +87,6 @@ class BoomarangRequest {
       'requestType': requestType,
       'requestDetails': requestDetails,
       'requestFormRef': requestFormRef,
-      'requestEmail': requestEmail,
       'consentTemplateId': consentTemplateId,
       'consentFormRef': consentFormRef,
       'isSubmitted': isSubmitted,
@@ -155,8 +152,6 @@ class BoomarangRequest {
       requestFormRef: map['requestFormRef'] != null
           ? map['requestFormRef'] as String
           : null,
-      requestEmail:
-          map['requestEmail'] != null ? map['requestEmail'] as String : null,
       consentTemplateId: map['consentTemplateId'] != null
           ? map['consentTemplateId'] as String
           : null,

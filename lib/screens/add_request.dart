@@ -65,19 +65,9 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   Widget build(BuildContext context) {
     List<Step> steps = [
       Step(
-        title: const Text('Request'),
+        title: const Text('Request Details'),
         content: Column(
           children: [
-            //request email
-            const SizedBox(height: 16),
-            FormBuilderTextField(
-              name: 'request_email',
-              initialValue: request?.requestEmail,
-              decoration: const InputDecoration(
-                labelText: 'Requester Email',
-                border: OutlineInputBorder(),
-              ),
-            ),
             const SizedBox(
               height: 16,
             ),
@@ -275,7 +265,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         ),
       ),
       Step(
-        title: const Text('Authoriser'),
+        title: const Text('Authoriser Details'),
         content: Column(
           children: [
             const SizedBox(height: 16),
@@ -333,7 +323,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         ),
       ),
       Step(
-        title: const Text('Consent'),
+        title: const Text('Consent Details'),
         content: Column(
           children: [
             FormBuilderRadioGroup(
@@ -491,7 +481,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         ),
       ),
       Step(
-        title: const Text('Holder'),
+        title: const Text('Holder Details'),
         content: Column(
           children: [
             FormBuilderRadioGroup(
@@ -563,7 +553,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         key: _requestFormKey,
         child: Stepper(
           currentStep: currentStep,
-          type: StepperType.horizontal,
           controlsBuilder: (context, controlsDetails) {
             return Column(
               children: [
@@ -656,6 +645,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   }
 
   Future<void> saveRequest({required bool submit}) async {
+    print(_requestFormKey
+        .currentState!.fields['authoriser_dob']?.value.runtimeType);
     BoomarangRequest newRequest = BoomarangRequest(
       id: id,
       creatorId: request?.creatorId ?? auth.currentUser!.uid,
@@ -674,8 +665,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       // authoriserPhoneNumber: _requestFormKey.currentState!.fields['authoriser_phone_number']!.value as String,
       requesterUserId: null,
       requesterOrgName: null,
-      requestEmail:
-          _requestFormKey.currentState!.fields['request_email']?.value,
       holderUserId: knowsHolder == 'self' ? auth.currentUser!.uid : null,
       holderOrgId: null,
       dateCreated: DateTime.now(),
@@ -684,7 +673,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       consentStatus: hasConsent == true
           ? 'consent_received_from_requester'
           : 'consent_pending',
-      consentVerified: false,
       paymentStatus: 'payment_pending',
       requestStatus: 'request_pending',
       requestType: _requestFormKey.currentState!.fields['type']?.value,
@@ -701,10 +689,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           : _requestFormKey.currentState!.fields['consent_form_ref']?.value,
     );
 
-    return await firestore
-        .collection('requests')
-        .doc(id)
-        .set(newRequest.toMap());
+    await firestore.collection('requests').doc(id).set(newRequest.toMap());
   }
 }
 
