@@ -65,19 +65,9 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   Widget build(BuildContext context) {
     List<Step> steps = [
       Step(
-        title: const Text('Request'),
+        title: const Text('Request Details'),
         content: Column(
           children: [
-            //request email
-            const SizedBox(height: 16),
-            FormBuilderTextField(
-              name: 'request_email',
-              initialValue: request?.requestEmail,
-              decoration: const InputDecoration(
-                labelText: 'Requester Email',
-                border: OutlineInputBorder(),
-              ),
-            ),
             const SizedBox(
               height: 16,
             ),
@@ -275,7 +265,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         ),
       ),
       Step(
-        title: const Text('Authoriser'),
+        title: const Text('Authoriser Details'),
         content: Column(
           children: [
             const SizedBox(height: 16),
@@ -333,7 +323,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         ),
       ),
       Step(
-        title: const Text('Consent'),
+        title: const Text('Consent Details'),
         content: Column(
           children: [
             FormBuilderRadioGroup(
@@ -491,7 +481,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         ),
       ),
       Step(
-        title: const Text('Holder'),
+        title: const Text('Holder Details'),
         content: Column(
           children: [
             FormBuilderRadioGroup(
@@ -674,8 +664,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       // authoriserPhoneNumber: _requestFormKey.currentState!.fields['authoriser_phone_number']!.value as String,
       requesterUserId: null,
       requesterOrgName: null,
-      requestEmail:
-          _requestFormKey.currentState!.fields['request_email']?.value,
       holderUserId: knowsHolder == 'self' ? auth.currentUser!.uid : null,
       holderOrgId: null,
       dateCreated: DateTime.now(),
@@ -701,10 +689,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           : _requestFormKey.currentState!.fields['consent_form_ref']?.value,
     );
 
-    return await firestore
-        .collection('requests')
-        .doc(id)
-        .set(newRequest.toMap());
+    await firestore.collection('requests').doc(id).set(newRequest.toMap());
   }
 }
 
