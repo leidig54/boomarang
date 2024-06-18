@@ -8,6 +8,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ViewRequestScreen extends StatefulWidget {
@@ -278,47 +279,48 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            //Request Details
-            if (request.requestDetails != null)
-              Row(
+            //type
+            RichText(
+              text: TextSpan(
+                text: 'Type: ',
+                style: Theme.of(context).textTheme.bodyMedium,
                 children: [
-                  RichText(
-                    text: TextSpan(
-                      text: 'Details: ',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      children: [
-                        TextSpan(
-                            text: request.requestDetails,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium!
-                                .copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87))
-                      ],
-                    ),
-                  ),
-                  //
-                  const SizedBox(width: 8),
-                  //separator
-                  Container(
-                    height: 16,
-                    width: 1,
-                    color: Colors.black26,
-                  ),
-                  const SizedBox(width: 8),
-                  if (request.requestFormRef != null) ...[
-                    const SizedBox(height: 8),
-                    TextButton.icon(
-                      onPressed: () {
-                        launchUrl(Uri.parse(request.requestFormRef!));
-                      },
-                      icon: const Icon(Icons.download),
-                      label: const Text('Download Request Form'),
-                    ),
-                  ],
+                  TextSpan(
+                      text: request.requestType,
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          fontWeight: FontWeight.bold, color: Colors.black87))
                 ],
               ),
+            ),
+            const SizedBox(height: 4),
+            //Request Details
+            if (request.requestDetails != null)
+              RichText(
+                text: TextSpan(
+                  text: 'Details: \n',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  children: [
+                    TextSpan(
+                        text: request.requestDetails,
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                            fontWeight: FontWeight.bold, color: Colors.black87))
+                  ],
+                ),
+              ),
+            if (request.requestFormRef != null) ...[
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.35,
+                child: SfPdfViewer.network(request.requestFormRef!),
+              ),
+            ],
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: () {
+                launchUrl(Uri.parse(request.requestFormRef!));
+              },
+              icon: const Icon(Icons.download),
+              label: const Text('Download Request Form'),
+            ),
           ],
         ),
       ),
@@ -518,7 +520,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text('View Request'),
+          title: const Text('Respond'),
           centerTitle: false,
         ),
         body: FormBuilder(
@@ -542,6 +544,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                         .copyWith(scrollbars: false),
                     child: Stepper(
                       currentStep: _currentStep,
+                      physics: const NeverScrollableScrollPhysics(),
                       type: StepperType.horizontal,
                       onStepTapped: (step) {
                         setState(() {
