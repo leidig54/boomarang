@@ -7,8 +7,6 @@ environment:
   sdk: ">=3.3.4 <4.0.0"
 
 dependencies:
-  boomarang_shared:
-    path: ../boomarang_shared
   cloud_firestore: ^5.0.1
   cloud_functions: ^5.0.0
   data_table_2: ^2.5.15
@@ -32,8 +30,6 @@ dependencies:
   syncfusion_flutter_pdfviewer: ^26.1.35
   url_launcher: ^6.3.0
   uuid: ^4.4.0
-  firebase_ui_auth: ^1.15.0
-  collection: ^1.18.0
 
 dev_dependencies:
   flutter_test:
