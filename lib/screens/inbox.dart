@@ -157,7 +157,7 @@ class _InboxScreenState extends State<InboxScreen> {
                                           );
                                         });
                                   },
-                                  label: const Text("View"),
+                                  label: const Text("Respond"),
                                 );
                               } else {
                                 return TextButton.icon(
