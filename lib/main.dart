@@ -2,13 +2,11 @@ import 'package:boomarang/firebase_options.dart';
 import 'package:boomarang/screens/add_request.dart';
 import 'package:boomarang/screens/inbox.dart';
 import 'package:boomarang/screens/profile.dart';
-import 'package:boomarang/screens/sent.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -131,10 +129,13 @@ class _AuthGateState extends State<AuthGate> {
             );
           } else if (snapshot.data == null) {
             return Scaffold(
-              body: SignInScreen(
-                providers: [
-                  EmailAuthProvider(),
-                ],
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await auth.signInAnonymously();
+                  },
+                  child: const Text('Sign in Anonymously'),
+                ),
               ),
             );
           } else {
@@ -158,8 +159,8 @@ class _HomeState extends State<Home> {
 
   List<Widget> screens = [
     const InboxScreen(),
-    const SentScreen(),
-    const SettingsScreen(),
+    const ProfileScreen(),
+    const Text('Settings'),
   ];
 
   @override
@@ -168,8 +169,7 @@ class _HomeState extends State<Home> {
       children: [
         NavigationRail(
           leading: const Padding(
-            padding: EdgeInsets.all(8),
-            child: FlutterLogo(size: 40),
+            padding: EdgeInsets.all(8.0),
             //Boomerang
           ),
           destinations: const [
@@ -178,42 +178,22 @@ class _HomeState extends State<Home> {
               label: Text('Inbox'),
             ),
             NavigationRailDestination(
-              icon: Icon(Icons.send),
-              label: Text('Sent'),
+              icon: Icon(Icons.account_circle),
+              label: Text('Account'),
             ),
             NavigationRailDestination(
               icon: Icon(Icons.settings),
               label: Text('Settings'),
+              disabled: true,
             ),
           ],
-          trailing: Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      auth.currentUser!.email!,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.exit_to_app),
-                      onPressed: () {
-                        auth.signOut();
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
           selectedIndex: selectedIndex,
           onDestinationSelected: (int index) {
             setState(() {
               selectedIndex = index;
             });
           },
-          extended: MediaQuery.of(context).size.width > 1400,
+          extended: true,
         ),
         const VerticalDivider(
           thickness: 1,
