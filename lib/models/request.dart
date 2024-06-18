@@ -8,6 +8,9 @@ class BoomarangRequest {
   String? authoriserFirstName;
   String? authoriserLastName;
   String? authoriserEmail;
+  bool? authoriserEmailVerified;
+  DateTime? authoriserDOB;
+  bool? authoriserDOBVerified;
   String? requesterUserId;
   String? requesterOrgName;
   String? holderUserId;
@@ -32,6 +35,9 @@ class BoomarangRequest {
     required this.authoriserFirstName,
     required this.authoriserLastName,
     required this.authoriserEmail,
+    required this.authoriserEmailVerified,
+    required this.authoriserDOB,
+    this.authoriserDOBVerified,
     required this.requesterUserId,
     required this.requesterOrgName,
     required this.holderUserId,
@@ -59,6 +65,10 @@ class BoomarangRequest {
       'authoriserFirstName': authoriserFirstName,
       'authoriserLastName': authoriserLastName,
       'authoriserEmail': authoriserEmail,
+      'authoriserEmailVerified': authoriserEmailVerified,
+      'authoriserDOB':
+          authoriserDOB != null ? Timestamp.fromDate(authoriserDOB!) : null,
+      'authoriserDOBVerified': authoriserDOBVerified,
       'requesterUserId': requesterUserId,
       'requesterOrgName': requesterOrgName,
       'holderUserId': holderUserId,
@@ -94,6 +104,15 @@ class BoomarangRequest {
           : null,
       authoriserEmail: map['authoriserEmail'] != null
           ? map['authoriserEmail'] as String
+          : null,
+      authoriserEmailVerified: map['authoriserEmailVerified'] != null
+          ? map['authoriserEmailVerified'] as bool
+          : null,
+      authoriserDOB: map['authoriserDOB'] != null
+          ? ((map['authoriserDOB'] ?? Timestamp(0, 0)) as Timestamp).toDate()
+          : null,
+      authoriserDOBVerified: map['authoriserDOBVerified'] != null
+          ? map['authoriserDOBVerified'] as bool
           : null,
       requesterUserId: map['requesterUserId'] != null
           ? map['requesterUserId'] as String
@@ -143,5 +162,19 @@ class BoomarangRequest {
 
   String get formattedCreatedDate {
     return DateFormat.yMMMMEEEEd().add_jms().format(dateCreated);
+  }
+
+  String get formattedAuthoriserDob {
+    if (authoriserDOB == null) return 'N/A';
+    //dd/MM/yyyy
+    return DateFormat('dd/MM/yyyy').format(authoriserDOB!);
+  }
+
+  String get formattedConsentStatus {
+    //capitalise first letter, remove underscores.
+    return consentStatus!
+        .split('_')
+        .map((word) => word[0].toUpperCase() + word.substring(1))
+        .join(' ');
   }
 }
