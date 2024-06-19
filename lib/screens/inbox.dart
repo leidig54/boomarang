@@ -61,7 +61,7 @@ class _InboxScreenState extends State<InboxScreen> {
                           ),
                           clipBehavior: Clip.antiAlias,
                           child: const SizedBox(
-                            width: 800,
+                            width: 1200,
                             height: 800,
                             child: AddRequestScreen(
                               request: null,
@@ -148,7 +148,7 @@ class _InboxScreenState extends State<InboxScreen> {
                                             ),
                                             clipBehavior: Clip.antiAlias,
                                             child: SizedBox(
-                                              width: 800,
+                                              width: 1200,
                                               height: 800,
                                               child: ViewRequestScreen(
                                                 request: request,
@@ -157,7 +157,7 @@ class _InboxScreenState extends State<InboxScreen> {
                                           );
                                         });
                                   },
-                                  label: const Text("View"),
+                                  label: const Text("Respond"),
                                 );
                               } else {
                                 return TextButton.icon(
@@ -172,7 +172,7 @@ class _InboxScreenState extends State<InboxScreen> {
                                             ),
                                             clipBehavior: Clip.antiAlias,
                                             child: SizedBox(
-                                              width: 800,
+                                              width: 1200,
                                               height: 800,
                                               child: AddRequestScreen(
                                                 request: request,

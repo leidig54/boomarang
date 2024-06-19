@@ -19,6 +19,7 @@ class BoomarangRequest {
   DateTime? dateUpdated;
   DateTime? dateSubmitted;
   String? consentStatus;
+  bool? consentVerified;
   String? paymentStatus;
   String? requestStatus;
   String? requestType;
@@ -46,6 +47,7 @@ class BoomarangRequest {
     required this.dateUpdated,
     required this.dateSubmitted,
     required this.consentStatus,
+    this.consentVerified,
     required this.paymentStatus,
     required this.requestStatus,
     required this.requestType,
@@ -79,6 +81,7 @@ class BoomarangRequest {
       'dateSubmitted':
           dateSubmitted != null ? Timestamp.fromDate(dateSubmitted!) : null,
       'consentStatus': consentStatus,
+      'consentVerified': consentVerified,
       'paymentStatus': paymentStatus,
       'requestStatus': requestStatus,
       'requestType': requestType,
@@ -134,6 +137,9 @@ class BoomarangRequest {
           : null,
       consentStatus:
           map['consentStatus'] != null ? map['consentStatus'] as String : null,
+      consentVerified: map['consentVerified'] != null
+          ? map['consentVerified'] as bool
+          : null,
       paymentStatus:
           map['paymentStatus'] != null ? map['paymentStatus'] as String : null,
       requestStatus:
