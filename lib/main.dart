@@ -1,16 +1,12 @@
-import 'dart:async';
-
 import 'package:boomarang/firebase_options.dart';
 import 'package:boomarang/screens/add_request.dart';
 import 'package:boomarang/screens/inbox.dart';
 import 'package:boomarang/screens/profile.dart';
-import 'package:boomarang/screens/sent.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -133,40 +129,17 @@ class _AuthGateState extends State<AuthGate> {
             );
           } else if (snapshot.data == null) {
             return Scaffold(
-              body: SignInScreen(
-                providers: [
-                  EmailAuthProvider(),
-                ],
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await auth.signInAnonymously();
+                  },
+                  child: const Text('Sign in Anonymously'),
+                ),
               ),
             );
           } else {
-            return StreamBuilder(
-                stream: firestore
-                    .collection('users')
-                    .doc(auth.currentUser!.uid)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Scaffold(
-                      body: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Scaffold(
-                      body: Center(
-                        child: Text('Error: ${snapshot.error}'),
-                      ),
-                    );
-                  } else if (!snapshot.hasData) {
-                    return const Scaffold(
-                      body: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  }
-                  return const Home();
-                });
+            return const Home();
           }
         });
   }
@@ -183,109 +156,44 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int selectedIndex = 0;
-  String? userType;
-  bool hasLoaded = false;
 
-  List<Widget> screens = [];
-  late StreamSubscription? userTypeStreamSubscription;
-
-  Future<void> getUserType() async {
-    userTypeStreamSubscription = firestore
-        .collection('users')
-        .doc(auth.currentUser!.uid)
-        .snapshots()
-        .listen((snapshot) {
-      userType = snapshot.data()!['type'];
-      if (userType == 'requester') {
-        screens = [
-          const SentScreen(),
-          const SettingsScreen(),
-        ];
-      } else if (userType == 'holder') {
-        screens = [
-          const InboxScreen(),
-          const SettingsScreen(),
-        ];
-      } else {
-        selectedIndex = 1;
-        screens = [
-          Container(),
-          const SettingsScreen(),
-        ];
-      }
-      hasLoaded = true;
-      setState(() {});
-    });
-  }
-
-  @override
-  void initState() {
-    getUserType();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    userTypeStreamSubscription?.cancel();
-    super.dispose();
-  }
+  List<Widget> screens = [
+    const InboxScreen(),
+    const ProfileScreen(),
+    const Text('Settings'),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    if (!hasLoaded) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
     return Row(
       children: [
         NavigationRail(
           leading: const Padding(
-            padding: EdgeInsets.all(8),
-            child: FlutterLogo(size: 40),
+            padding: EdgeInsets.all(8.0),
             //Boomerang
           ),
-          destinations: [
+          destinations: const [
             NavigationRailDestination(
-              icon: const Icon(Icons.mail),
-              label: const Text('Requests'),
-              disabled: userType == null,
+              icon: Icon(Icons.mail),
+              label: Text('Inbox'),
             ),
-            const NavigationRailDestination(
+            NavigationRailDestination(
+              icon: Icon(Icons.account_circle),
+              label: Text('Account'),
+            ),
+            NavigationRailDestination(
               icon: Icon(Icons.settings),
               label: Text('Settings'),
+              disabled: true,
             ),
           ],
-          trailing: Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      auth.currentUser!.email!,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.exit_to_app),
-                      onPressed: () {
-                        auth.signOut();
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
           selectedIndex: selectedIndex,
           onDestinationSelected: (int index) {
             setState(() {
               selectedIndex = index;
             });
           },
-          extended: MediaQuery.of(context).size.width > 1400,
+          extended: true,
         ),
         const VerticalDivider(
           thickness: 1,
