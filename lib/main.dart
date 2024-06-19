@@ -2,6 +2,7 @@ import 'package:boomarang/firebase_options.dart';
 import 'package:boomarang/screens/add_request.dart';
 import 'package:boomarang/screens/inbox.dart';
 import 'package:boomarang/screens/profile.dart';
+import 'package:boomarang/screens/sandbox.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -160,6 +161,7 @@ class _HomeState extends State<Home> {
   List<Widget> screens = [
     const InboxScreen(),
     const ProfileScreen(),
+    const SandboxScreen(),
     const Text('Settings'),
   ];
 
@@ -180,6 +182,10 @@ class _HomeState extends State<Home> {
             NavigationRailDestination(
               icon: Icon(Icons.account_circle),
               label: Text('Account'),
+            ),
+            NavigationRailDestination(
+              icon: Icon(Icons.person),
+              label: Text('Sandbox'),
             ),
             NavigationRailDestination(
               icon: Icon(Icons.settings),

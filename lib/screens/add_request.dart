@@ -553,7 +553,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         key: _requestFormKey,
         child: Stepper(
           currentStep: currentStep,
-          type: StepperType.horizontal,
           controlsBuilder: (context, controlsDetails) {
             return Column(
               children: [
@@ -646,6 +645,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   }
 
   Future<void> saveRequest({required bool submit}) async {
+    print(_requestFormKey
+        .currentState!.fields['authoriser_dob']?.value.runtimeType);
     BoomarangRequest newRequest = BoomarangRequest(
       id: id,
       creatorId: request?.creatorId ?? auth.currentUser!.uid,
@@ -672,7 +673,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       consentStatus: hasConsent == true
           ? 'consent_received_from_requester'
           : 'consent_pending',
-      consentVerified: false,
       paymentStatus: 'payment_pending',
       requestStatus: 'request_pending',
       requestType: _requestFormKey.currentState!.fields['type']?.value,
