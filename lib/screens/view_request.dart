@@ -12,10 +12,12 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ViewRequestScreen extends StatefulWidget {
-  const ViewRequestScreen({super.key, required this.request, this.response});
+  const ViewRequestScreen({
+    super.key,
+    required this.request,
+  });
 
   final BoomarangRequest request;
-  final BoomarangResponse? response;
 
   @override
   State<ViewRequestScreen> createState() => _ViewRequestScreenState();
@@ -25,14 +27,14 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
   final _consultationsFormKey = GlobalKey<FormBuilderState>();
 
   BoomarangRequest get request => widget.request;
-  BoomarangResponse? get response => widget.response;
+  BoomarangResponse? response;
 
   int _currentStep = 0;
   bool isGeneratingReport = false;
   QuillController reportQuillController = QuillController.basic();
 
   String? consultationFormName;
-  String? consultationFormUrl;
+  String? consultationFormRef;
 
   late String id;
 
@@ -41,10 +43,21 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
   @override
   void initState() {
     id = request.id;
+    firestore.collection('responses').doc(id).get().then((value) {
+      if (value.exists) {
+        response = BoomarangResponse.fromMap(value.data()!);
+        reportQuillController.document = Document.fromJson(response!.report);
+      }
+    });
     storage.ref('consultations/$id/consultation_form').list().then((value) {
       if (value.items.isNotEmpty) {
         setState(() {
           consultationFormName = value.items.first.name;
+        });
+        value.items.first.getDownloadURL().then((value) {
+          setState(() {
+            consultationFormRef = value;
+          });
         });
       }
     });
@@ -258,19 +271,23 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                   color: Colors.black26,
                 ),
                 const SizedBox(width: 8),
-                if (request.consentFormRef != null) ...[
-                  const SizedBox(height: 8),
-                  TextButton.icon(
-                    onPressed: () {
-                      launchUrl(Uri.parse(request.consentFormRef!));
-                    },
-                    icon: const Icon(Icons.download),
-                    label: const Text('Download'),
-                  ),
-                ],
               ],
             ),
-            //if consent status == consent_received_from_requester, show the file as a text button to download
+            //show file
+            if (request.consentFormRef != null) ...[
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.35,
+                child: SfPdfViewer.network(request.consentFormRef!),
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: () {
+                  launchUrl(Uri.parse(request.consentFormRef!));
+                },
+                icon: const Icon(Icons.download),
+                label: const Text('Download'),
+              ),
+            ]
           ],
         ),
       ),
@@ -330,7 +347,13 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             //upload consultations
-            if (consultationFormName != null)
+            if (consultationFormName != null && consultationFormRef != null)
+              //show pdf
+              ...[
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.35,
+                child: SfPdfViewer.network(consultationFormRef!),
+              ),
               FormBuilderField(
                 name: 'consultation_form_ref',
                 builder: (context) => Row(
@@ -346,7 +369,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                             .then((value) {
                           setState(() {
                             consultationFormName = null;
-                            consultationFormUrl = null;
+                            consultationFormRef = null;
                           });
                         }).catchError(
                           (error) {
@@ -359,8 +382,8 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                     ),
                   ],
                 ),
-              )
-            else
+              ),
+            ] else
               isUploadingConsultations
                   ? const LinearProgressIndicator()
                   : Row(
@@ -394,14 +417,14 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                                       SettableMetadata(
                                           contentType: 'application/pdf'));
 
-                              consultationFormUrl = await storage
+                              consultationFormRef = await storage
                                   .ref(
                                       'consultations/$id/consultation_form/$consultationFormFileName')
                                   .getDownloadURL();
 
                               _consultationsFormKey
                                   .currentState!.fields['consultation_form_ref']
-                                  ?.didChange(consultationFormUrl);
+                                  ?.didChange(consultationFormRef);
 
                               consultationFormName = await storage
                                   .ref(
@@ -456,7 +479,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                             ),
                             consultationData: ConsultationData(
                               text: null,
-                              file: consultationFormUrl,
+                              file: consultationFormRef,
                             ),
                           ).whenComplete(() {
                             setState(() {
@@ -522,6 +545,19 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
         appBar: AppBar(
           title: const Text('Respond'),
           centerTitle: false,
+          actions: [
+            //save Draft
+            TextButton.icon(
+              onPressed: () async {
+                if (_consultationsFormKey.currentState!.saveAndValidate()) {
+                  await saveResponse(isSubmitted: false);
+                  navigatorKey.currentState!.pop();
+                }
+              },
+              icon: const Icon(Icons.save),
+              label: const Text('Save Draft'),
+            ),
+          ],
         ),
         body: FormBuilder(
           key: _consultationsFormKey,
@@ -546,6 +582,33 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                       currentStep: _currentStep,
                       physics: const NeverScrollableScrollPhysics(),
                       type: StepperType.horizontal,
+                      controlsBuilder: (context, controlsDetails) {
+                        return Row(
+                          children: [
+                            if (_currentStep != 0)
+                              TextButton(
+                                onPressed: controlsDetails.onStepCancel,
+                                child: const Text('Back'),
+                              ),
+                            if (_currentStep != steps.length - 1)
+                              TextButton(
+                                onPressed: controlsDetails.onStepContinue,
+                                child: const Text('Next'),
+                              ),
+                            if (_currentStep == steps.length - 1)
+                              TextButton(
+                                onPressed: () async {
+                                  if (_consultationsFormKey.currentState!
+                                      .saveAndValidate()) {
+                                    await saveResponse(isSubmitted: true);
+                                    navigatorKey.currentState!.pop();
+                                  }
+                                },
+                                child: const Text('Submit'),
+                              ),
+                          ],
+                        );
+                      },
                       onStepTapped: (step) {
                         setState(() {
                           _currentStep = step;
@@ -573,5 +636,20 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
             ),
           ),
         ));
+  }
+
+  Future<void> saveResponse({required bool isSubmitted}) async {
+    BoomarangResponse response = BoomarangResponse(
+      id: id,
+      consultationFormRef: consultationFormRef,
+      consultationDetails: null,
+      report: reportQuillController.document.toDelta().toJson(),
+      isSubmitted: isSubmitted,
+    );
+
+    return await firestore
+        .collection('responses')
+        .doc(id)
+        .set(response.toMap());
   }
 }
