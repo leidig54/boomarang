@@ -4,10 +4,11 @@ import { firebase } from "@genkit-ai/firebase";
 import { firebaseAuth } from "@genkit-ai/firebase/auth";
 import { onFlow } from "@genkit-ai/firebase/functions";
 import { gemini15ProPreview, vertexAI } from "@genkit-ai/vertexai";
+import * as functions from "firebase-functions";
+import nodemailer from "nodemailer";
 import * as z from "zod";
 import serviceAccount from "./serviceKey.json";
 import admin = require("firebase-admin");
-
 
 admin.initializeApp(
   {
@@ -83,5 +84,54 @@ async (subject) => {
   return result.text();
 }
 );
+
+export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("requests/{requestId}").onWrite(async (change, context) => {
+  // we need to check if to see if the isSubmitted field is true when the request is created or updated (i.e. when the request is submitted), but we only want to send the email once, so we need to check if the isSubmitted field is true and the request has not been submitted before
+  if (change.after.data()?.isSubmitted === true && change.before.data()?.isSubmitted !== true) {
+    const request = change.after.data();
+
+    // get the authoriser email from the request
+    const authoriserEmail = request?.authoriserEmail;
+
+    // email the authoriser with the request id
+    // Configure the email transport using the provided SMTP server.
+    const email = "george@joinoto.com";
+    const password = "GHD9XULrYSFwdOKM";
+    const mailTransport = nodemailer.createTransport({
+      host: "smtp-relay.brevo.com",
+      port: 587,
+      auth: {
+        user: email,
+        pass: password,
+      },
+    });
+
+    // the website url is booomarang-consent.web.app. append the request id to the url with the name requestId.
+    const emailMessageHtml = `<p>Dear Authoriser,</p>
+    <p>A new consent application has been submitted. Please review the request and provide your consent.</p>
+    <p>Request ID: ${context.params.requestId}</p>
+    <p>Click <a href="https://boomarang-consent.web.app?requestId=${context.params.requestId}">here</a> to review the request.</p>
+    <p>Thank you.</p>`;
+
+
+    const mailOptions = {
+      from: "\"George\" <george@boomarang.com>",
+      to: authoriserEmail,
+      subject: "Consent requested",
+      html: emailMessageHtml,
+    };
+
+    try {
+      await mailTransport.sendMail(mailOptions);
+      console.log(`Email sent to: ${mailOptions.to}`);
+      return null;
+    } catch (error) {
+      console.error("There was an error while sending the email:", error);
+      return null;
+    }
+  }
+
+  return null;
+});
 
 
