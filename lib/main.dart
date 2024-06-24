@@ -2,6 +2,7 @@ import 'package:boomarang/firebase_options.dart';
 import 'package:boomarang/screens/add_request.dart';
 import 'package:boomarang/screens/inbox.dart';
 import 'package:boomarang/screens/profile.dart';
+import 'package:boomarang/screens/sent.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -159,6 +160,7 @@ class _HomeState extends State<Home> {
 
   List<Widget> screens = [
     const InboxScreen(),
+    const SentScreen(),
     const ProfileScreen(),
     const Text('Settings'),
   ];
@@ -177,9 +179,15 @@ class _HomeState extends State<Home> {
               icon: Icon(Icons.mail),
               label: Text('Inbox'),
             ),
+            //Sent
+            NavigationRailDestination(
+              icon: Icon(Icons.send),
+              label: Text('Sent'),
+            ),
+
             NavigationRailDestination(
               icon: Icon(Icons.account_circle),
-              label: Text('Account'),
+              label: Text('Profile'),
             ),
             NavigationRailDestination(
               icon: Icon(Icons.settings),
@@ -193,7 +201,7 @@ class _HomeState extends State<Home> {
               selectedIndex = index;
             });
           },
-          extended: true,
+          extended: MediaQuery.of(context).size.width > 1400,
         ),
         const VerticalDivider(
           thickness: 1,
