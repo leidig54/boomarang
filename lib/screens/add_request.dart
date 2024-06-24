@@ -1,6 +1,6 @@
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/alert_dialog.dart';
-import 'package:boomarang/models/request.dart';
+import 'package:boomarang_shared/models/request.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +25,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
 
   bool? hasConsent;
   String? knowsHolder;
+  bool? isRequester;
 
   String? consentFormName;
   String? requestFormName;
@@ -68,19 +69,49 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         title: const Text('Request'),
         content: Column(
           children: [
-            //request email
-            const SizedBox(height: 16),
-            FormBuilderTextField(
-              name: 'request_email',
-              initialValue: request?.requestEmail,
+            //are you the requester or is it on behalf of someone else. if its on behalf of someone else, you will need to provide their email
+            FormBuilderRadioGroup(
+              name: 'is_requester',
+              initialValue: request?.isRequester,
+              orientation: OptionsOrientation.vertical,
               decoration: const InputDecoration(
-                labelText: 'Requester Email',
-                border: OutlineInputBorder(),
+                border: InputBorder.none,
               ),
+              onChanged: (value) {
+                setState(() {
+                  isRequester = value as bool;
+                });
+              },
+              options: const [
+                FormBuilderFieldOption(
+                  value: true,
+                  child: Text('I am the requester'),
+                ),
+                FormBuilderFieldOption(
+                  value: false,
+                  child: Text(
+                      'I am submitting a request on behalf of someone else'),
+                ),
+              ],
             ),
             const SizedBox(
               height: 16,
             ),
+            if (isRequester == false) ...[
+              FormBuilderTextField(
+                name: 'requester_email',
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  helperText:
+                      'A link to the finished report will be sent to this email',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(
+                height: 16,
+              ),
+            ],
+
             FormBuilderDropdown(
               name: 'type',
               autofocus: false,
@@ -88,7 +119,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                 FocusScope.of(context).nextFocus();
               },
               decoration: const InputDecoration(
-                labelText: 'Request Type',
+                labelText: 'Type',
+                // helperText: 'Please select the type of request',
                 border: OutlineInputBorder(),
               ),
               initialValue: request?.requestType,
@@ -166,8 +198,9 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
               initialValue: request?.requestDetails,
               decoration: const InputDecoration(
                 labelText: 'Request Details',
+                hintText: 'Please provide as much detail as possible',
                 helperText:
-                    'Enter the details of the request here or upload a request form (optional).',
+                    'If you are uploading a request form, you can leave this blank.',
                 border: OutlineInputBorder(),
                 alignLabelWithHint: true,
               ),
@@ -250,9 +283,14 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                   } else {
                     return Row(
                       children: [
+                        //success icon
+                        const Icon(Icons.check, color: Colors.green),
+                        const SizedBox(width: 16),
+
                         Text(requestFormName!),
                         const SizedBox(width: 16),
-                        IconButton(
+                        TextButton.icon(
+                          label: const Text('Delete'),
                           onPressed: () async {
                             await storage
                                 .ref(
@@ -659,6 +697,9 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
     BoomarangRequest newRequest = BoomarangRequest(
       id: id,
       creatorId: request?.creatorId ?? auth.currentUser!.uid,
+      isRequester: request?.isRequester ??
+          _requestFormKey.currentState!.fields['is_requester']?.value,
+      creatorOrgId: request?.creatorOrgId,
       isSubmitted: submit,
       knowsHolder: _requestFormKey.currentState!.fields['knows_holder']?.value,
       hasConsent: _requestFormKey.currentState!.fields['has_consent']?.value,
@@ -669,7 +710,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       authoriserEmail:
           _requestFormKey.currentState!.fields['authoriser_email']?.value,
       authoriserDOB: DateFormat('dd/MM/yyyy').tryParse(
-          _requestFormKey.currentState!.fields['authoriser_dob']?.value),
+          _requestFormKey.currentState!.fields['authoriser_dob']?.value ?? ""),
       authoriserEmailVerified: false,
       // authoriserPhoneNumber: _requestFormKey.currentState!.fields['authoriser_phone_number']!.value as String,
       requesterUserId: null,
