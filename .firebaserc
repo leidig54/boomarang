@@ -2,7 +2,15 @@
   "projects": {
     "default": "boomarang-ac130"
   },
-  "targets": {},
+  "targets": {
+    "boomarang-ac130": {
+      "hosting": {
+        "app": [
+          "boomarang"
+        ]
+      }
+    }
+  },
   "etags": {
     "boomarang-ac130": {
       "extensionInstances": {}
