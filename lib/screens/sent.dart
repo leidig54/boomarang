@@ -21,7 +21,7 @@ class _SentScreenState extends State<SentScreen> {
   void initState() {
     requestStreamSubscription = firestore
         .collection('requests')
-        .where('requesterId', isEqualTo: auth.currentUser!.uid)
+        .where('creatorId', isEqualTo: auth.currentUser!.uid)
         .snapshots()
         .listen((snapshot) {
       _requests =
@@ -43,7 +43,6 @@ class _SentScreenState extends State<SentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         label: const Text('Add Request'),
         onPressed: () {
@@ -78,63 +77,85 @@ class _SentScreenState extends State<SentScreen> {
               label: Text('Authoriser'),
               tooltip: 'The name of the individual',
             ),
-            //holder
             DataColumn(
-              label: Text('Holder'),
-              tooltip: 'The entity who holds the data',
+              label: Text('Requester'),
+              tooltip: 'The entity who made the request',
             ),
-            //status
             DataColumn(
-              label: Text('Status'),
-              tooltip: 'The status of the request',
+              label: Text('Consent'),
+              tooltip: 'The consent status of the request',
             ),
             DataColumn(
               label: Text('Actions'),
-              tooltip: 'The actions that can be taken on the request',
+              tooltip: 'Actions that can be performed on the request',
             ),
           ],
           rows: _requests.map((e) {
             return DataRow(
               cells: [
-                DataCell(Text(e.formattedCreatedDate)),
+                DataCell(Text(e.dateCreated.toString())),
                 DataCell(Text(e.authoriserEmail ?? 'Unknown')),
-                DataCell(Text(e.holderEmail ?? 'Unknown')),
-                DataCell(Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(e.formattedRequestStatus),
-                    const SizedBox(height: 4),
-                    Text(e.formattedConsentStatus)
-                  ],
-                )),
+                DataCell(Text(e.requesterOrgName ?? 'Unknown')),
+                DataCell(Text(e.consentStatus ?? 'Unknown')),
                 DataCell(
-                  e.isSubmitted == true
-                      ? TextButton(
-                          child: const Text('View'),
-                          onPressed: () {},
-                        )
-                      : TextButton(
-                          child: const Text('Edit'),
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return Dialog(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return Dialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: SizedBox(
+                                    width: 1200,
+                                    height: 800,
+                                    child: AddRequestScreen(
+                                      request: e,
                                     ),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: SizedBox(
-                                      width: 1200,
-                                      height: 800,
-                                      child: AddRequestScreen(
-                                        request: e,
-                                      ),
+                                  ),
+                                );
+                              });
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text('Delete Request'),
+                                  content: const Text(
+                                      'Are you sure you want to delete this request?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        firestore
+                                            .collection('requests')
+                                            .doc(e.id)
+                                            .delete();
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Yes'),
                                     ),
-                                  );
-                                });
-                          },
-                        ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('No'),
+                                    ),
+                                  ],
+                                );
+                              });
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ],
             );
