@@ -1,8 +1,8 @@
 import 'package:boomarang/main.dart';
 import 'package:boomarang/methods/generate_report.dart';
 import 'package:boomarang/misc/alert_dialog.dart';
-import 'package:boomarang/models/request.dart';
-import 'package:boomarang/models/response.dart';
+import 'package:boomarang_shared/models/request.dart';
+import 'package:boomarang_shared/models/response.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
