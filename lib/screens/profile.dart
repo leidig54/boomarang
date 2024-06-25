@@ -62,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             decoration: const InputDecoration(
                               labelText: 'Title',
                               hintText: 'Mr, Mrs, Dr, etc.',
-                              border: UnderlineInputBorder(),
+                              border: OutlineInputBorder(),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -71,7 +71,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             initialValue: user?.firstName,
                             decoration: const InputDecoration(
                               labelText: 'First Name',
-                              border: UnderlineInputBorder(),
+                              border: OutlineInputBorder(),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -80,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             initialValue: user?.lastName,
                             decoration: const InputDecoration(
                               labelText: 'Last Name',
-                              border: UnderlineInputBorder(),
+                              border: OutlineInputBorder(),
                             ),
                           ),
                           const SizedBox(height: 32),
