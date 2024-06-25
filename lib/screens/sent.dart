@@ -99,7 +99,14 @@ class _SentScreenState extends State<SentScreen> {
                 DataCell(Text(e.formattedCreatedDate)),
                 DataCell(Text(e.authoriserEmail ?? 'Unknown')),
                 DataCell(Text(e.holderEmail ?? 'Unknown')),
-                DataCell(Text(e.formattedRequestStatus)),
+                DataCell(Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(e.formattedRequestStatus),
+                    const SizedBox(height: 4),
+                    Text(e.formattedConsentStatus)
+                  ],
+                )),
                 DataCell(
                   e.isSubmitted == true
                       ? TextButton(
