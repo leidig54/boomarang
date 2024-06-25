@@ -1,23 +1,17 @@
-import 'dart:async';
-
 import 'package:boomarang/firebase_options.dart';
-import 'package:boomarang/misc/alert_dialog.dart';
 import 'package:boomarang/screens/add_request.dart';
-import 'package:boomarang/screens/holder.dart';
+import 'package:boomarang/screens/inbox.dart';
 import 'package:boomarang/screens/profile.dart';
-import 'package:boomarang/screens/requester.dart';
-import 'package:boomarang_shared/models/user.dart';
+import 'package:boomarang/screens/sent.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart' hide ProfileScreen;
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions =
@@ -28,7 +22,7 @@ FirebaseFirestore firestore = FirebaseFirestore.instance;
 bool useEmulators = true;
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-void main() async {
+void main() {
   runApp(const MainApp());
 }
 
@@ -45,13 +39,6 @@ class _MainAppState extends State<MainApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-      theme: ThemeData(
-        fontFamily: GoogleFonts.balooPaaji2().fontFamily,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo,
-        ),
-        scaffoldBackgroundColor: Colors.white,
-      ),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -65,7 +52,6 @@ class _MainAppState extends State<MainApp> {
         '/add-request': (context) => const AddRequestScreen(),
       },
       initialRoute: '/',
-      //add google font
     );
   }
 }
@@ -86,13 +72,7 @@ class InitApp extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
               body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    Text('Initialising Firebase...'),
-                  ],
-                ),
+                child: CircularProgressIndicator(),
               ),
             );
           } else if (snapshot.hasError) {
@@ -127,7 +107,7 @@ class _AuthGateState extends State<AuthGate> {
         // storage.useStorageEmulator('localhost', 9199);
       }
     } on Exception catch (e) {
-      buildErrorAlertDialog(e);
+      debugPrint('Error: $e');
     }
     super.initState();
   }
@@ -140,13 +120,7 @@ class _AuthGateState extends State<AuthGate> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
               body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    Text('Checking authentication...'),
-                  ],
-                ),
+                child: CircularProgressIndicator(),
               ),
             );
           } else if (snapshot.hasError) {
@@ -164,45 +138,7 @@ class _AuthGateState extends State<AuthGate> {
               ),
             );
           } else {
-            return StreamBuilder(
-                stream: firestore
-                    .collection('users')
-                    .doc(auth.currentUser!.uid)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Scaffold(
-                      body: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(),
-                            Text('Checking user information...'),
-                          ],
-                        ),
-                      ),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Scaffold(
-                      body: Center(
-                        child: Text('Error: ${snapshot.error}'),
-                      ),
-                    );
-                  } else if (!snapshot.hasData) {
-                    return const Scaffold(
-                      body: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(),
-                            Text('Creating account...'),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-                  return const Home();
-                });
+            return const Home();
           }
         });
   }
@@ -219,175 +155,55 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int selectedIndex = 0;
-  BoomarangUser? user;
-  bool hasLoaded = false;
-  String? version;
-  String? buildNumber;
 
-  List<Widget> screens = [];
-  late StreamSubscription? userTypeStreamSubscription;
-
-  Future<void> getUserType() async {
-    userTypeStreamSubscription = firestore
-        .collection('users')
-        .doc(auth.currentUser!.uid)
-        .snapshots()
-        .listen((snapshot) {
-      if (!snapshot.exists) {
-        return;
-      }
-      user = BoomarangUser.fromMap(snapshot.data() as Map<String, dynamic>);
-
-      if (user!.userType == 'requester') {
-        screens = [
-          const AddRequestScreen(),
-          const RequesterScreen(),
-          const ProfileScreen(),
-        ];
-      } else if (user!.userType == 'holder') {
-        screens = [
-          const HolderScreen(),
-          const ProfileScreen(),
-        ];
-      } else {
-        selectedIndex = 1;
-        screens = [
-          Container(),
-          const ProfileScreen(),
-        ];
-      }
-      hasLoaded = true;
-      setState(() {});
-    });
-  }
-
-  @override
-  void initState() {
-    getUserType();
-    PackageInfo.fromPlatform().then((value) {
-      version = value.version;
-      buildNumber = value.buildNumber;
-    });
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    userTypeStreamSubscription?.cancel();
-    super.dispose();
-  }
+  List<Widget> screens = [
+    const InboxScreen(),
+    const SentScreen(),
+    const SettingsScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    if (!hasLoaded) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
     return Row(
       children: [
         NavigationRail(
-          leading: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              children: [
-                const SizedBox(
-                  height: 40,
-                ),
-                const FlutterLogo(size: 100),
-                const SizedBox(
-                  height: 40,
-                ),
-                Text(
-                  'Boomarang',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(
-                  height: 40,
-                )
-              ],
-            ),
+          leading: const Padding(
+            padding: EdgeInsets.all(8),
+            child: FlutterLogo(size: 40),
             //Boomerang
           ),
-          destinations: [
-            if (user?.userType == 'requester')
-              NavigationRailDestination(
-                icon: const Icon(Icons.add),
-                disabled: user?.userType == null,
-                label: Text(
-                  'Add New',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-              ),
+          destinations: const [
             NavigationRailDestination(
-              icon: const Icon(Icons.mail),
-              label: Text(
-                'Requests',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              disabled: user?.userType == null,
+              icon: Icon(Icons.mail),
+              label: Text('Inbox'),
             ),
             NavigationRailDestination(
-              icon: const Icon(Icons.person),
-              label: Text(
-                'Profile',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
+              icon: Icon(Icons.send),
+              label: Text('Sent'),
+            ),
+            NavigationRailDestination(
+              icon: Icon(Icons.settings),
+              label: Text('Settings'),
             ),
           ],
           trailing: Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Text(
-                  auth.currentUser!.email!,
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    //holder or requester icon
-                    Icon(
-                      user?.userType == 'holder'
-                          ? Icons.arrow_circle_up_rounded
-                          : Icons.arrow_circle_down_rounded,
-                    ),
-                    const SizedBox(
-                      width: 5,
-                    ),
                     Text(
-                      user?.userType == 'holder' ? 'Holder' : 'Requester',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      auth.currentUser!.email!,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.exit_to_app),
+                      onPressed: () {
+                        auth.signOut();
+                      },
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
-                TextButton.icon(
-                  label: const Text('Sign out'),
-                  icon: const Icon(Icons.exit_to_app),
-                  onPressed: () {
-                    auth.signOut();
-                  },
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Column(
-                  children: [
-                    Text('Version: $version',
-                        style: Theme.of(context).textTheme.bodySmall),
-                    Text('Build number: $buildNumber',
-                        style: Theme.of(context).textTheme.bodySmall),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                )
               ],
             ),
           ),
@@ -400,10 +216,14 @@ class _HomeState extends State<Home> {
           extended: MediaQuery.of(context).size.width > 1400,
         ),
         const VerticalDivider(
-          thickness: 3,
-          width: 3,
+          thickness: 1,
+          width: 1,
         ),
-        Expanded(child: Scaffold(body: screens[selectedIndex])),
+        Expanded(
+          child: Scaffold(
+            body: screens[selectedIndex],
+          ),
+        ),
       ],
     );
   }
