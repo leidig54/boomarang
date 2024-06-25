@@ -236,3 +236,4 @@ export const assignHolderIdToRequestOnUserCreate = functions.auth.user().onCreat
   }
   return null;
 });
+
