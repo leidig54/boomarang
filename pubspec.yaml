@@ -34,7 +34,6 @@ dependencies:
   uuid: ^4.4.0
   firebase_ui_auth: ^1.15.0
   collection: ^1.18.0
-  flutter_quill_to_pdf: ^1.2.0
 
 dev_dependencies:
   flutter_test:

@@ -1,7 +1,4 @@
-import 'dart:async';
-
 import 'package:boomarang/firebase_options.dart';
-import 'package:boomarang/misc/alert_dialog.dart';
 import 'package:boomarang/screens/add_request.dart';
 import 'package:boomarang/screens/inbox.dart';
 import 'package:boomarang/screens/profile.dart';
@@ -141,33 +138,7 @@ class _AuthGateState extends State<AuthGate> {
               ),
             );
           } else {
-            return StreamBuilder(
-                stream: firestore
-                    .collection('users')
-                    .doc(auth.currentUser!.uid)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Scaffold(
-                      body: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Scaffold(
-                      body: Center(
-                        child: Text('Error: ${snapshot.error}'),
-                      ),
-                    );
-                  } else if (!snapshot.hasData) {
-                    return const Scaffold(
-                      body: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  }
-                  return const Home();
-                });
+            return const Home();
           }
         });
   }
@@ -184,74 +155,15 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int selectedIndex = 0;
-  String? userType;
-  bool? emailVerified = false;
-  bool hasLoaded = false;
-  bool codeExpired = true;
-  DateTime? verificationCodeExpiresAt;
 
-  List<Widget> screens = [];
-  late StreamSubscription? userTypeStreamSubscription;
-
-  Future<void> getUserType() async {
-    userTypeStreamSubscription = firestore
-        .collection('users')
-        .doc(auth.currentUser!.uid)
-        .snapshots()
-        .listen((snapshot) {
-      userType = snapshot.data()?['userType'];
-      emailVerified = snapshot.data()?['emailVerified'];
-
-      verificationCodeExpiresAt =
-          (snapshot.data()?['verificationCodeExpiresAt'] as Timestamp).toDate();
-
-      if (verificationCodeExpiresAt != null) {
-        codeExpired = verificationCodeExpiresAt!.isBefore(DateTime.now());
-      }
-
-      if (userType == 'requester') {
-        screens = [
-          const SentScreen(),
-          const SettingsScreen(),
-        ];
-      } else if (userType == 'holder') {
-        screens = [
-          const InboxScreen(),
-          const SettingsScreen(),
-        ];
-      } else {
-        selectedIndex = 1;
-        screens = [
-          Container(),
-          const SettingsScreen(),
-        ];
-      }
-      hasLoaded = true;
-      setState(() {});
-    });
-  }
-
-  @override
-  void initState() {
-    getUserType();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    userTypeStreamSubscription?.cancel();
-    super.dispose();
-  }
+  List<Widget> screens = [
+    const InboxScreen(),
+    const SentScreen(),
+    const SettingsScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    if (!hasLoaded) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
     return Row(
       children: [
         NavigationRail(
@@ -260,13 +172,16 @@ class _HomeState extends State<Home> {
             child: FlutterLogo(size: 40),
             //Boomerang
           ),
-          destinations: [
+          destinations: const [
             NavigationRailDestination(
-              icon: const Icon(Icons.mail),
-              label: const Text('Requests'),
-              disabled: userType == null,
+              icon: Icon(Icons.mail),
+              label: Text('Inbox'),
             ),
-            const NavigationRailDestination(
+            NavigationRailDestination(
+              icon: Icon(Icons.send),
+              label: Text('Sent'),
+            ),
+            NavigationRailDestination(
               icon: Icon(Icons.settings),
               label: Text('Settings'),
             ),
@@ -306,112 +221,8 @@ class _HomeState extends State<Home> {
         ),
         Expanded(
           child: Scaffold(
-            body: Column(
-              children: [
-                Expanded(child: screens[selectedIndex]),
-                Builder(builder: (context) {
-                  if (emailVerified == false && codeExpired == true) {
-                    return const SendVerificationCodeSnackbar();
-                  } else if (emailVerified == false && codeExpired == false) {
-                    return const CheckEmailVerificationCodeSnackbar();
-                  } else {
-                    return const SizedBox();
-                  }
-                })
-              ],
-            ),
+            body: screens[selectedIndex],
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class CheckEmailVerificationCodeSnackbar extends StatefulWidget {
-  const CheckEmailVerificationCodeSnackbar({
-    super.key,
-  });
-
-  @override
-  State<CheckEmailVerificationCodeSnackbar> createState() =>
-      _CheckEmailVerificationCodeSnackbarState();
-}
-
-class _CheckEmailVerificationCodeSnackbarState
-    extends State<CheckEmailVerificationCodeSnackbar> {
-  bool isLoading = false;
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Text('Enter the verification code sent to your email:'),
-        Expanded(
-          child: TextField(
-            decoration: const InputDecoration(
-              hintText: 'Verification Code',
-            ),
-            onSubmitted: isLoading
-                ? null
-                : (value) async {
-                    setState(() {
-                      isLoading = true;
-                    });
-                    functions
-                        .httpsCallable('checkEmailVerificationCode')
-                        .call({'code': value}).catchError((e) {
-                      setState(() {
-                        isLoading = false;
-                      });
-                      buildErrorAlertDialog(e);
-                      throw e;
-                    });
-                  },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class SendVerificationCodeSnackbar extends StatefulWidget {
-  const SendVerificationCodeSnackbar({
-    super.key,
-  });
-
-  @override
-  State<SendVerificationCodeSnackbar> createState() =>
-      _SendVerificationCodeSnackbarState();
-}
-
-class _SendVerificationCodeSnackbarState
-    extends State<SendVerificationCodeSnackbar> {
-  bool isSending = false;
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Text('Email not verified'),
-        const Spacer(),
-        TextButton(
-          onPressed: isSending
-              ? null
-              : () async {
-                  setState(() {
-                    isSending = true;
-                  });
-                  //send the user id to the cloud function
-                  await functions
-                      .httpsCallable('sendEmailVerification')
-                      .call()
-                      .catchError((e) {
-                    setState(() {
-                      isSending = false;
-                    });
-                    buildErrorAlertDialog(e);
-                    throw e;
-                  });
-                },
-          child: const Text('Resend'),
         ),
       ],
     );
