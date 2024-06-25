@@ -69,6 +69,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
     List<Step> steps = [
       Step(
         title: const Text("Authoriser"),
+        isActive: _currentStep == 0,
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -206,6 +207,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
       ),
       Step(
         title: const Text("Consent"),
+        isActive: _currentStep == 1,
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -293,6 +295,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
       ),
       Step(
         title: const Text("Request"),
+        isActive: _currentStep == 2,
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -343,6 +346,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
       ),
       Step(
         title: const Text("Consultations"),
+        isActive: _currentStep == 3,
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -455,6 +459,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
       ),
       Step(
         title: const Text("Report"),
+        isActive: _currentStep == 4,
         content: Column(
           children: [
             if (reportQuillController.document.isEmpty())
