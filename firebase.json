@@ -24,7 +24,6 @@
     },
     "singleProjectMode": true
   },
-  "extensions": {},
   "functions": [
     {
       "source": "functions",
