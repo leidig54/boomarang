@@ -4,6 +4,8 @@ import 'package:boomarang/main.dart';
 import 'package:boomarang/screens/add_request.dart';
 import 'package:boomarang/screens/view_request.dart';
 import 'package:boomarang_shared/models/request.dart';
+import 'package:boomarang_shared/models/response.dart';
+import 'package:collection/collection.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 
@@ -16,13 +18,17 @@ class InboxScreen extends StatefulWidget {
 
 class _InboxScreenState extends State<InboxScreen> {
   List<BoomarangRequest> _requests = [];
+  List<BoomarangResponse> _responses = [];
   late StreamSubscription requestStreamSubscription;
+  late StreamSubscription responseStreamSubscription;
 
   @override
   void initState() {
     requestStreamSubscription = firestore
         .collection('requests')
-        .where('holderId', isEqualTo: auth.currentUser!.uid)
+        .where('holderUserId', isEqualTo: auth.currentUser!.uid)
+        .where('isSubmitted', isEqualTo: true)
+        .where('hasConsent', isEqualTo: true)
         .snapshots()
         .listen((snapshot) {
       _requests =
@@ -30,6 +36,17 @@ class _InboxScreenState extends State<InboxScreen> {
       _requests.sort((a, b) {
         return b.dateCreated.compareTo(a.dateCreated);
       });
+      setState(() {});
+    });
+
+    responseStreamSubscription = firestore
+        .collection('responses')
+        .where('holderUserId', isEqualTo: auth.currentUser!.uid)
+        .snapshots()
+        .listen((snapshot) {
+      _responses = snapshot.docs
+          .map((e) => BoomarangResponse.fromMap(e.data()))
+          .toList();
       setState(() {});
     });
     super.initState();
@@ -60,93 +77,85 @@ class _InboxScreenState extends State<InboxScreen> {
             tooltip: 'The entity who made the request',
           ),
           DataColumn(
-            label: Text('Consent'),
-            tooltip: 'The consent status of the request',
-          ),
-
-          DataColumn(
-            label: Text('Complete'),
-            tooltip: 'The completion status of the request',
-          ),
-          //type§
-          DataColumn(
-            label: Text('Type'),
-            tooltip: 'The type of request',
+            label: Text('Status'),
+            tooltip: 'The status of the request',
           ),
           DataColumn(
-            label: Text("Actions"),
+            label: Text('Actions'),
+            tooltip: 'The action to take on the request',
           ),
         ],
-        rows: _requests
-            .map(
-              (request) => DataRow(
-                cells: [
-                  DataCell(
-                    Text(request.formattedCreatedDate),
+        rows: _requests.map(
+          (request) {
+            BoomarangResponse? response = _responses
+                .firstWhereOrNull((element) => element.id == request.id);
+            return DataRow(
+              cells: [
+                DataCell(
+                  Text(request.formattedCreatedDate),
+                ),
+                DataCell(Text(request.authoriserEmail ?? 'Unknown')),
+                DataCell(Text(request.requestEmail ?? 'Unknown')),
+                DataCell(
+                  Text(response?.status ?? 'Not Started'),
+                ),
+                DataCell(
+                  Builder(
+                    builder: (context) {
+                      if (request.isSubmitted == true) {
+                        return TextButton.icon(
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return Dialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: SizedBox(
+                                      width: 1200,
+                                      height: 800,
+                                      child: ViewRequestScreen(
+                                        request: request,
+                                      ),
+                                    ),
+                                  );
+                                });
+                          },
+                          label: const Text("Respond"),
+                        );
+                      } else {
+                        return TextButton.icon(
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return Dialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: SizedBox(
+                                      width: 1200,
+                                      height: 800,
+                                      child: AddRequestScreen(
+                                        request: request,
+                                      ),
+                                    ),
+                                  );
+                                });
+                          },
+                          label: const Text("Edit"),
+                        );
+                      }
+                    },
                   ),
-                  DataCell(Text(
-                      '${request.authoriserFirstName} ${request.authoriserLastName}')),
-                  DataCell(Text(request.requesterOrgName ?? 'Unknown')),
-                  DataCell(Text(request.consentStatus ?? 'Unknown')),
-                  DataCell(Text(request.requestStatus ?? 'Unknown')),
-                  DataCell(Text(request.requestType ?? 'Unknown')),
-                  DataCell(
-                    Builder(
-                      builder: (context) {
-                        if (request.isSubmitted == true) {
-                          return TextButton.icon(
-                            onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return Dialog(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      clipBehavior: Clip.antiAlias,
-                                      child: SizedBox(
-                                        width: 1200,
-                                        height: 800,
-                                        child: ViewRequestScreen(
-                                          request: request,
-                                        ),
-                                      ),
-                                    );
-                                  });
-                            },
-                            label: const Text("Respond"),
-                          );
-                        } else {
-                          return TextButton.icon(
-                            onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return Dialog(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      clipBehavior: Clip.antiAlias,
-                                      child: SizedBox(
-                                        width: 1200,
-                                        height: 800,
-                                        child: AddRequestScreen(
-                                          request: request,
-                                        ),
-                                      ),
-                                    );
-                                  });
-                            },
-                            label: const Text("Edit"),
-                          );
-                        }
-                      },
-                    ),
-                  )
-                ],
-              ),
-            )
-            .toList(),
+                )
+              ],
+            );
+          },
+        ).toList(),
       ),
     );
   }
