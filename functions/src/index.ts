@@ -11,6 +11,10 @@ import * as z from "zod";
 import serviceAccount from "./serviceKey.json";
 import admin = require("firebase-admin");
 
+// determine whether running on emulator
+const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
+const emulatorPort = "54919";
+
 
 admin.initializeApp(
   {
@@ -108,11 +112,13 @@ export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("
       },
     });
 
+    const address = isEmulator ? "http://localhost:54919" : "https://booomarang-consent.web.app";
+
     // the website url is booomarang-consent.web.app. append the request id to the url with the name requestId.
     const emailMessageHtml = `<p>Dear Authoriser,</p>
     <p>A new consent application has been submitted. Please review the request and provide your consent.</p>
     <p>Request ID: ${context.params.requestId}</p>
-    <p>Click <a href="https://boomarang-consent.web.app?requestId=${context.params.requestId}">here</a> to review the request.</p>
+    <p>Click <a href="${address}?requestId=${context.params.requestId}">here</a> to review the request.</p>
     <p>Thank you.</p>`;
 
 
