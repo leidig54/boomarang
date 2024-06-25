@@ -678,12 +678,10 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
   Future<void> saveResponse({required bool isSubmitted}) async {
     BoomarangResponse response = BoomarangResponse(
       id: id,
-      holderUserId: auth.currentUser!.uid,
       consultationFormRef: consultationFormRef,
       consultationDetails: null,
       report: reportQuillController.document.toDelta().toJson(),
       isSubmitted: isSubmitted,
-      status: isSubmitted ? 'Complete' : 'Draft',
     );
 
     return await firestore
