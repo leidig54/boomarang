@@ -43,7 +43,6 @@ class _InboxScreenState extends State<InboxScreen> {
         .where('holderUserId', isEqualTo: auth.currentUser!.uid)
         .snapshots()
         .listen((snapshot) {
-      print(snapshot.docs.length);
       _responses = snapshot.docs
           .map((e) => BoomarangResponse.fromMap(e.data()))
           .toList();
