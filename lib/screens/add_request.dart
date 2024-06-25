@@ -25,7 +25,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
 
   bool? hasConsent;
   String? knowsHolder;
-  bool? isRequester;
 
   String? consentFormName;
   String? requestFormName;
@@ -69,49 +68,9 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         title: const Text('Request'),
         content: Column(
           children: [
-            //are you the requester or is it on behalf of someone else. if its on behalf of someone else, you will need to provide their email
-            FormBuilderRadioGroup(
-              name: 'is_requester',
-              initialValue: request?.isRequester,
-              orientation: OptionsOrientation.vertical,
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-              ),
-              onChanged: (value) {
-                setState(() {
-                  isRequester = value as bool;
-                });
-              },
-              options: const [
-                FormBuilderFieldOption(
-                  value: true,
-                  child: Text('I am the requester'),
-                ),
-                FormBuilderFieldOption(
-                  value: false,
-                  child: Text(
-                      'I am submitting a request on behalf of someone else'),
-                ),
-              ],
-            ),
             const SizedBox(
               height: 16,
             ),
-            if (isRequester == false) ...[
-              FormBuilderTextField(
-                name: 'requester_email',
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  helperText:
-                      'A link to the finished report will be sent to this email',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(
-                height: 16,
-              ),
-            ],
-
             FormBuilderDropdown(
               name: 'type',
               autofocus: false,
@@ -195,12 +154,14 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
             FormBuilderTextField(
               name: 'request_details',
               maxLines: 5,
+              enabled: requestFormName == null,
               initialValue: request?.requestDetails,
               decoration: const InputDecoration(
                 labelText: 'Request Details',
-                hintText: 'Please provide as much detail as possible',
+                hintText:
+                    'Please describe the reason for the request, the data required, etc.',
                 helperText:
-                    'If you are uploading a request form, you can leave this blank.',
+                    'If you are uploading a request form, leave this blank.',
                 border: OutlineInputBorder(),
                 alignLabelWithHint: true,
               ),
@@ -263,6 +224,11 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                                         .getMetadata()
                                         .then((value) => value.name);
 
+                                    //clear the request details
+                                    _requestFormKey.currentState!
+                                        .fields['request_details']!
+                                        .didChange(null);
+
                                     setState(() {});
                                   } on Exception catch (e) {
                                     buildErrorAlertDialog(e);
@@ -288,7 +254,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                         const SizedBox(width: 16),
 
                         Text(requestFormName!),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 8),
                         TextButton.icon(
                           label: const Text('Delete'),
                           onPressed: () async {
@@ -476,9 +442,12 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     if (consentFormName != null)
                       Row(
                         children: [
+                          const Icon(Icons.check, color: Colors.green),
+                          const SizedBox(width: 16),
                           Text(consentFormName!),
                           const SizedBox(width: 16),
-                          IconButton(
+                          TextButton.icon(
+                            label: const Text('Delete'),
                             onPressed: () async {
                               await storage
                                   .ref(
@@ -532,49 +501,16 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         title: const Text('Holder'),
         content: Column(
           children: [
-            FormBuilderRadioGroup(
-              name: 'knows_holder',
-              orientation: OptionsOrientation.vertical,
-              initialValue: request?.knowsHolder,
+            const SizedBox(height: 16),
+            FormBuilderTextField(
+              name: 'holder_email',
+              initialValue: request?.holderEmail,
               decoration: const InputDecoration(
-                border: InputBorder.none,
+                labelText: 'Holder Email',
+                helperText: 'We will send the request to this email address',
+                border: OutlineInputBorder(),
               ),
-              onChanged: (value) {
-                setState(() {
-                  knowsHolder = value;
-                });
-              },
-              options: const [
-                FormBuilderFieldOption(
-                  value: 'yes',
-                  child: Text('I know the holder email'),
-                ),
-                FormBuilderFieldOption(
-                  value: 'no',
-                  child: Text(
-                      'I do not know the holder (authoriser will be asked to complete)'),
-                ),
-                FormBuilderFieldOption(
-                  value: 'self',
-                  child: Text('I am the holder'),
-                ),
-                //i am the holder
-              ],
             ),
-            if (knowsHolder == 'yes')
-              Column(
-                children: [
-                  const SizedBox(height: 16),
-                  FormBuilderTextField(
-                    name: 'holder_email',
-                    decoration: const InputDecoration(
-                      labelText: 'Holder Email',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
           ],
         ),
       ),
@@ -595,6 +531,16 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
             label: const Text("Save Draft"),
             icon: const Icon(Icons.save),
           ),
+          //delete
+          if (request != null)
+            TextButton.icon(
+              onPressed: () async {
+                await firestore.collection('requests').doc(id).delete();
+                navigatorKey.currentState!.pop();
+              },
+              label: const Text("Delete"),
+              icon: const Icon(Icons.delete),
+            ),
         ],
       ),
       body: FormBuilder(
@@ -603,6 +549,26 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           currentStep: currentStep,
           type: StepperType.horizontal,
           controlsBuilder: (context, controlsDetails) {
+            final colorScheme = Theme.of(context).colorScheme;
+            const OutlinedBorder buttonShape = RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(2)));
+            const EdgeInsets buttonPadding =
+                EdgeInsets.symmetric(horizontal: 16.0);
+            ButtonStyle buttonStyle = ButtonStyle(
+              foregroundColor: WidgetStateProperty.resolveWith<Color?>(
+                  (Set<WidgetState> states) {
+                return states.contains(WidgetState.disabled)
+                    ? null
+                    : colorScheme.onPrimary;
+              }),
+              backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+                  (Set<WidgetState> states) {
+                return colorScheme.primary;
+              }),
+              padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(
+                  buttonPadding),
+              shape: const WidgetStatePropertyAll<OutlinedBorder>(buttonShape),
+            );
             return Column(
               children: [
                 const SizedBox(
@@ -611,6 +577,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                 Row(
                   children: [
                     TextButton(
+                      style: buttonStyle,
                       onPressed: () {
                         if (currentStep > 0) {
                           setState(() {
@@ -627,6 +594,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                             width: 16,
                           ),
                           TextButton(
+                            style: buttonStyle,
                             onPressed: () {
                               if (_requestFormKey.currentState!
                                   .saveAndValidate()) {
@@ -648,6 +616,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                             width: 16,
                           ),
                           TextButton(
+                            style: buttonStyle,
                             onPressed: () async {
                               if (_requestFormKey.currentState!
                                   .saveAndValidate()) {
@@ -696,12 +665,9 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   Future<void> saveRequest({required bool submit}) async {
     BoomarangRequest newRequest = BoomarangRequest(
       id: id,
-      creatorId: request?.creatorId ?? auth.currentUser!.uid,
-      isRequester: request?.isRequester ??
-          _requestFormKey.currentState!.fields['is_requester']?.value,
-      creatorOrgId: request?.creatorOrgId,
       isSubmitted: submit,
       knowsHolder: _requestFormKey.currentState!.fields['knows_holder']?.value,
+      holderEmail: _requestFormKey.currentState!.fields['holder_email']?.value,
       hasConsent: _requestFormKey.currentState!.fields['has_consent']?.value,
       authoriserFirstName:
           _requestFormKey.currentState!.fields['authoriser_first_name']?.value,
@@ -713,11 +679,10 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           _requestFormKey.currentState!.fields['authoriser_dob']?.value ?? ""),
       authoriserEmailVerified: false,
       // authoriserPhoneNumber: _requestFormKey.currentState!.fields['authoriser_phone_number']!.value as String,
-      requesterUserId: null,
+      requesterId: auth.currentUser!.uid,
       requesterOrgName: null,
-      requestEmail:
-          _requestFormKey.currentState!.fields['request_email']?.value,
-      holderUserId: knowsHolder == 'self' ? auth.currentUser!.uid : null,
+      requestEmail: auth.currentUser!.email,
+      holderUserId: request?.holderUserId,
       holderOrgId: null,
       dateCreated: DateTime.now(),
       dateUpdated: DateTime.now(),
@@ -727,7 +692,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           : 'consent_pending',
       consentVerified: false,
       paymentStatus: 'payment_pending',
-      requestStatus: 'request_pending',
+      requestStatus: submit == true ? 'submitted' : 'draft',
       requestType: _requestFormKey.currentState!.fields['type']?.value,
       requestDetails:
           _requestFormKey.currentState!.fields['request_details']?.value,
