@@ -4,13 +4,14 @@ import { firebase } from "@genkit-ai/firebase";
 import { firebaseAuth } from "@genkit-ai/firebase/auth";
 import { onFlow } from "@genkit-ai/firebase/functions";
 import { gemini15ProPreview, vertexAI } from "@genkit-ai/vertexai";
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldValue } from "firebase-admin/firestore";
 import * as functions from "firebase-functions";
 import nodemailer from "nodemailer";
 import * as z from "zod";
 import serviceAccount from "./serviceKey.json";
 import admin = require("firebase-admin");
 
+// determine whether running on emulator
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 
 
@@ -92,7 +93,6 @@ async (subject) => {
 export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("requests/{requestId}").onWrite(async (change, context) => {
   // we need to check if to see if the isSubmitted field is true when the request is created or updated (i.e. when the request is submitted), but we only want to send the email once, so we need to check if the isSubmitted field is true and the request has not been submitted before
   if (change.after.data()?.isSubmitted === true && change.before.data()?.isSubmitted !== true) {
-    console.log("Request has been submitted. Sending email to authoriser...");
     const request = change.after.data();
 
     // get the authoriser email from the request
@@ -111,7 +111,7 @@ export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("
       },
     });
 
-    const address = isEmulator ? "http://localhost:62409" : "https://boomarang-consent.web.app";
+    const address = isEmulator ? "http://localhost:54919" : "https://booomarang-consent.web.app";
 
     // the website url is booomarang-consent.web.app. append the request id to the url with the name requestId.
     const emailMessageHtml = `<p>Dear Authoriser,</p>
@@ -136,30 +136,22 @@ export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("
       console.error("There was an error while sending the email:", error);
       return null;
     }
-  } else {
-    console.log("Request has not been submitted. Exiting...");
-    return null;
   }
-});
-
-export const createUserDocument = functions.auth.user().onCreate(async (user) => {
-  // create the user document
-  const userDoc = admin.firestore().collection("users").doc(user.uid);
-  await userDoc.set({
-    email: user.email,
-    emailVerified: false,
-    createdAt: FieldValue.serverTimestamp(),
-  });
-  console.log("User document created for: ", user.email);
-
-  // send a verification email to the user
-  await sendVerificationEmail(user.uid);
 
   return null;
 });
 
+export const createUserDocument = functions.auth.user().onCreate(async (user) => {
+  const userDoc = admin.firestore().collection("users").doc(user.uid);
+  await userDoc.set({
+    email: user.email,
+    createdAt: FieldValue.serverTimestamp(),
+  });
+  return null;
+});
+
 // when a request is updated and the holderEmail field is no longer null or has changed, check to see if the user with that holderEmail already exists. if it does, assign the userId to the holderUserId field in the request
-export const assignHolderToRequestOnRequestCreate = functions.firestore.document("requests/{requestId}")
+export const assignHolderIdToRequest = functions.firestore.document("requests/{requestId}")
   .onWrite(async (change) => {
     const before = change.before.data();
     const after = change.after.data();
@@ -198,7 +190,7 @@ export const assignHolderToRequestOnRequestCreate = functions.firestore.document
           // Email the holder to create an account
           const emailMessageHtml = `<p>Dear Holder,</p>
           <p>A new request has been created for you. Please create an account with this email to view and manage the request.</p>
-          <p>Click <a href="https://boomarang.web.app">here</a> to create an account.</p>
+          <p>Click <a href="https://boomarang-consent.web.app">here</a> to create an account.</p>
           <p>Thank you.</p>`;
 
           const mailOptions = {
@@ -219,176 +211,28 @@ export const assignHolderToRequestOnRequestCreate = functions.firestore.document
           console.error("Error fetching user:", error);
         }
       }
-    } else {
-      console.log("Holder email has not changed. Exiting...");
     }
     return null;
   });
 
-// when a user is verified, check if the user has a request with a holderEmail that matches the user's email. if it does, assign the userId to the holderUserId field in the request
-export const assignRequestToHolderOnUserVerification = functions.firestore.document("users/{userId}").onWrite(async (change) => {
-  const before = change.before.data();
-  const after = change.after.data();
-
-  // see if the email verification status has changed to true from null or false
-  if (before?.emailVerified !== true && after?.emailVerified === true) {
-    console.log("User email verified. Checking if user has any requests...");
-    const holderEmail = after?.email;
-    if (!holderEmail) {
-      console.log("Holder email is null. Exiting...");
-      return null;
-    }
-    try {
-      const requests = await admin.firestore().collection("requests").where("holderEmail", "==", holderEmail).get();
-      requests.forEach(async (request) => {
-        console.log("Request found. Assigning holderUserId to request...");
-        await request.ref.update({
-          holderUserId: change.after.id,
-        });
+// when a user is created, check if the user has a request with a holderEmail that matches the user's email. if it does, assign the userId to the holderUserId field in the request
+export const assignHolderIdToRequestOnUserCreate = functions.auth.user().onCreate(async (user) => {
+  console.log("User created. Checking if user has any requests...");
+  const holderEmail = user.email;
+  if (!holderEmail) {
+    console.log("Holder email is null. Exiting...");
+    return null;
+  }
+  try {
+    const requests = await admin.firestore().collection("requests").where("holderEmail", "==", holderEmail).get();
+    requests.forEach(async (request) => {
+      console.log("Request found. Assigning holderUserId to request...");
+      await request.ref.update({
+        holderUserId: user.uid,
       });
-    } catch (error) {
-      console.error("Error fetching requests:", error);
-    }
-  } else {
-    console.log("User email not verified. Exiting...");
+    });
+  } catch (error) {
+    console.error("Error fetching requests:", error);
   }
   return null;
-});
-
-export const sendVerificationEmail = async (userId: string, ) => {
-  console.log("Sending verification email to user...");
-
-  // get the user document
-  const userDoc = admin.firestore().collection("users").doc(userId);
-  const user = await userDoc.get();
-  if (!user.exists) {
-    console.log("User does not exist");
-    throw new Error("User does not exist");
-  }
-  if (!user.data()?.email) {
-    console.log("User email is null");
-    throw new Error("User email is null");
-  }
-
-
-  // send a verification code (6 digits) to the users email
-  const code = Math.floor(100000 + Math.random() * 900000);
-  const expiresIn = 25 * 60 * 1000; // 20 minutes in milliseconds
-  const expirationTime = new Date(Date.now() + expiresIn);
-
-  // save the code to a secure collection in firestore
-  const verificationCodeDoc = admin.firestore().collection("verification_codes").doc(userId);
-
-  await verificationCodeDoc.set({
-    code: code.toString(),
-    createdAt: FieldValue.serverTimestamp(),
-    expiresAt: Timestamp.fromDate(expirationTime),
-  });
-  console.log("Verification code saved to firestore");
-
-  // save the expiration time to the user document
-  await userDoc.update({
-    verificationCodeExpiresAt: Timestamp.fromDate(expirationTime),
-  });
-
-  // Construct email verification template, embed the link and send
-  const emailMessageHtml = `<p>Dear User,</p>
-  <p>Thank you for creating an account with Boomarang. Please verify your email address by entering the following code:</p>
-  <p>${code}</p>
-  <p>Thank you.</p>`;
-
-  // Configure the email transport using the provided SMTP server.
-  const email = "george@joinoto.com";
-  const password = "GHD9XULrYSFwdOKM"; // Ensure you're securely handling passwords and sensitive information
-  const mailTransport = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
-    auth: {
-      user: email,
-      pass: password,
-    },
-  });
-
-  const mailOptions = {
-    from: "\"Boomarang Verification\" <verificaton@boomarang.com>",
-    to: user.data()?.email,
-    subject: "Create an account to view your request",
-    html: emailMessageHtml,
-  };
-
-  try {
-    await mailTransport.sendMail(mailOptions);
-    console.log(`Email sent to: ${mailOptions.to}`);
-  } catch (emailError) {
-    console.error("There was an error while sending the email:", emailError);
-    throw new Error("Failed to send verification email");
-  }
-
-  // return a success message
-  if (isEmulator) {
-    return `Verification code: ${code}`;
-  }
-  return "Verification email sent";
-};
-
-export const sendVerificationEmailCallable = functions.https.onCall(async (data, context) => {
-  // check if the user is authenticated
-  if (!context.auth) {
-    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated to send verification email");
-  }
-
-  // get the user id from the authenticated user
-  const userId = context.auth.uid;
-
-  // send the verification email
-  await sendVerificationEmail(userId);
-
-  return "Verification email sent";
-});
-
-export const checkEmailVerificationCode = functions.https.onCall(async (data, context) => {
-  // check if the user is authenticated
-  if (!context.auth) {
-    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated to verify email");
-  }
-
-  // get the user id from the authenticated user
-  const userId = context.auth.uid;
-
-  // get the verification code from the request
-  const code = data.code;
-
-  // get the verification code document
-  const verificationCodeDoc = admin.firestore().collection("verification_codes").doc(userId);
-  const verificationCode = await verificationCodeDoc.get();
-  if (!verificationCode.exists) {
-    throw new functions.https.HttpsError("not-found", "Verification code not found");
-  }
-  console.log("Verification code found: ", verificationCode.data()?.code.length);
-  console.log("Submitted code: ", code.length);
-
-  // check if the code is correct
-  if (verificationCode.data()?.code !== code) {
-    throw new functions.https.HttpsError("invalid-argument", "Invalid verification code");
-  }
-
-  // check if the code has expired
-  if (verificationCode.data()?.expiresAt.toMillis() < Date.now()) {
-    throw new functions.https.HttpsError("invalid-argument", "Verification code has expired");
-  }
-
-  // update the user document to mark the email as verified
-  const userDoc = admin.firestore().collection("users").doc(userId);
-  await userDoc.update({
-    emailVerified: true,
-  });
-
-  admin.auth().updateUser(userId, {
-    emailVerified: true,
-  });
-
-  // delete the verification code document
-  await verificationCodeDoc.delete();
-
-  return "Email verified";
 });
