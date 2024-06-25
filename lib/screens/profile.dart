@@ -83,26 +83,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               border: UnderlineInputBorder(),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          //userType (holder or requester)
-                          FormBuilderDropdown(
-                            name: 'type',
-                            initialValue: user?.userType,
-                            decoration: const InputDecoration(
-                              labelText: 'User Type',
-                              border: UnderlineInputBorder(),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'holder',
-                                child: Text('Holder'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'requester',
-                                child: Text('Requester'),
-                              ),
-                            ],
-                          ),
                           const SizedBox(height: 32),
                           Row(
                             children: [
