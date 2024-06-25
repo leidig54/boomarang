@@ -687,9 +687,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       dateCreated: DateTime.now(),
       dateUpdated: DateTime.now(),
       dateSubmitted: DateTime.now(),
-      consentStatus: hasConsent == true
-          ? 'consent_received_from_requester'
-          : 'consent_pending',
+      consentStatus:
+          hasConsent == true ? 'requester_consented' : 'consent_pending',
       consentVerified: false,
       paymentStatus: 'payment_pending',
       requestStatus: submit == true ? 'submitted' : 'draft',
