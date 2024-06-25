@@ -58,7 +58,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         consentFormName = value.items.map((e) => e.name).first;
       });
     });
-
     super.initState();
   }
 
@@ -67,7 +66,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
     List<Step> steps = [
       Step(
         title: const Text('Request'),
-        isActive: currentStep == 0,
         content: Column(
           children: [
             const SizedBox(
@@ -82,7 +80,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
               decoration: const InputDecoration(
                 labelText: 'Type',
                 // helperText: 'Please select the type of request',
-                border: UnderlineInputBorder(),
+                border: OutlineInputBorder(),
               ),
               initialValue: request?.requestType,
               items: const [
@@ -164,7 +162,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     'Please describe the reason for the request, the data required, etc.',
                 helperText:
                     'If you are uploading a request form, leave this blank.',
-                border: UnderlineInputBorder(),
+                border: OutlineInputBorder(),
                 alignLabelWithHint: true,
               ),
             ),
@@ -282,7 +280,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       ),
       Step(
         title: const Text('Authoriser'),
-        isActive: currentStep == 1,
         content: Column(
           children: [
             const SizedBox(height: 16),
@@ -291,7 +288,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
               initialValue: request?.authoriserFirstName,
               decoration: const InputDecoration(
                 labelText: 'First Name',
-                border: UnderlineInputBorder(),
+                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
@@ -300,7 +297,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
               initialValue: request?.authoriserLastName,
               decoration: const InputDecoration(
                 labelText: 'Last Name',
-                border: UnderlineInputBorder(),
+                border: OutlineInputBorder(),
               ),
             ),
             //authoriser dob
@@ -324,7 +321,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Date of Birth',
                   hintText: 'dd/mm/yyyy',
-                  border: UnderlineInputBorder(),
+                  border: OutlineInputBorder(),
                 )),
             //authoriser email
             const SizedBox(height: 16),
@@ -333,7 +330,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
               initialValue: request?.authoriserEmail,
               decoration: const InputDecoration(
                 labelText: 'Email',
-                border: UnderlineInputBorder(),
+                border: OutlineInputBorder(),
               ),
             ),
           ],
@@ -341,7 +338,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       ),
       Step(
         title: const Text('Consent'),
-        isActive: currentStep == 2,
         content: Column(
           children: [
             FormBuilderRadioGroup(
@@ -479,7 +475,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                       name: 'consent_template',
                       decoration: const InputDecoration(
                         labelText: 'Consent Template',
-                        border: UnderlineInputBorder(),
+                        border: OutlineInputBorder(),
                       ),
                       initialValue: request?.consentTemplateId ?? '1',
                       items: const [
@@ -503,7 +499,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       ),
       Step(
         title: const Text('Holder'),
-        isActive: currentStep == 3,
         content: Column(
           children: [
             const SizedBox(height: 16),
@@ -513,7 +508,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
               decoration: const InputDecoration(
                 labelText: 'Holder Email',
                 helperText: 'We will send the request to this email address',
-                border: UnderlineInputBorder(),
+                border: OutlineInputBorder(),
               ),
             ),
           ],
