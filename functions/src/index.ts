@@ -13,7 +13,6 @@ import admin = require("firebase-admin");
 
 // determine whether running on emulator
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
-const emulatorPort = "54919";
 
 
 admin.initializeApp(
@@ -237,3 +236,4 @@ export const assignHolderIdToRequestOnUserCreate = functions.auth.user().onCreat
   }
   return null;
 });
+
