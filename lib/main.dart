@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:boomarang/firebase_options.dart';
 import 'package:boomarang/screens/add_request.dart';
 import 'package:boomarang/screens/inbox.dart';
@@ -138,7 +140,33 @@ class _AuthGateState extends State<AuthGate> {
               ),
             );
           } else {
-            return const Home();
+            return StreamBuilder(
+                stream: firestore
+                    .collection('users')
+                    .doc(auth.currentUser!.uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Scaffold(
+                      body: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Scaffold(
+                      body: Center(
+                        child: Text('Error: ${snapshot.error}'),
+                      ),
+                    );
+                  } else if (!snapshot.hasData) {
+                    return const Scaffold(
+                      body: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+                  return const Home();
+                });
           }
         });
   }
@@ -155,15 +183,62 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int selectedIndex = 0;
+  String? userType;
+  bool hasLoaded = false;
 
-  List<Widget> screens = [
-    const InboxScreen(),
-    const SentScreen(),
-    const SettingsScreen(),
-  ];
+  List<Widget> screens = [];
+  late StreamSubscription? userTypeStreamSubscription;
+
+  Future<void> getUserType() async {
+    userTypeStreamSubscription = firestore
+        .collection('users')
+        .doc(auth.currentUser!.uid)
+        .snapshots()
+        .listen((snapshot) {
+      userType = snapshot.data()!['type'];
+      if (userType == 'requester') {
+        screens = [
+          const SentScreen(),
+          const SettingsScreen(),
+        ];
+      } else if (userType == 'holder') {
+        screens = [
+          const InboxScreen(),
+          const SettingsScreen(),
+        ];
+      } else {
+        selectedIndex = 1;
+        screens = [
+          Container(),
+          const SettingsScreen(),
+        ];
+      }
+      hasLoaded = true;
+      setState(() {});
+    });
+  }
+
+  @override
+  void initState() {
+    getUserType();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    userTypeStreamSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (!hasLoaded) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return Row(
       children: [
         NavigationRail(
@@ -172,16 +247,13 @@ class _HomeState extends State<Home> {
             child: FlutterLogo(size: 40),
             //Boomerang
           ),
-          destinations: const [
+          destinations: [
             NavigationRailDestination(
-              icon: Icon(Icons.mail),
-              label: Text('Inbox'),
+              icon: const Icon(Icons.mail),
+              label: const Text('Requests'),
+              disabled: userType == null,
             ),
-            NavigationRailDestination(
-              icon: Icon(Icons.send),
-              label: Text('Sent'),
-            ),
-            NavigationRailDestination(
+            const NavigationRailDestination(
               icon: Icon(Icons.settings),
               label: Text('Settings'),
             ),
