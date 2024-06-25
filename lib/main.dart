@@ -5,9 +5,10 @@ import 'package:boomarang/screens/profile.dart';
 import 'package:boomarang/screens/sent.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -130,13 +131,10 @@ class _AuthGateState extends State<AuthGate> {
             );
           } else if (snapshot.data == null) {
             return Scaffold(
-              body: Center(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    await auth.signInAnonymously();
-                  },
-                  child: const Text('Sign in Anonymously'),
-                ),
+              body: SignInScreen(
+                providers: [
+                  EmailAuthProvider(),
+                ],
               ),
             );
           } else {
@@ -161,8 +159,7 @@ class _HomeState extends State<Home> {
   List<Widget> screens = [
     const InboxScreen(),
     const SentScreen(),
-    const ProfileScreen(),
-    const Text('Settings'),
+    const SettingsScreen(),
   ];
 
   @override
@@ -171,7 +168,8 @@ class _HomeState extends State<Home> {
       children: [
         NavigationRail(
           leading: const Padding(
-            padding: EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(8),
+            child: FlutterLogo(size: 40),
             //Boomerang
           ),
           destinations: const [
@@ -179,22 +177,36 @@ class _HomeState extends State<Home> {
               icon: Icon(Icons.mail),
               label: Text('Inbox'),
             ),
-            //Sent
             NavigationRailDestination(
               icon: Icon(Icons.send),
               label: Text('Sent'),
             ),
-
-            NavigationRailDestination(
-              icon: Icon(Icons.account_circle),
-              label: Text('Profile'),
-            ),
             NavigationRailDestination(
               icon: Icon(Icons.settings),
               label: Text('Settings'),
-              disabled: true,
             ),
           ],
+          trailing: Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      auth.currentUser!.email!,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.exit_to_app),
+                      onPressed: () {
+                        auth.signOut();
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           selectedIndex: selectedIndex,
           onDestinationSelected: (int index) {
             setState(() {

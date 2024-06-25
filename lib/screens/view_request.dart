@@ -583,29 +583,66 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                       physics: const NeverScrollableScrollPhysics(),
                       type: StepperType.horizontal,
                       controlsBuilder: (context, controlsDetails) {
-                        return Row(
+                        final colorScheme = Theme.of(context).colorScheme;
+                        const OutlinedBorder buttonShape =
+                            RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(2)));
+                        const EdgeInsets buttonPadding =
+                            EdgeInsets.symmetric(horizontal: 16.0);
+                        ButtonStyle buttonStyle = ButtonStyle(
+                          foregroundColor:
+                              WidgetStateProperty.resolveWith<Color?>(
+                                  (Set<WidgetState> states) {
+                            return states.contains(WidgetState.disabled)
+                                ? null
+                                : colorScheme.onPrimary;
+                          }),
+                          backgroundColor:
+                              WidgetStateProperty.resolveWith<Color?>(
+                                  (Set<WidgetState> states) {
+                            return colorScheme.primary;
+                          }),
+                          padding:
+                              const WidgetStatePropertyAll<EdgeInsetsGeometry>(
+                                  buttonPadding),
+                          shape: const WidgetStatePropertyAll<OutlinedBorder>(
+                              buttonShape),
+                        );
+                        return Column(
                           children: [
-                            if (_currentStep != 0)
-                              TextButton(
-                                onPressed: controlsDetails.onStepCancel,
-                                child: const Text('Back'),
-                              ),
-                            if (_currentStep != steps.length - 1)
-                              TextButton(
-                                onPressed: controlsDetails.onStepContinue,
-                                child: const Text('Next'),
-                              ),
-                            if (_currentStep == steps.length - 1)
-                              TextButton(
-                                onPressed: () async {
-                                  if (_consultationsFormKey.currentState!
-                                      .saveAndValidate()) {
-                                    await saveResponse(isSubmitted: true);
-                                    navigatorKey.currentState!.pop();
-                                  }
-                                },
-                                child: const Text('Submit'),
-                              ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                if (_currentStep != 0)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: TextButton(
+                                      style: buttonStyle,
+                                      onPressed: controlsDetails.onStepCancel,
+                                      child: const Text('Back'),
+                                    ),
+                                  ),
+                                if (_currentStep != steps.length - 1)
+                                  TextButton(
+                                    style: buttonStyle,
+                                    onPressed: controlsDetails.onStepContinue,
+                                    child: const Text('Next'),
+                                  ),
+                                if (_currentStep == steps.length - 1)
+                                  TextButton(
+                                    style: buttonStyle,
+                                    onPressed: () async {
+                                      if (_consultationsFormKey.currentState!
+                                          .saveAndValidate()) {
+                                        await saveResponse(isSubmitted: true);
+                                        navigatorKey.currentState!.pop();
+                                      }
+                                    },
+                                    child: const Text('Submit'),
+                                  ),
+                              ],
+                            ),
                           ],
                         );
                       },
