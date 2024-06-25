@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
-import 'package:boomarang/screens/add_request.dart';
 import 'package:boomarang/screens/view_request.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/response.dart';
@@ -44,6 +43,7 @@ class _InboxScreenState extends State<InboxScreen> {
         .where('holderUserId', isEqualTo: auth.currentUser!.uid)
         .snapshots()
         .listen((snapshot) {
+      print(snapshot.docs.length);
       _responses = snapshot.docs
           .map((e) => BoomarangResponse.fromMap(e.data()))
           .toList();
@@ -89,6 +89,7 @@ class _InboxScreenState extends State<InboxScreen> {
           (request) {
             BoomarangResponse? response = _responses
                 .firstWhereOrNull((element) => element.id == request.id);
+
             return DataRow(
               cells: [
                 DataCell(
@@ -97,12 +98,12 @@ class _InboxScreenState extends State<InboxScreen> {
                 DataCell(Text(request.authoriserEmail ?? 'Unknown')),
                 DataCell(Text(request.requestEmail ?? 'Unknown')),
                 DataCell(
-                  Text(response?.status ?? 'Not Started'),
+                  Text(response?.status ?? 'Awaiting response'),
                 ),
                 DataCell(
                   Builder(
                     builder: (context) {
-                      if (request.isSubmitted == true) {
+                      if (response?.isSubmitted != true) {
                         return TextButton.icon(
                           onPressed: () {
                             showDialog(
@@ -126,28 +127,7 @@ class _InboxScreenState extends State<InboxScreen> {
                           label: const Text("Respond"),
                         );
                       } else {
-                        return TextButton.icon(
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return Dialog(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: SizedBox(
-                                      width: 1200,
-                                      height: 800,
-                                      child: AddRequestScreen(
-                                        request: request,
-                                      ),
-                                    ),
-                                  );
-                                });
-                          },
-                          label: const Text("Edit"),
-                        );
+                        return Container();
                       }
                     },
                   ),
