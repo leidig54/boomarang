@@ -1,21 +1,21 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
-import 'package:boomarang/screens/view_request.dart';
+import 'package:boomarang/screens/respond_request.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/response.dart';
 import 'package:collection/collection.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 
-class InboxScreen extends StatefulWidget {
-  const InboxScreen({super.key});
+class HolderScreen extends StatefulWidget {
+  const HolderScreen({super.key});
 
   @override
-  State<InboxScreen> createState() => _InboxScreenState();
+  State<HolderScreen> createState() => _HolderScreenState();
 }
 
-class _InboxScreenState extends State<InboxScreen> {
+class _HolderScreenState extends State<HolderScreen> {
   List<BoomarangRequest> _requests = [];
   List<BoomarangResponse> _responses = [];
   late StreamSubscription requestStreamSubscription;
@@ -27,7 +27,6 @@ class _InboxScreenState extends State<InboxScreen> {
         .collection('requests')
         .where('holderUserId', isEqualTo: auth.currentUser!.uid)
         .where('isSubmitted', isEqualTo: true)
-        .where('hasConsent', isEqualTo: true)
         .snapshots()
         .listen((snapshot) {
       _requests =
@@ -102,7 +101,8 @@ class _InboxScreenState extends State<InboxScreen> {
                 DataCell(
                   Builder(
                     builder: (context) {
-                      if (response?.isSubmitted != true) {
+                      if (response?.isSubmitted != true &&
+                          request.consentVerified == true) {
                         return TextButton.icon(
                           onPressed: () {
                             showDialog(
@@ -125,6 +125,8 @@ class _InboxScreenState extends State<InboxScreen> {
                           },
                           label: const Text("Respond"),
                         );
+                      } else if (request.consentVerified != true) {
+                        return const Text('Awaiting Consent');
                       } else {
                         return Container();
                       }
