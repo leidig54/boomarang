@@ -86,7 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           const SizedBox(height: 16),
                           //userType (holder or requester)
                           FormBuilderDropdown(
-                            name: 'type',
+                            name: 'userType',
                             initialValue: user?.userType,
                             decoration: const InputDecoration(
                               labelText: 'User Type',
