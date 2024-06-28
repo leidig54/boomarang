@@ -684,7 +684,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           _requestFormKey.currentState!.fields['authoriser_dob']?.value ?? ""),
       authoriserEmailVerified: false,
       // authoriserPhoneNumber: _requestFormKey.currentState!.fields['authoriser_phone_number']!.value as String,
-      requesterId: auth.currentUser!.uid,
+      requesterUserId: auth.currentUser!.uid,
       requesterOrgName: null,
       requestEmail: auth.currentUser!.email,
       holderUserId: request?.holderUserId,
