@@ -684,6 +684,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
     BoomarangResponse response = BoomarangResponse(
       id: id,
       holderUserId: auth.currentUser!.uid,
+      requesterUserId: request.requesterUserId,
       consultationFormRef: consultationFormRef,
       consultationDetails: null,
       report: reportQuillController.document.toDelta().toJson(),

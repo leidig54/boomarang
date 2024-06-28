@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:boomarang/firebase_options.dart';
 import 'package:boomarang/misc/alert_dialog.dart';
 import 'package:boomarang/screens/add_request.dart';
-import 'package:boomarang/screens/inbox.dart';
+import 'package:boomarang/screens/holder.dart';
 import 'package:boomarang/screens/profile.dart';
-import 'package:boomarang/screens/sent.dart';
+import 'package:boomarang/screens/requester.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
@@ -211,12 +211,12 @@ class _HomeState extends State<Home> {
 
       if (userType == 'requester') {
         screens = [
-          const SentScreen(),
+          const RequesterScreen(),
           const SettingsScreen(),
         ];
       } else if (userType == 'holder') {
         screens = [
-          const InboxScreen(),
+          const HolderScreen(),
           const SettingsScreen(),
         ];
       } else {
@@ -391,7 +391,6 @@ class _SendVerificationCodeSnackbarState
     return Row(
       children: [
         const Text('Email not verified'),
-        const Spacer(),
         TextButton(
           onPressed: isSending
               ? null
@@ -401,7 +400,7 @@ class _SendVerificationCodeSnackbarState
                   });
                   //send the user id to the cloud function
                   await functions
-                      .httpsCallable('sendEmailVerification')
+                      .httpsCallable('sendVerificationEmailCallable')
                       .call()
                       .catchError((e) {
                     setState(() {
