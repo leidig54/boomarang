@@ -92,7 +92,6 @@ async (subject) => {
 export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("requests/{requestId}").onWrite(async (change, context) => {
   // we need to check if to see if the isSubmitted field is true when the request is created or updated (i.e. when the request is submitted), but we only want to send the email once, so we need to check if the isSubmitted field is true and the request has not been submitted before
   if (change.after.data()?.isSubmitted === true && change.before.data()?.isSubmitted !== true) {
-    console.log("Request has been submitted. Sending email to authoriser...");
     const request = change.after.data();
 
     // get the authoriser email from the request
@@ -111,7 +110,7 @@ export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("
       },
     });
 
-    const address = isEmulator ? "http://localhost:62409" : "https://booomarang-consent.web.app";
+    const address = isEmulator ? "http://localhost:54919" : "https://booomarang-consent.web.app";
 
     // the website url is booomarang-consent.web.app. append the request id to the url with the name requestId.
     const emailMessageHtml = `<p>Dear Authoriser,</p>
@@ -136,10 +135,9 @@ export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("
       console.error("There was an error while sending the email:", error);
       return null;
     }
-  } else {
-    console.log("Request has not been submitted. Exiting...");
-    return null;
   }
+
+  return null;
 });
 
 export const createUserDocument = functions.auth.user().onCreate(async (user) => {
@@ -219,8 +217,6 @@ export const assignHolderIdToRequest = functions.firestore.document("requests/{r
           console.error("Error fetching user:", error);
         }
       }
-    } else {
-      console.log("Holder email has not changed. Exiting...");
     }
     return null;
   });
