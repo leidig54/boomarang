@@ -111,7 +111,7 @@ export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("
       },
     });
 
-    const address = isEmulator ? "http://localhost:62409" : "https://boomarang-consent.web.app";
+    const address = isEmulator ? "http://localhost:62409" : "https://booomarang-consent.web.app";
 
     // the website url is booomarang-consent.web.app. append the request id to the url with the name requestId.
     const emailMessageHtml = `<p>Dear Authoriser,</p>
@@ -147,7 +147,7 @@ export const createUserDocument = functions.auth.user().onCreate(async (user) =>
   const userDoc = admin.firestore().collection("users").doc(user.uid);
   await userDoc.set({
     email: user.email,
-    emailVerified: false,
+    emailVerified: user.emailVerified,
     createdAt: FieldValue.serverTimestamp(),
   });
   console.log("User document created for: ", user.email);
@@ -159,7 +159,7 @@ export const createUserDocument = functions.auth.user().onCreate(async (user) =>
 });
 
 // when a request is updated and the holderEmail field is no longer null or has changed, check to see if the user with that holderEmail already exists. if it does, assign the userId to the holderUserId field in the request
-export const assignHolderToRequestOnRequestCreate = functions.firestore.document("requests/{requestId}")
+export const assignHolderIdToRequest = functions.firestore.document("requests/{requestId}")
   .onWrite(async (change) => {
     const before = change.before.data();
     const after = change.after.data();
@@ -198,7 +198,7 @@ export const assignHolderToRequestOnRequestCreate = functions.firestore.document
           // Email the holder to create an account
           const emailMessageHtml = `<p>Dear Holder,</p>
           <p>A new request has been created for you. Please create an account with this email to view and manage the request.</p>
-          <p>Click <a href="https://boomarang.web.app">here</a> to create an account.</p>
+          <p>Click <a href="https://boomarang-consent.web.app">here</a> to create an account.</p>
           <p>Thank you.</p>`;
 
           const mailOptions = {
@@ -225,8 +225,8 @@ export const assignHolderToRequestOnRequestCreate = functions.firestore.document
     return null;
   });
 
-// when a user is verified, check if the user has a request with a holderEmail that matches the user's email. if it does, assign the userId to the holderUserId field in the request
-export const assignRequestToHolderOnUserVerification = functions.firestore.document("users/{userId}").onWrite(async (change) => {
+// when a user is created, check if the user has a request with a holderEmail that matches the user's email. if it does, assign the userId to the holderUserId field in the request
+export const assignHolderIdToRequestOnUserCreate = functions.firestore.document("users/{userId}").onWrite(async (change) => {
   const before = change.before.data();
   const after = change.after.data();
 
