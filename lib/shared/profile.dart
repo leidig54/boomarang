@@ -91,8 +91,6 @@ class _BoomarangProfileScreenState extends State<BoomarangProfileScreen> {
                   FormBuilderTextField(
                     name: 'email',
                     readOnly: true,
-                    enableInteractiveSelection: false,
-                    enabled: false,
                     initialValue: user?.email,
                     decoration: const InputDecoration(
                       labelText: 'Email',
@@ -104,19 +102,6 @@ class _BoomarangProfileScreenState extends State<BoomarangProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ElevatedButton.icon(
-                        onPressed: !_formChanged
-                            ? null
-                            : () {
-                                _userFormKey.currentState!.reset();
-                                setState(() {
-                                  _formChanged = false;
-                                });
-                              },
-                        icon: const Icon(Icons.clear),
-                        label: const Text('Reset'),
-                      ),
-                      const SizedBox(width: 16),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.save),
                         onPressed: !_formChanged
@@ -137,6 +122,19 @@ class _BoomarangProfileScreenState extends State<BoomarangProfileScreen> {
                                 }
                               },
                         label: const Text('Save'),
+                      ),
+                      const SizedBox(width: 16),
+                      ElevatedButton.icon(
+                        onPressed: !_formChanged
+                            ? null
+                            : () {
+                                _userFormKey.currentState!.reset();
+                                setState(() {
+                                  _formChanged = false;
+                                });
+                              },
+                        icon: const Icon(Icons.clear),
+                        label: const Text('Discard'),
                       ),
                     ],
                   ),
