@@ -6,13 +6,10 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 class AddRequestScreen extends StatefulWidget {
-  //TODO: Decide whether or not we need to be editing existing requests (or viewing them?).
-  //If not we can remove the request parameter and the associated code.
   const AddRequestScreen({super.key, this.request});
 
   final BoomarangRequest? request;
@@ -69,92 +66,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   Widget build(BuildContext context) {
     List<Step> steps = [
       Step(
-        title: const Text('Contact Details'),
-        isActive: currentStep == 0,
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Authoriser",
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            FormBuilderTextField(
-              name: 'authoriser_first_name',
-              validator: FormBuilderValidators.required(),
-              initialValue: request?.authoriserFirstName,
-              decoration: const InputDecoration(
-                labelText: 'First Name',
-                border: UnderlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            FormBuilderTextField(
-              name: 'authoriser_last_name',
-              validator: FormBuilderValidators.required(),
-              initialValue: request?.authoriserLastName,
-              decoration: const InputDecoration(
-                labelText: 'Last Name',
-                border: UnderlineInputBorder(),
-              ),
-            ),
-            //authoriser dob
-            const SizedBox(height: 16),
-            FormBuilderTextField(
-                name: 'authoriser_dob',
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(),
-                ]),
-                initialValue: request?.authoriserDOB != null
-                    ? DateFormat('dd/MM/yyyy').format(request!.authoriserDOB!)
-                    : null,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(10),
-                  DateFormatInputFormatter(DateFormat('dd/MM/yyyy')),
-                ],
-                valueTransformer: (value) {
-                  if (value == null) {
-                    return null;
-                  }
-                  return DateFormat('dd/MM/yyyy').parse(value);
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Date of Birth',
-                  hintText: 'dd/mm/yyyy',
-                  border: UnderlineInputBorder(),
-                )),
-            //authoriser email
-            const SizedBox(height: 16),
-            FormBuilderTextField(
-              name: 'authoriser_email',
-              initialValue: request?.authoriserEmail,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: UnderlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              "Holder",
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            FormBuilderTextField(
-              name: 'holder_email',
-              initialValue: request?.holderEmail,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                helperText: 'We will send the request to this email address',
-                border: UnderlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-      ),
-      Step(
         title: const Text('Request'),
-        isActive: currentStep == 1,
+        isActive: currentStep == 0,
         content: Column(
           children: [
             const SizedBox(
@@ -274,7 +187,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                                       await FilePicker.platform.pickFiles(
                                     type: FileType.custom,
                                     allowedExtensions: ['pdf'],
-                                    withData: true,
                                   );
 
                                   if (requestFormFile == null) {
@@ -369,6 +281,65 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         ),
       ),
       Step(
+        title: const Text('Authoriser'),
+        isActive: currentStep == 1,
+        content: Column(
+          children: [
+            const SizedBox(height: 16),
+            FormBuilderTextField(
+              name: 'authoriser_first_name',
+              initialValue: request?.authoriserFirstName,
+              decoration: const InputDecoration(
+                labelText: 'First Name',
+                border: UnderlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            FormBuilderTextField(
+              name: 'authoriser_last_name',
+              initialValue: request?.authoriserLastName,
+              decoration: const InputDecoration(
+                labelText: 'Last Name',
+                border: UnderlineInputBorder(),
+              ),
+            ),
+            //authoriser dob
+            const SizedBox(height: 16),
+            FormBuilderTextField(
+                name: 'authoriser_dob',
+                initialValue: request?.authoriserDOB != null
+                    ? DateFormat('dd/MM/yyyy').format(request!.authoriserDOB!)
+                    : null,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                  DateFormatInputFormatter(DateFormat('dd/MM/yyyy')),
+                ],
+                valueTransformer: (value) {
+                  if (value == null) {
+                    return null;
+                  }
+                  return DateFormat('dd/MM/yyyy').parse(value);
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Date of Birth',
+                  hintText: 'dd/mm/yyyy',
+                  border: UnderlineInputBorder(),
+                )),
+            //authoriser email
+            const SizedBox(height: 16),
+            FormBuilderTextField(
+              name: 'authoriser_email',
+              initialValue: request?.authoriserEmail,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                border: UnderlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+      ),
+      Step(
         title: const Text('Consent'),
         isActive: currentStep == 2,
         content: Column(
@@ -415,7 +386,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                                         await FilePicker.platform.pickFiles(
                                       type: FileType.custom,
                                       allowedExtensions: ['pdf'],
-                                      withData: true,
                                     );
 
                                     if (consentFormFile == null) {
@@ -531,6 +501,24 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           ],
         ),
       ),
+      Step(
+        title: const Text('Holder'),
+        isActive: currentStep == 3,
+        content: Column(
+          children: [
+            const SizedBox(height: 16),
+            FormBuilderTextField(
+              name: 'holder_email',
+              initialValue: request?.holderEmail,
+              decoration: const InputDecoration(
+                labelText: 'Holder Email',
+                helperText: 'We will send the request to this email address',
+                border: UnderlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+      ),
     ];
 
     return Scaffold(
@@ -538,6 +526,16 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         title: const Text('Add Request'),
         centerTitle: false,
         actions: [
+          TextButton.icon(
+            onPressed: () {
+              if (_requestFormKey.currentState!.saveAndValidate()) {
+                saveRequest(submit: false);
+                navigatorKey.currentState!.pop();
+              }
+            },
+            label: const Text("Save Draft"),
+            icon: const Icon(Icons.save),
+          ),
           //delete
           if (request != null)
             TextButton.icon(
@@ -698,7 +696,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           hasConsent == true ? 'requester_consented' : 'consent_pending',
       consentVerified: false,
       paymentStatus: 'payment_pending',
-      requestStatus: submit == true ? 'awaiting response' : 'draft',
+      requestStatus: submit == true ? 'submitted' : 'draft',
       requestType: _requestFormKey.currentState!.fields['type']?.value,
       requestDetails:
           _requestFormKey.currentState!.fields['request_details']?.value,
