@@ -1,4 +1,4 @@
-import 'package:boomarang/misc/alert_dialog.dart';
+import 'package:boomarang/shared/alert_dialog.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
