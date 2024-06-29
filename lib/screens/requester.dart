@@ -77,7 +77,9 @@ class _RequesterScreenState extends State<RequesterScreen> {
                     child: const SizedBox(
                       width: 1200,
                       height: 800,
-                      child: AddRequestScreen(),
+                      child: AddRequestScreen(
+                        request: null,
+                      ),
                     ),
                   );
                 });
@@ -89,7 +91,7 @@ class _RequesterScreenState extends State<RequesterScreen> {
           columnWidthMode: ColumnWidthMode.fill,
           frozenRowsCount: 1,
           gridLinesVisibility: GridLinesVisibility.both,
-          headerGridLinesVisibility: GridLinesVisibility.both,
+          headerGridLinesVisibility: GridLinesVisibility.vertical,
           allowSorting: true,
           allowFiltering: true,
           columns: [
@@ -101,11 +103,11 @@ class _RequesterScreenState extends State<RequesterScreen> {
                   child: const Text('Date'),
                 )),
             GridColumn(
-                columnName: 'subjectEmail',
+                columnName: 'authoriserEmail',
                 label: Container(
                   padding: const EdgeInsets.all(8),
                   alignment: Alignment.center,
-                  child: const Text('Subject'),
+                  child: const Text('Authoriser'),
                 )),
             GridColumn(
                 columnName: 'requestEmail',
@@ -140,7 +142,7 @@ class RequesterDataSource extends DataGridSource {
               DataGridCell<String>(
                   columnName: 'date', value: e.formattedCreatedDate),
               DataGridCell<String>(
-                  columnName: 'subjectEmail', value: e.subjectEmail),
+                  columnName: 'authoriserEmail', value: e.authoriserEmail),
               DataGridCell<String>(
                   columnName: 'requestEmail', value: e.requestEmail),
               DataGridCell<String>(
