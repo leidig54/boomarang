@@ -24,34 +24,25 @@ class _EnterEmailVerificationCodeScreenState
           width: 400,
           child: TextField(
             autofocus: true,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Enter the verification code sent to your email',
-              border: const OutlineInputBorder(),
-              suffixIcon: isVerifying
-                  ? const CircularProgressIndicator.adaptive()
-                  : null,
+              border: OutlineInputBorder(),
             ),
-            enabled: !isVerifying,
-            onSubmitted: isVerifying
-                ? null
-                : (code) async {
-                    setState(() {
-                      isVerifying = true;
-                    });
-                    await Future.delayed(const Duration(seconds: 2));
-                    await functions
-                        .httpsCallable('checkEmailVerificationCode')
-                        .call({'code': code}).catchError((e) {
-                      buildErrorAlertDialog(e);
-                      throw e;
-                    }).whenComplete(() {
-                      if (mounted) {
-                        setState(() {
-                          isVerifying = false;
-                        });
-                      }
-                    });
-                  },
+            onSubmitted: (code) async {
+              setState(() {
+                isVerifying = true;
+              });
+              await functions
+                  .httpsCallable('checkEmailVerificationCode')
+                  .call({'code': code}).catchError((e) {
+                buildErrorAlertDialog(e);
+                throw e;
+              }).whenComplete(() {
+                setState(() {
+                  isVerifying = false;
+                });
+              });
+            },
           ),
         ),
       ),
