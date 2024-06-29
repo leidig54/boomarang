@@ -15,9 +15,9 @@ const createRequest = async () => {
     const request = {
         id: faker.string.uuid(),
         creatorId: faker.string.uuid(),
-        authoriserFirstName: faker.person.firstName(),
-        authoriserLastName: faker.person.lastName(),
-        authoriserEmail: faker.internet.email(),
+        subjectFirstName: faker.person.firstName(),
+        subjectLastName: faker.person.lastName(),
+        subjectEmail: faker.internet.email(),
         requesterUserId: faker.string.uuid(),
         requesterOrgName: faker.company.name(),
         holderUserId: faker.string.uuid(),
@@ -55,9 +55,9 @@ for (let i = 0; i < 50; i++) {
 
 //request models (in Dart) 
 // String id;
-//   String authoriserFirstName;
-//   String authoriserLastName;
-//   String authoriserEmail;
+//   String subjectFirstName;
+//   String subjectLastName;
+//   String subjectEmail;
 //   String? requesterUserId;
 //   String? requesterOrgName;
 //   String? holderUserId;
