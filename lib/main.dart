@@ -240,6 +240,7 @@ class _HomeState extends State<Home> {
 
       if (user!.userType == 'requester') {
         screens = [
+          const AddRequestScreen(),
           const RequesterScreen(),
           const ProfileScreen(),
         ];
@@ -311,6 +312,14 @@ class _HomeState extends State<Home> {
             //Boomerang
           ),
           destinations: [
+            if (user?.userType == 'requester')
+              NavigationRailDestination(
+                icon: const Icon(Icons.add),
+                label: Text(
+                  'Add New',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ),
             NavigationRailDestination(
               icon: const Icon(Icons.mail),
               label: Text(
