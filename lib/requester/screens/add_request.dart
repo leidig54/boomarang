@@ -40,8 +40,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
 
   late String id;
 
-  bool isSubmitting = false;
-
   @override
   void initState() {
     id = const Uuid().v4();
@@ -545,32 +543,9 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
             }
           } else if (currentStep == 2) {
             if (_consentDetailsFormKey.currentState!.saveAndValidate()) {
-              //TODO: Extract this widget
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Submit Request'),
-                  content: const Text(
-                      'Are you sure you want to submit this request?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        await submitRequest();
-                        if (!context.mounted) return;
-                        Navigator.of(context).pop();
-                        context.read<TabIndexProvider>().setTabIndex(1);
-                      },
-                      child: const Text('Submit'),
-                    ),
-                  ],
-                ),
-              );
+              await submitRequest();
+              if (!context.mounted) return;
+              context.read<TabIndexProvider>().setTabIndex(1);
             }
           }
         },

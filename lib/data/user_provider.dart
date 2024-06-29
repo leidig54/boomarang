@@ -10,17 +10,12 @@ class UserProvider extends ChangeNotifier {
   StreamSubscription? userSubscription;
 
   UserProvider() {
-    //TODO: Doesn't clear when the user logs out
     userSubscription = firestore
         .collection('users')
         .doc(auth.currentUser?.uid)
         .snapshots()
         .listen((event) {
-      if (!event.exists) {
-        user = null;
-      } else {
-        user = BoomarangUser.fromMap(event.data()!);
-      }
+      user = BoomarangUser.fromMap(event.data()!);
       notifyListeners();
     });
   }

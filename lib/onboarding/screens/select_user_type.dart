@@ -20,106 +20,44 @@ class _SelectUserTypeScreenState extends State<SelectUserTypeScreen> {
           constraints: const BoxConstraints(maxWidth: 600),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "What do you want to do?",
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                  ],
-                ),
+              Text(
+                "Select User Type",
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              Expanded(
-                flex: 2,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                children: [
-                                  const Icon(Icons.send),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  Text('Submit a request',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  const Text(
-                                      'You want a quick and easy way to submit a request for sensitive information.',
-                                      textAlign: TextAlign.center),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  OutlinedButton(
-                                      onPressed: () async {
-                                        await firestore
-                                            .collection('users')
-                                            .doc(auth.currentUser!.uid)
-                                            .set({'userType': 'requester'},
-                                                SetOptions(merge: true));
-                                      },
-                                      child: const Text('Select')),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 32,
-                        ),
-                        Expanded(
-                          child: Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                children: [
-                                  const Icon(Icons.reply),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  Text('Reply to requests',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  const Text(
-                                      'You want a quick and easy way of responding to requests for sensitive information.',
-                                      textAlign: TextAlign.center),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  OutlinedButton(
-                                      onPressed: () async {
-                                        await firestore
-                                            .collection('users')
-                                            .doc(auth.currentUser!.uid)
-                                            .set({'userType': 'holder'},
-                                                SetOptions(merge: true));
-                                      },
-                                      child: const Text('Select')),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 32),
+              ListTile(
+                title: const Text('Healthcare Provider'),
+                subtitle: const Text(
+                    'You hold patient data and want to respond to requests.'),
+                trailing:
+                    //healthcare icon
+                    const Icon(Icons.medical_services_outlined),
+                onTap: () async {
+                  await firestore
+                      .collection('users')
+                      .doc(auth.currentUser!.uid)
+                      .set({'userType': 'holder'}, SetOptions(merge: true));
+                },
+              ),
+              const Divider(
+                thickness: 1,
+                height: 1,
+              ),
+              ListTile(
+                title: const Text('Insurer'),
+                subtitle: const Text(
+                    'You want to submit requests for reports on your clients.'),
+                trailing:
+                    //insurance icon
+                    const Icon(Icons.business_center_outlined),
+                onTap: () async {
+                  await firestore
+                      .collection('users')
+                      .doc(auth.currentUser!.uid)
+                      .set({'userType': 'requester'}, SetOptions(merge: true));
+                },
               ),
             ],
           ),
