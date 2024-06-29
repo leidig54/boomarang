@@ -315,7 +315,6 @@ class _HomeState extends State<Home> {
             if (user?.userType == 'requester')
               NavigationRailDestination(
                 icon: const Icon(Icons.add),
-                disabled: user?.userType == null,
                 label: Text(
                   'Add New',
                   style: Theme.of(context).textTheme.bodyLarge,
