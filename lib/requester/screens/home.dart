@@ -19,7 +19,7 @@ class _RequesterHomeState extends State<RequesterHome> {
   List<Widget> screens = [
     const AddRequestScreen(),
     const RequesterDatagridScreen(),
-    const ProfileScreen(),
+    const BoomarangProfileScreen(),
   ];
 
   @override
