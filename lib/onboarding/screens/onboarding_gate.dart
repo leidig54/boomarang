@@ -1,8 +1,10 @@
 import 'package:boomarang/data/user_provider.dart';
+import 'package:boomarang/holder/screens/home.dart';
 import 'package:boomarang/onboarding/screens/enter_email_verification_code.dart';
 import 'package:boomarang/onboarding/screens/resend_email_verification_code.dart';
 import 'package:boomarang/onboarding/screens/select_user_type.dart';
 import 'package:boomarang/requester/screens/home.dart';
+import 'package:boomarang/shared/profile.dart';
 import 'package:boomarang_shared/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -47,8 +49,13 @@ class _OnboardingGateScreenState extends State<OnboardingGateScreen> {
       return const SelectUserTypeScreen();
     }
 
+    //onboarding - profile
+    if (!user.profileIsComplete) {
+      return const BoomarangProfileScreen();
+    }
+
     if (user.userType == 'holder') {
-      return const RequesterHome();
+      return const HolderHome();
     } else if (user.userType == 'requester') {
       return const RequesterHome();
     } else {
