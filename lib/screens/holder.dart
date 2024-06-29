@@ -78,11 +78,11 @@ class _HolderScreenState extends State<HolderScreen> {
                 child: const Text('Date'),
               )),
           GridColumn(
-              columnName: 'authoriserEmail',
+              columnName: 'subjectEmail',
               label: Container(
                 padding: const EdgeInsets.all(8),
                 alignment: Alignment.center,
-                child: const Text('Authoriser'),
+                child: const Text('Subject'),
               )),
           GridColumn(
               columnName: 'requestEmail',
@@ -118,7 +118,7 @@ class HolderDataSource extends DataGridSource {
               DataGridCell<String>(
                   columnName: 'date', value: e.formattedCreatedDate),
               DataGridCell<String>(
-                  columnName: 'authoriserEmail', value: e.authoriserEmail),
+                  columnName: 'subjectEmail', value: e.subjectEmail),
               DataGridCell<String>(
                   columnName: 'requestEmail', value: e.requestEmail),
               DataGridCell<String>(

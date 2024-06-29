@@ -68,7 +68,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
   Widget build(BuildContext context) {
     List<Step> steps = [
       Step(
-        title: const Text("Authoriser"),
+        title: const Text("Subject"),
         isActive: _currentStep == 0,
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -80,7 +80,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                 children: [
                   TextSpan(
                       text:
-                          '${request.authoriserFirstName} ${request.authoriserLastName}',
+                          '${request.subjectFirstName} ${request.subjectLastName}',
                       style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                           fontWeight: FontWeight.bold, color: Colors.black87))
                 ],
@@ -95,7 +95,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                     style: Theme.of(context).textTheme.bodyMedium,
                     children: [
                       TextSpan(
-                          text: request.formattedAuthoriserDob,
+                          text: request.formattedSubjectDob,
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium!
@@ -120,9 +120,8 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                     style: Theme.of(context).textTheme.bodyMedium,
                     children: [
                       TextSpan(
-                          text: request.authoriserDOBVerified == true
-                              ? 'Yes'
-                              : 'No',
+                          text:
+                              request.subjectDOBVerified == true ? 'Yes' : 'No',
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium!
@@ -134,10 +133,10 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                 ),
                 const SizedBox(width: 8),
                 Icon(
-                  request.authoriserDOBVerified == true
+                  request.subjectDOBVerified == true
                       ? Icons.check_circle
                       : Icons.cancel,
-                  color: request.authoriserDOBVerified == true
+                  color: request.subjectDOBVerified == true
                       ? Colors.green
                       : Colors.red,
                   size: 16,
@@ -153,7 +152,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                     style: Theme.of(context).textTheme.bodyMedium,
                     children: [
                       TextSpan(
-                          text: request.authoriserEmail,
+                          text: request.subjectEmail,
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium!
@@ -178,7 +177,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                     style: Theme.of(context).textTheme.bodyMedium,
                     children: [
                       TextSpan(
-                          text: request.authoriserEmailVerified == true
+                          text: request.subjectEmailVerified == true
                               ? 'Yes'
                               : 'No',
                           style: Theme.of(context)
@@ -192,10 +191,10 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                 ),
                 const SizedBox(width: 8),
                 Icon(
-                  request.authoriserEmailVerified == true
+                  request.subjectEmailVerified == true
                       ? Icons.check_circle
                       : Icons.cancel,
-                  color: request.authoriserEmailVerified == true
+                  color: request.subjectEmailVerified == true
                       ? Colors.green
                       : Colors.red,
                   size: 16,
@@ -211,71 +210,6 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            //consent status
-            Row(
-              children: [
-                RichText(
-                  text: TextSpan(
-                    text: 'Status: ',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    children: [
-                      TextSpan(
-                          text: request.formattedConsentStatus,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
-                              .copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87))
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                //separator
-                Container(
-                  height: 16,
-                  width: 1,
-                  color: Colors.black26,
-                ),
-                const SizedBox(width: 8),
-                //consent verified
-                RichText(
-                  text: TextSpan(
-                    text: 'Verified: ',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    children: [
-                      TextSpan(
-                          text: request.consentVerified == true ? 'Yes' : 'No',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
-                              .copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87))
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  request.consentVerified == true
-                      ? Icons.check_circle
-                      : Icons.cancel,
-                  color: request.consentVerified == true
-                      ? Colors.green
-                      : Colors.red,
-                  size: 16,
-                ),
-                const SizedBox(width: 8),
-                //separator
-                Container(
-                  height: 16,
-                  width: 1,
-                  color: Colors.black26,
-                ),
-                const SizedBox(width: 8),
-              ],
-            ),
-            //show file
             if (request.consentFormRef != null) ...[
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.35,
@@ -572,12 +506,12 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
             child: Column(
               children: [
                 Text(
-                  '${request.authoriserFirstName} ${request.authoriserLastName}',
+                  '${request.subjectFirstName} ${request.subjectLastName}',
                   textAlign: TextAlign.end,
                 ),
-                //authoriserDOB
+                //subjectDOB
                 Text(
-                  request.formattedAuthoriserDob,
+                  request.formattedSubjectDob,
                   textAlign: TextAlign.end,
                 ),
                 Expanded(
