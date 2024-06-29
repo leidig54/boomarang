@@ -1,7 +1,6 @@
 import 'package:boomarang/main.dart';
 import 'package:boomarang/onboarding/screens/onboarding_gate.dart';
 import 'package:boomarang/shared/alert_dialog.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart' hide ProfileScreen;
 import 'package:flutter/foundation.dart';
@@ -24,7 +23,6 @@ class _AuthGateState extends State<AuthGate> {
         functions.useFunctionsEmulator('localhost', 5001);
         auth.useAuthEmulator('localhost', 9099);
         firestore.useFirestoreEmulator('localhost', 8080);
-        firestore.settings = const Settings(persistenceEnabled: false);
         // storage.useStorageEmulator('localhost', 9199);
       }
     } on Exception catch (e) {

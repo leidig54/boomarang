@@ -45,7 +45,9 @@ class _NavigationRailTrailingWidgetState
           Row(
             children: [
               Icon(
-                user?.userType == 'requester' ? Icons.send : Icons.reply,
+                user?.userType == 'requester'
+                    ? Icons.arrow_circle_up_rounded
+                    : Icons.arrow_circle_down_rounded,
               ),
               const SizedBox(
                 width: 5,
@@ -71,9 +73,9 @@ class _NavigationRailTrailingWidgetState
           ),
           Column(
             children: [
-              Text('Version: ${packageInfo?.version}',
+              Text('Version: ${packageInfo!.version}',
                   style: Theme.of(context).textTheme.bodySmall),
-              Text('Build number: ${packageInfo?.buildNumber}',
+              Text('Build number: ${packageInfo!.buildNumber}',
                   style: Theme.of(context).textTheme.bodySmall),
             ],
           ),

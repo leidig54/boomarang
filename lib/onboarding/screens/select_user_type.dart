@@ -28,22 +28,12 @@ class _SelectUserTypeScreenState extends State<SelectUserTypeScreen> {
               ),
               const SizedBox(height: 32),
               ListTile(
-                title: const Text('Holder'),
+                title: const Text('Healthcare Provider'),
                 subtitle: const Text(
-                    'You hold sensitive data and want to respond to requests.\nE.g. doctors, accountants, universities.'),
-                trailing: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.arrow_forward_ios),
-                  ],
-                ),
-                leading: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.arrow_circle_up),
-                  ],
-                ),
-                isThreeLine: true,
+                    'You hold patient data and want to respond to requests.'),
+                trailing:
+                    //healthcare icon
+                    const Icon(Icons.medical_services_outlined),
                 onTap: () async {
                   await firestore
                       .collection('users')
@@ -56,22 +46,12 @@ class _SelectUserTypeScreenState extends State<SelectUserTypeScreen> {
                 height: 1,
               ),
               ListTile(
-                title: const Text('Requester'),
+                title: const Text('Insurer'),
                 subtitle: const Text(
-                    'You want to submit requests for sensitive data.\nE.g. insurance, legal, recruitment.'),
-                trailing: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.arrow_forward_ios),
-                  ],
-                ),
-                leading: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.arrow_circle_down),
-                  ],
-                ),
-                isThreeLine: true,
+                    'You want to submit requests for reports on your clients.'),
+                trailing:
+                    //insurance icon
+                    const Icon(Icons.business_center_outlined),
                 onTap: () async {
                   await firestore
                       .collection('users')
