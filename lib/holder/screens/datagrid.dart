@@ -2,22 +2,19 @@ import 'dart:async';
 
 import 'package:boomarang/main.dart';
 import 'package:boomarang_shared/models/request.dart';
-import 'package:boomarang_shared/models/response.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-class HolderScreen extends StatefulWidget {
-  const HolderScreen({super.key});
+class HolderDatagridScreen extends StatefulWidget {
+  const HolderDatagridScreen({super.key});
 
   @override
-  State<HolderScreen> createState() => _HolderScreenState();
+  State<HolderDatagridScreen> createState() => _HolderDatagridScreenState();
 }
 
-class _HolderScreenState extends State<HolderScreen> {
+class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
   List<BoomarangRequest> _requests = [];
-  List<BoomarangResponse> _responses = [];
   late StreamSubscription requestStreamSubscription;
-  late StreamSubscription responseStreamSubscription;
 
   late HolderDataSource _dataSource;
 
@@ -39,24 +36,12 @@ class _HolderScreenState extends State<HolderScreen> {
       _dataSource.updateDataGridSource();
     });
 
-    responseStreamSubscription = firestore
-        .collection('responses')
-        .where('holderUserId', isEqualTo: auth.currentUser!.uid)
-        .snapshots()
-        .listen((snapshot) {
-      _responses = snapshot.docs
-          .map((e) => BoomarangResponse.fromMap(e.data()))
-          .toList();
-      setState(() {});
-    });
-
     super.initState();
   }
 
   @override
   void dispose() {
     requestStreamSubscription.cancel();
-    responseStreamSubscription.cancel();
     super.dispose();
   }
 
