@@ -73,9 +73,9 @@ class _NavigationRailTrailingWidgetState
           ),
           Column(
             children: [
-              Text('Version: ${packageInfo!.version}',
+              Text('Version: ${packageInfo?.version}',
                   style: Theme.of(context).textTheme.bodySmall),
-              Text('Build number: ${packageInfo!.buildNumber}',
+              Text('Build number: ${packageInfo?.buildNumber}',
                   style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
