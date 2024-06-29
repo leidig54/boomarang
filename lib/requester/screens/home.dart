@@ -1,10 +1,8 @@
-import 'package:boomarang/misc/tab_index_provider.dart';
 import 'package:boomarang/requester/screens/add_request.dart';
 import 'package:boomarang/requester/screens/datagrid.dart';
 import 'package:boomarang/shared/navigation_bottom_widget.dart';
 import 'package:boomarang/shared/profile.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class RequesterHome extends StatefulWidget {
   const RequesterHome({
@@ -16,6 +14,8 @@ class RequesterHome extends StatefulWidget {
 }
 
 class _RequesterHomeState extends State<RequesterHome> {
+  int selectedIndex = 0;
+
   List<Widget> screens = [
     const AddRequestScreen(),
     const RequesterDatagridScreen(),
@@ -73,21 +73,19 @@ class _RequesterHomeState extends State<RequesterHome> {
             ),
           ],
           trailing: const NavigationRailTrailingWidget(),
-          selectedIndex: context.watch<TabIndexProvider>().tabIndex,
+          selectedIndex: selectedIndex,
           onDestinationSelected: (int index) {
-            context.read<TabIndexProvider>().setTabIndex(index);
+            setState(() {
+              selectedIndex = index;
+            });
           },
-          extended: true,
+          extended: MediaQuery.of(context).size.width > 1400,
         ),
         const VerticalDivider(
           thickness: 3,
           width: 3,
         ),
-        Expanded(
-          child: Scaffold(
-            body: screens[context.watch<TabIndexProvider>().tabIndex],
-          ),
-        ),
+        Expanded(child: Scaffold(body: screens[selectedIndex])),
       ],
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// TODO: replace current loading screens with this
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key, required this.message});
 
