@@ -92,12 +92,13 @@ async (subject) => {
 export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("requests/{requestId}").onWrite(async (change, context) => {
   // we need to check if to see if the isSubmitted field is true when the request is created or updated (i.e. when the request is submitted), but we only want to send the email once, so we need to check if the isSubmitted field is true and the request has not been submitted before
   if (change.after.data()?.isSubmitted === true && change.before.data()?.isSubmitted !== true) {
+    console.log("Request has been submitted. Sending email to subject...");
     const request = change.after.data();
 
-    // get the authoriser email from the request
-    const authoriserEmail = request?.authoriserEmail;
+    // get the subject email from the request
+    const subjectEmail = request?.subjectEmail;
 
-    // email the authoriser with the request id
+    // email the subject with the request id
     // Configure the email transport using the provided SMTP server.
     const email = "george@joinoto.com";
     const password = "GHD9XULrYSFwdOKM";
@@ -110,10 +111,10 @@ export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("
       },
     });
 
-    const address = isEmulator ? "http://localhost:54919" : "https://booomarang-consent.web.app";
+    const address = isEmulator ? "http://localhost:62409" : "https://boomarang-consent.web.app";
 
     // the website url is booomarang-consent.web.app. append the request id to the url with the name requestId.
-    const emailMessageHtml = `<p>Dear Authoriser,</p>
+    const emailMessageHtml = `<p>Dear Subject,</p>
     <p>A new consent application has been submitted. Please review the request and provide your consent.</p>
     <p>Request ID: ${context.params.requestId}</p>
     <p>Click <a href="${address}?requestId=${context.params.requestId}">here</a> to review the request.</p>
@@ -122,7 +123,7 @@ export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("
 
     const mailOptions = {
       from: "\"George\" <george@boomarang.com>",
-      to: authoriserEmail,
+      to: subjectEmail,
       subject: "Consent requested",
       html: emailMessageHtml,
     };
@@ -135,9 +136,10 @@ export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("
       console.error("There was an error while sending the email:", error);
       return null;
     }
+  } else {
+    console.log("Request has not been submitted. Exiting...");
+    return null;
   }
-
-  return null;
 });
 
 export const createUserDocument = functions.auth.user().onCreate(async (user) => {
@@ -145,7 +147,7 @@ export const createUserDocument = functions.auth.user().onCreate(async (user) =>
   const userDoc = admin.firestore().collection("users").doc(user.uid);
   await userDoc.set({
     email: user.email,
-    emailVerified: user.emailVerified,
+    emailVerified: false,
     createdAt: FieldValue.serverTimestamp(),
   });
   console.log("User document created for: ", user.email);
@@ -157,7 +159,7 @@ export const createUserDocument = functions.auth.user().onCreate(async (user) =>
 });
 
 // when a request is updated and the holderEmail field is no longer null or has changed, check to see if the user with that holderEmail already exists. if it does, assign the userId to the holderUserId field in the request
-export const assignHolderIdToRequest = functions.firestore.document("requests/{requestId}")
+export const assignHolderToRequestOnRequestCreate = functions.firestore.document("requests/{requestId}")
   .onWrite(async (change) => {
     const before = change.before.data();
     const after = change.after.data();
@@ -196,7 +198,7 @@ export const assignHolderIdToRequest = functions.firestore.document("requests/{r
           // Email the holder to create an account
           const emailMessageHtml = `<p>Dear Holder,</p>
           <p>A new request has been created for you. Please create an account with this email to view and manage the request.</p>
-          <p>Click <a href="https://boomarang-consent.web.app">here</a> to create an account.</p>
+          <p>Click <a href="https://boomarang.web.app">here</a> to create an account.</p>
           <p>Thank you.</p>`;
 
           const mailOptions = {
@@ -217,12 +219,14 @@ export const assignHolderIdToRequest = functions.firestore.document("requests/{r
           console.error("Error fetching user:", error);
         }
       }
+    } else {
+      console.log("Holder email has not changed. Exiting...");
     }
     return null;
   });
 
-// when a user is created, check if the user has a request with a holderEmail that matches the user's email. if it does, assign the userId to the holderUserId field in the request
-export const assignHolderIdToRequestOnUserCreate = functions.firestore.document("users/{userId}").onWrite(async (change) => {
+// when a user is verified, check if the user has a request with a holderEmail that matches the user's email. if it does, assign the userId to the holderUserId field in the request
+export const assignRequestToHolderOnUserVerification = functions.firestore.document("users/{userId}").onWrite(async (change) => {
   const before = change.before.data();
   const after = change.after.data();
 
