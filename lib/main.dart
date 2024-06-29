@@ -6,15 +6,18 @@ import 'package:boomarang/screens/add_request.dart';
 import 'package:boomarang/screens/holder.dart';
 import 'package:boomarang/screens/profile.dart';
 import 'package:boomarang/screens/requester.dart';
+import 'package:boomarang_shared/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:firebase_ui_auth/firebase_ui_auth.dart' hide ProfileScreen;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions =
@@ -25,7 +28,7 @@ FirebaseFirestore firestore = FirebaseFirestore.instance;
 bool useEmulators = true;
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-void main() {
+void main() async {
   runApp(const MainApp());
 }
 
@@ -42,6 +45,13 @@ class _MainAppState extends State<MainApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
+      theme: ThemeData(
+        fontFamily: GoogleFonts.balooPaaji2().fontFamily,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.indigo,
+        ),
+        scaffoldBackgroundColor: Colors.white,
+      ),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -55,6 +65,7 @@ class _MainAppState extends State<MainApp> {
         '/add-request': (context) => const AddRequestScreen(),
       },
       initialRoute: '/',
+      //add google font
     );
   }
 }
@@ -75,7 +86,13 @@ class InitApp extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
               body: Center(
-                child: CircularProgressIndicator(),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    Text('Initialising Firebase...'),
+                  ],
+                ),
               ),
             );
           } else if (snapshot.hasError) {
@@ -110,7 +127,7 @@ class _AuthGateState extends State<AuthGate> {
         // storage.useStorageEmulator('localhost', 9199);
       }
     } on Exception catch (e) {
-      debugPrint('Error: $e');
+      buildErrorAlertDialog(e);
     }
     super.initState();
   }
@@ -123,7 +140,13 @@ class _AuthGateState extends State<AuthGate> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
               body: Center(
-                child: CircularProgressIndicator(),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    Text('Checking authentication...'),
+                  ],
+                ),
               ),
             );
           } else if (snapshot.hasError) {
@@ -150,7 +173,13 @@ class _AuthGateState extends State<AuthGate> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Scaffold(
                       body: Center(
-                        child: CircularProgressIndicator(),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(),
+                            Text('Checking user information...'),
+                          ],
+                        ),
                       ),
                     );
                   } else if (snapshot.hasError) {
@@ -162,7 +191,13 @@ class _AuthGateState extends State<AuthGate> {
                   } else if (!snapshot.hasData) {
                     return const Scaffold(
                       body: Center(
-                        child: CircularProgressIndicator(),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(),
+                            Text('Creating account...'),
+                          ],
+                        ),
                       ),
                     );
                   }
@@ -184,11 +219,10 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int selectedIndex = 0;
-  String? userType;
-  bool? emailVerified = false;
+  BoomarangUser? user;
   bool hasLoaded = false;
-  bool codeExpired = true;
-  DateTime? verificationCodeExpiresAt;
+  String? version;
+  String? buildNumber;
 
   List<Widget> screens = [];
   late StreamSubscription? userTypeStreamSubscription;
@@ -199,31 +233,26 @@ class _HomeState extends State<Home> {
         .doc(auth.currentUser!.uid)
         .snapshots()
         .listen((snapshot) {
-      userType = snapshot.data()?['userType'];
-      emailVerified = snapshot.data()?['emailVerified'];
-
-      verificationCodeExpiresAt =
-          (snapshot.data()?['verificationCodeExpiresAt'] as Timestamp).toDate();
-
-      if (verificationCodeExpiresAt != null) {
-        codeExpired = verificationCodeExpiresAt!.isBefore(DateTime.now());
+      if (!snapshot.exists) {
+        return;
       }
+      user = BoomarangUser.fromMap(snapshot.data() as Map<String, dynamic>);
 
-      if (userType == 'requester') {
+      if (user!.userType == 'requester') {
         screens = [
           const RequesterScreen(),
-          const SettingsScreen(),
+          const ProfileScreen(),
         ];
-      } else if (userType == 'holder') {
+      } else if (user!.userType == 'holder') {
         screens = [
           const HolderScreen(),
-          const SettingsScreen(),
+          const ProfileScreen(),
         ];
       } else {
         selectedIndex = 1;
         screens = [
           Container(),
-          const SettingsScreen(),
+          const ProfileScreen(),
         ];
       }
       hasLoaded = true;
@@ -234,6 +263,10 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     getUserType();
+    PackageInfo.fromPlatform().then((value) {
+      version = value.version;
+      buildNumber = value.buildNumber;
+    });
     super.initState();
   }
 
@@ -255,40 +288,96 @@ class _HomeState extends State<Home> {
     return Row(
       children: [
         NavigationRail(
-          leading: const Padding(
-            padding: EdgeInsets.all(8),
-            child: FlutterLogo(size: 40),
+          leading: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 40,
+                ),
+                const FlutterLogo(size: 100),
+                const SizedBox(
+                  height: 40,
+                ),
+                Text(
+                  'Boomarang',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(
+                  height: 40,
+                )
+              ],
+            ),
             //Boomerang
           ),
           destinations: [
             NavigationRailDestination(
               icon: const Icon(Icons.mail),
-              label: const Text('Requests'),
-              disabled: userType == null,
+              label: Text(
+                'Requests',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              disabled: user?.userType == null,
             ),
-            const NavigationRailDestination(
-              icon: Icon(Icons.settings),
-              label: Text('Settings'),
+            NavigationRailDestination(
+              icon: const Icon(Icons.person),
+              label: Text(
+                'Profile',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
             ),
           ],
           trailing: Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                Text(
+                  auth.currentUser!.email!,
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Text(
-                      auth.currentUser!.email!,
+                    //holder or requester icon
+                    Icon(
+                      user?.userType == 'holder'
+                          ? Icons.arrow_circle_up_rounded
+                          : Icons.arrow_circle_down_rounded,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.exit_to_app),
-                      onPressed: () {
-                        auth.signOut();
-                      },
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    Text(
+                      user?.userType == 'holder' ? 'Holder' : 'Requester',
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
+                const SizedBox(
+                  height: 20,
+                ),
+                TextButton.icon(
+                  label: const Text('Sign out'),
+                  icon: const Icon(Icons.exit_to_app),
+                  onPressed: () {
+                    auth.signOut();
+                  },
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Column(
+                  children: [
+                    Text('Version: $version',
+                        style: Theme.of(context).textTheme.bodySmall),
+                    Text('Build number: $buildNumber',
+                        style: Theme.of(context).textTheme.bodySmall),
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                )
               ],
             ),
           ),
@@ -301,117 +390,10 @@ class _HomeState extends State<Home> {
           extended: MediaQuery.of(context).size.width > 1400,
         ),
         const VerticalDivider(
-          thickness: 1,
-          width: 1,
+          thickness: 3,
+          width: 3,
         ),
-        Expanded(
-          child: Scaffold(
-            body: Column(
-              children: [
-                Expanded(child: screens[selectedIndex]),
-                Builder(builder: (context) {
-                  if (emailVerified == false && codeExpired == true) {
-                    return const SendVerificationCodeSnackbar();
-                  } else if (emailVerified == false && codeExpired == false) {
-                    return const CheckEmailVerificationCodeSnackbar();
-                  } else {
-                    return const SizedBox();
-                  }
-                })
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class CheckEmailVerificationCodeSnackbar extends StatefulWidget {
-  const CheckEmailVerificationCodeSnackbar({
-    super.key,
-  });
-
-  @override
-  State<CheckEmailVerificationCodeSnackbar> createState() =>
-      _CheckEmailVerificationCodeSnackbarState();
-}
-
-class _CheckEmailVerificationCodeSnackbarState
-    extends State<CheckEmailVerificationCodeSnackbar> {
-  bool isLoading = false;
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Text('Enter the verification code sent to your email:'),
-        Expanded(
-          child: TextField(
-            decoration: const InputDecoration(
-              hintText: 'Verification Code',
-            ),
-            onSubmitted: isLoading
-                ? null
-                : (value) async {
-                    setState(() {
-                      isLoading = true;
-                    });
-                    functions
-                        .httpsCallable('checkEmailVerificationCode')
-                        .call({'code': value}).catchError((e) {
-                      setState(() {
-                        isLoading = false;
-                      });
-                      buildErrorAlertDialog(e);
-                      throw e;
-                    });
-                  },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class SendVerificationCodeSnackbar extends StatefulWidget {
-  const SendVerificationCodeSnackbar({
-    super.key,
-  });
-
-  @override
-  State<SendVerificationCodeSnackbar> createState() =>
-      _SendVerificationCodeSnackbarState();
-}
-
-class _SendVerificationCodeSnackbarState
-    extends State<SendVerificationCodeSnackbar> {
-  bool isSending = false;
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Text('Email not verified'),
-        TextButton(
-          onPressed: isSending
-              ? null
-              : () async {
-                  setState(() {
-                    isSending = true;
-                  });
-                  //send the user id to the cloud function
-                  await functions
-                      .httpsCallable('sendVerificationEmailCallable')
-                      .call()
-                      .catchError((e) {
-                    setState(() {
-                      isSending = false;
-                    });
-                    buildErrorAlertDialog(e);
-                    throw e;
-                  });
-                },
-          child: const Text('Resend'),
-        ),
+        Expanded(child: Scaffold(body: screens[selectedIndex])),
       ],
     );
   }
