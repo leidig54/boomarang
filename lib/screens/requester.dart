@@ -91,7 +91,7 @@ class _RequesterScreenState extends State<RequesterScreen> {
           columnWidthMode: ColumnWidthMode.fill,
           frozenRowsCount: 1,
           gridLinesVisibility: GridLinesVisibility.both,
-          headerGridLinesVisibility: GridLinesVisibility.vertical,
+          headerGridLinesVisibility: GridLinesVisibility.both,
           allowSorting: true,
           allowFiltering: true,
           columns: [
