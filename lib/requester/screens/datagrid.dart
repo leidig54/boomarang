@@ -1,24 +1,22 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
-import 'package:boomarang/screens/add_request.dart';
+import 'package:boomarang/requester/screens/add_request.dart';
 import 'package:boomarang_shared/models/request.dart';
-import 'package:boomarang_shared/models/response.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-class RequesterScreen extends StatefulWidget {
-  const RequesterScreen({super.key});
+class RequesterDatagridScreen extends StatefulWidget {
+  const RequesterDatagridScreen({super.key});
 
   @override
-  State<RequesterScreen> createState() => _RequesterScreenState();
+  State<RequesterDatagridScreen> createState() =>
+      _RequesterDatagridScreenState();
 }
 
-class _RequesterScreenState extends State<RequesterScreen> {
+class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
   List<BoomarangRequest> _requests = [];
-  List<BoomarangResponse> _responses = [];
   late StreamSubscription requestStreamSubscription;
-  late StreamSubscription responseStreamSubscription;
 
   late RequesterDataSource _dataSource;
 
@@ -40,16 +38,6 @@ class _RequesterScreenState extends State<RequesterScreen> {
       setState(() {});
     });
 
-    responseStreamSubscription = firestore
-        .collection('responses')
-        .where('requesterUserId', isEqualTo: auth.currentUser!.uid)
-        .snapshots()
-        .listen((snapshot) {
-      _responses = snapshot.docs
-          .map((e) => BoomarangResponse.fromMap(e.data()))
-          .toList();
-      setState(() {});
-    });
     super.initState();
   }
 
