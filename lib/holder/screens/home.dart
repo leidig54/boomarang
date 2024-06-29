@@ -17,7 +17,7 @@ class _HolderHomeState extends State<HolderHome> {
 
   List<Widget> screens = [
     const HolderDatagridScreen(),
-    const ProfileScreen(),
+    const BoomarangProfileScreen(),
   ];
 
   @override
