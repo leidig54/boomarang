@@ -28,21 +28,25 @@ class _EnterEmailVerificationCodeScreenState
               labelText: 'Enter the verification code sent to your email',
               border: OutlineInputBorder(),
             ),
-            onSubmitted: (code) async {
-              setState(() {
-                isVerifying = true;
-              });
-              await functions
-                  .httpsCallable('checkEmailVerificationCode')
-                  .call({'code': code}).catchError((e) {
-                buildErrorAlertDialog(e);
-                throw e;
-              }).whenComplete(() {
-                setState(() {
-                  isVerifying = false;
-                });
-              });
-            },
+            onSubmitted: isVerifying
+                ? null
+                : (code) async {
+                    setState(() {
+                      isVerifying = true;
+                    });
+                    await functions
+                        .httpsCallable('checkEmailVerificationCode')
+                        .call({'code': code}).catchError((e) {
+                      buildErrorAlertDialog(e);
+                      throw e;
+                    }).whenComplete(() {
+                      if (mounted) {
+                        setState(() {
+                          isVerifying = false;
+                        });
+                      }
+                    });
+                  },
           ),
         ),
       ),
