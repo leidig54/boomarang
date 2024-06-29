@@ -376,7 +376,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
             children: [
               FormBuilderField(
                 name: 'consent_form_ref',
-                //TODO: validator doesnt work
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(),
                 ]),
