@@ -400,6 +400,7 @@ class _ViewRequestScreenState extends State<ViewRequestScreen> {
                             final result = await FilePicker.platform.pickFiles(
                               type: FileType.custom,
                               allowedExtensions: ['pdf'],
+                              withData: true,
                             );
 
                             if (result == null) {
