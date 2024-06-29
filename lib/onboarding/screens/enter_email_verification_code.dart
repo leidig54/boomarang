@@ -15,69 +15,35 @@ class EnterEmailVerificationCodeScreen extends StatefulWidget {
 class _EnterEmailVerificationCodeScreenState
     extends State<EnterEmailVerificationCodeScreen> {
   bool isVerifying = false;
-  TextEditingController codeController = TextEditingController();
-
-  Future<void> onSubmitted(String code) async {
-    setState(() {
-      isVerifying = true;
-    });
-    await Future.delayed(const Duration(seconds: 2));
-    await functions
-        .httpsCallable('checkEmailVerificationCode')
-        .call({'code': code}).catchError((e) {
-      buildErrorAlertDialog(e);
-      throw e;
-    }).whenComplete(() {
-      if (mounted) {
-        setState(() {
-          isVerifying = false;
-        });
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 400,
-              child: TextFormField(
-                controller: codeController,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: 'Enter the verification code sent to your email',
-                  border: const OutlineInputBorder(),
-                  suffixIcon: isVerifying
-                      ? const CircularProgressIndicator.adaptive()
-                      : IconButton(
-                          onPressed: isVerifying
-                              ? null
-                              : () async {
-                                  await onSubmitted(codeController.text);
-                                },
-                          icon: const Icon(Icons.send)),
-                ),
-                enabled: !isVerifying,
-                onFieldSubmitted: isVerifying
-                    ? null
-                    : (code) async {
-                        await onSubmitted(code);
-                      },
-              ),
+        child: SizedBox(
+          width: 400,
+          child: TextField(
+            autofocus: true,
+            decoration: const InputDecoration(
+              labelText: 'Enter the verification code sent to your email',
+              border: OutlineInputBorder(),
             ),
-            //Sign out button
-            const SizedBox(height: 20),
-            TextButton(
-              onPressed: () {
-                auth.signOut();
-              },
-              child: const Text("Exit"),
-            )
-          ],
+            onSubmitted: (code) async {
+              setState(() {
+                isVerifying = true;
+              });
+              await functions
+                  .httpsCallable('checkEmailVerificationCode')
+                  .call({'code': code}).catchError((e) {
+                buildErrorAlertDialog(e);
+                throw e;
+              }).whenComplete(() {
+                setState(() {
+                  isVerifying = false;
+                });
+              });
+            },
+          ),
         ),
       ),
     );

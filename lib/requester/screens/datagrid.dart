@@ -1,9 +1,7 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
-import 'package:boomarang/requester/screens/view_response.dart';
 import 'package:boomarang_shared/models/request.dart';
-import 'package:boomarang_shared/models/response.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
@@ -56,31 +54,6 @@ class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
       columnWidthMode: ColumnWidthMode.fill,
       gridLinesVisibility: GridLinesVisibility.both,
       headerGridLinesVisibility: GridLinesVisibility.both,
-      onCellDoubleTap: (details) async {
-        final row = details.rowColumnIndex.rowIndex;
-
-        //get the response for the request
-        final responseData = await firestore
-            .collection('responses')
-            .where('id', isEqualTo: _requests[row - 1].id)
-            .get();
-
-        BoomarangResponse response =
-            BoomarangResponse.fromMap(responseData.docs.first.data());
-
-        if (!context.mounted) return;
-
-        //navigate to the response screen
-        showDialog(
-            context: context,
-            builder: (context) {
-              return Dialog(
-                child: ViewResponseScreen(response: response),
-              );
-            });
-
-        //
-      },
       columns: [
         GridColumn(
             columnName: 'date',
@@ -97,11 +70,11 @@ class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
               child: const Text('Subject'),
             )),
         GridColumn(
-            columnName: 'holderEmail',
+            columnName: 'requestEmail',
             label: Container(
               padding: const EdgeInsets.all(8),
               alignment: Alignment.center,
-              child: const Text('Healthcare Provider'),
+              child: const Text('Requester'),
             )),
         GridColumn(
           columnName: 'status',
@@ -131,9 +104,9 @@ class RequesterDataSource extends DataGridSource {
               DataGridCell<String>(
                   columnName: 'subjectEmail', value: e.subjectEmail),
               DataGridCell<String>(
-                  columnName: 'holderEmail', value: e.holderEmail),
+                  columnName: 'requestEmail', value: e.requestEmail),
               DataGridCell<String>(
-                  columnName: 'status', value: e.formattedRequestStatus),
+                  columnName: 'status', value: e.requestStatus),
             ],
           ),
         )

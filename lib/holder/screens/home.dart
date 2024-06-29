@@ -16,9 +16,8 @@ class _HolderHomeState extends State<HolderHome> {
   int selectedIndex = 0;
 
   List<Widget> screens = [
-    Container(),
     const HolderDatagridScreen(),
-    const BoomarangProfileScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -49,14 +48,6 @@ class _HolderHomeState extends State<HolderHome> {
             //Boomerang
           ),
           destinations: [
-            //Dashboard
-            NavigationRailDestination(
-              icon: const Icon(Icons.dashboard),
-              label: Text(
-                'Dashboard',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ),
             NavigationRailDestination(
               icon: const Icon(Icons.mail),
               label: Text(
@@ -79,7 +70,7 @@ class _HolderHomeState extends State<HolderHome> {
               selectedIndex = index;
             });
           },
-          extended: true,
+          extended: MediaQuery.of(context).size.width > 1400,
         ),
         const VerticalDivider(
           thickness: 3,
