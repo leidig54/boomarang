@@ -1,5 +1,5 @@
 import 'package:boomarang/main.dart';
-import 'package:boomarang/misc/alert_dialog.dart';
+import 'package:boomarang/shared/alert_dialog.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -12,8 +12,6 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 class AddRequestScreen extends StatefulWidget {
-  //TODO: Decide whether or not we need to be editing existing requests (or viewing them?).
-  //If not we can remove the request parameter and the associated code.
   const AddRequestScreen({super.key});
 
   @override

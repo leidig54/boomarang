@@ -1,6 +1,6 @@
+import 'package:boomarang/holder/logic/generate_report.dart';
 import 'package:boomarang/main.dart';
-import 'package:boomarang/methods/generate_report.dart';
-import 'package:boomarang/misc/alert_dialog.dart';
+import 'package:boomarang/shared/alert_dialog.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/response.dart';
 import 'package:file_picker/file_picker.dart';
@@ -11,8 +11,8 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ViewRequestScreen extends StatefulWidget {
-  const ViewRequestScreen({
+class RespondRequestScreen extends StatefulWidget {
+  const RespondRequestScreen({
     super.key,
     required this.request,
   });
@@ -20,10 +20,10 @@ class ViewRequestScreen extends StatefulWidget {
   final BoomarangRequest request;
 
   @override
-  State<ViewRequestScreen> createState() => _ViewRequestScreenState();
+  State<RespondRequestScreen> createState() => _RespondRequestScreenState();
 }
 
-class _ViewRequestScreenState extends State<ViewRequestScreen> {
+class _RespondRequestScreenState extends State<RespondRequestScreen> {
   final _consultationsFormKey = GlobalKey<FormBuilderState>();
 
   BoomarangRequest get request => widget.request;
