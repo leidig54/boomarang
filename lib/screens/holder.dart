@@ -1,12 +1,10 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
-import 'package:boomarang/screens/respond_request.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/response.dart';
-import 'package:collection/collection.dart';
-import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 class HolderScreen extends StatefulWidget {
   const HolderScreen({super.key});
@@ -21,8 +19,11 @@ class _HolderScreenState extends State<HolderScreen> {
   late StreamSubscription requestStreamSubscription;
   late StreamSubscription responseStreamSubscription;
 
+  late HolderDataSource _dataSource;
+
   @override
   void initState() {
+    _dataSource = HolderDataSource(requests: _requests);
     requestStreamSubscription = firestore
         .collection('requests')
         .where('holderUserId', isEqualTo: auth.currentUser!.uid)
@@ -34,7 +35,8 @@ class _HolderScreenState extends State<HolderScreen> {
       _requests.sort((a, b) {
         return b.dateCreated.compareTo(a.dateCreated);
       });
-      setState(() {});
+      _dataSource.buildDataGridRows(requests: _requests);
+      _dataSource.updateDataGridSource();
     });
 
     responseStreamSubscription = firestore
@@ -47,97 +49,105 @@ class _HolderScreenState extends State<HolderScreen> {
           .toList();
       setState(() {});
     });
+
     super.initState();
   }
 
   @override
   void dispose() {
     requestStreamSubscription.cancel();
+    responseStreamSubscription.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: DataTable2(
-        showBottomBorder: true,
-        columns: const [
-          DataColumn(
-            label: Text('Date'),
-            tooltip: 'The date of the request',
-          ),
-          DataColumn(
-            label: Text('Authoriser'),
-            tooltip: 'The name of the individual',
-          ),
-          DataColumn(
-            label: Text('Requester'),
-            tooltip: 'The entity who made the request',
-          ),
-          DataColumn(
-            label: Text('Status'),
-            tooltip: 'The status of the request',
-          ),
-          DataColumn(
-            label: Text('Actions'),
-            tooltip: 'The action to take on the request',
+      body: SfDataGrid(
+        source: _dataSource,
+        frozenRowsCount: 1,
+        columnWidthMode: ColumnWidthMode.fill,
+        gridLinesVisibility: GridLinesVisibility.both,
+        headerGridLinesVisibility: GridLinesVisibility.none,
+        columns: [
+          GridColumn(
+              columnName: 'date',
+              label: Container(
+                padding: const EdgeInsets.all(8),
+                alignment: Alignment.center,
+                child: const Text('Date'),
+              )),
+          GridColumn(
+              columnName: 'authoriserEmail',
+              label: Container(
+                padding: const EdgeInsets.all(8),
+                alignment: Alignment.center,
+                child: const Text('Authoriser'),
+              )),
+          GridColumn(
+              columnName: 'requestEmail',
+              label: Container(
+                padding: const EdgeInsets.all(8),
+                alignment: Alignment.center,
+                child: const Text('Requester'),
+              )),
+          GridColumn(
+            columnName: 'status',
+            label: Container(
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+              child: const Text('Status'),
+            ),
           ),
         ],
-        rows: _requests.map(
-          (request) {
-            BoomarangResponse? response = _responses
-                .firstWhereOrNull((element) => element.id == request.id);
-
-            return DataRow(
-              cells: [
-                DataCell(
-                  Text(request.formattedCreatedDate),
-                ),
-                DataCell(Text(request.authoriserEmail ?? 'Unknown')),
-                DataCell(Text(request.requestEmail ?? 'Unknown')),
-                DataCell(
-                  Text(response?.status ?? 'Awaiting response'),
-                ),
-                DataCell(
-                  Builder(
-                    builder: (context) {
-                      if (response?.isSubmitted != true &&
-                          request.consentVerified == true) {
-                        return TextButton.icon(
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return Dialog(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: SizedBox(
-                                      width: 1200,
-                                      height: 800,
-                                      child: ViewRequestScreen(
-                                        request: request,
-                                      ),
-                                    ),
-                                  );
-                                });
-                          },
-                          label: const Text("Respond"),
-                        );
-                      } else if (request.consentVerified != true) {
-                        return const Text('Awaiting Consent');
-                      } else {
-                        return Container();
-                      }
-                    },
-                  ),
-                )
-              ],
-            );
-          },
-        ).toList(),
       ),
     );
+  }
+}
+
+class HolderDataSource extends DataGridSource {
+  HolderDataSource({required List<BoomarangRequest> requests}) {
+    buildDataGridRows(requests: requests);
+  }
+
+  void buildDataGridRows({required List<BoomarangRequest> requests}) {
+    dataGridRows = requests
+        .map(
+          (e) => DataGridRow(
+            cells: [
+              DataGridCell<String>(
+                  columnName: 'date', value: e.formattedCreatedDate),
+              DataGridCell<String>(
+                  columnName: 'authoriserEmail', value: e.authoriserEmail),
+              DataGridCell<String>(
+                  columnName: 'requestEmail', value: e.requestEmail),
+              DataGridCell<String>(
+                  columnName: 'status', value: e.requestStatus),
+            ],
+          ),
+        )
+        .toList();
+  }
+
+  List<DataGridRow> dataGridRows = [];
+
+  @override
+  List<DataGridRow> get rows => dataGridRows;
+
+  @override
+  DataGridRowAdapter? buildRow(DataGridRow row) {
+    return DataGridRowAdapter(
+      cells: row.getCells().map<Widget>((e) {
+        return Container(
+          padding: const EdgeInsets.all(8),
+          alignment: Alignment.center,
+          child: Text(e.value.toString()),
+        );
+      }).toList(),
+    );
+  }
+
+  void updateDataGridSource() {
+    notifyListeners();
   }
 }
