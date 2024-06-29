@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:boomarang/main.dart';
 import 'package:boomarang/screens/add_request.dart';
-import 'package:boomarang/screens/view_response.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/response.dart';
-import 'package:collection/collection.dart';
-import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 class RequesterScreen extends StatefulWidget {
   const RequesterScreen({super.key});
@@ -22,8 +20,11 @@ class _RequesterScreenState extends State<RequesterScreen> {
   late StreamSubscription requestStreamSubscription;
   late StreamSubscription responseStreamSubscription;
 
+  late RequesterDataSource _dataSource;
+
   @override
   void initState() {
+    _dataSource = RequesterDataSource(requests: _requests);
     requestStreamSubscription = firestore
         .collection('requests')
         .where('requesterUserId', isEqualTo: auth.currentUser!.uid)
@@ -34,6 +35,8 @@ class _RequesterScreenState extends State<RequesterScreen> {
       _requests.sort((a, b) {
         return b.dateCreated.compareTo(a.dateCreated);
       });
+      _dataSource.buildDataGridRows(requests: _requests);
+      _dataSource.updateDataGridSource();
       setState(() {});
     });
 
@@ -59,123 +62,116 @@ class _RequesterScreenState extends State<RequesterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton.extended(
-        label: const Text('Add Request'),
-        onPressed: () {
-          showDialog(
-              context: context,
-              builder: (context) {
-                return Dialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: const SizedBox(
-                    width: 1200,
-                    height: 800,
-                    child: AddRequestScreen(
-                      request: null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: FloatingActionButton.extended(
+          label: const Text('Add Request'),
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return Dialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ),
-                );
-              });
-        },
-        icon: const Icon(Icons.add),
-      ),
-      body: DataTable2(
-          showBottomBorder: true,
-          columns: const [
-            DataColumn(
-              label: Text('Date'),
-              tooltip: 'The date of the request',
-            ),
-            DataColumn(
-              label: Text('Authoriser'),
-              tooltip: 'The name of the individual',
-            ),
-            //holder
-            DataColumn(
-              label: Text('Holder'),
-              tooltip: 'The entity who holds the data',
-            ),
-            //status
-            DataColumn(
-              label: Text('Status'),
-              tooltip: 'The status of the request',
-            ),
-            DataColumn(
-              label: Text('Actions'),
-              tooltip: 'The actions that can be taken on the request',
+                    clipBehavior: Clip.antiAlias,
+                    child: const SizedBox(
+                      width: 1200,
+                      height: 800,
+                      child: AddRequestScreen(
+                        request: null,
+                      ),
+                    ),
+                  );
+                });
+          },
+          icon: const Icon(Icons.add),
+        ),
+        body: SfDataGrid(
+          source: _dataSource,
+          columnWidthMode: ColumnWidthMode.fill,
+          frozenRowsCount: 1,
+          gridLinesVisibility: GridLinesVisibility.both,
+          headerGridLinesVisibility: GridLinesVisibility.vertical,
+          allowSorting: true,
+          allowFiltering: true,
+          columns: [
+            GridColumn(
+                columnName: 'date',
+                label: Container(
+                  padding: const EdgeInsets.all(8),
+                  alignment: Alignment.center,
+                  child: const Text('Date'),
+                )),
+            GridColumn(
+                columnName: 'authoriserEmail',
+                label: Container(
+                  padding: const EdgeInsets.all(8),
+                  alignment: Alignment.center,
+                  child: const Text('Authoriser'),
+                )),
+            GridColumn(
+                columnName: 'requestEmail',
+                label: Container(
+                  padding: const EdgeInsets.all(8),
+                  alignment: Alignment.center,
+                  child: const Text('Requester'),
+                )),
+            GridColumn(
+              columnName: 'status',
+              label: Container(
+                padding: const EdgeInsets.all(8),
+                alignment: Alignment.center,
+                child: const Text('Status'),
+              ),
             ),
           ],
-          rows: _requests.map((e) {
-            BoomarangResponse? response =
-                _responses.firstWhereOrNull((element) => element.id == e.id);
-            return DataRow(
-              cells: [
-                DataCell(Text(e.formattedCreatedDate)),
-                DataCell(Text(e.authoriserEmail ?? 'Unknown')),
-                DataCell(Text(e.holderEmail ?? 'Unknown')),
-                DataCell(
-                  Text(response?.status != null
-                      ? response!.status!
-                      : e.formattedRequestStatus),
-                ),
-                DataCell(Builder(builder: (context) {
-                  if (e.isSubmitted == false) {
-                    return TextButton(
-                      child: const Text('Edit'),
-                      onPressed: () {
-                        showDialog(
-                            context: context,
-                            builder: (context) {
-                              return Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                clipBehavior: Clip.antiAlias,
-                                child: SizedBox(
-                                  width: 1200,
-                                  height: 800,
-                                  child: AddRequestScreen(
-                                    request: e,
-                                  ),
-                                ),
-                              );
-                            });
-                      },
-                    );
-                  } else if (response?.isSubmitted == true) {
-                    return TextButton(
-                      child: const Text('View'),
-                      onPressed: () {
-                        showDialog(
-                            context: context,
-                            builder: (context) {
-                              return Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                clipBehavior: Clip.antiAlias,
-                                child: SizedBox(
-                                  width: 1200,
-                                  height: 800,
-                                  child: ViewResponseScreen(
-                                    response: response!,
-                                  ),
-                                ),
-                              );
-                            });
-                      },
-                    );
-                  } else {
-                    return Container();
-                  }
-                })),
-              ],
-            );
-          }).toList()),
+        ));
+  }
+}
+
+class RequesterDataSource extends DataGridSource {
+  RequesterDataSource({required List<BoomarangRequest> requests}) {
+    buildDataGridRows(requests: requests);
+  }
+
+  void buildDataGridRows({required List<BoomarangRequest> requests}) {
+    dataGridRows = requests
+        .map(
+          (e) => DataGridRow(
+            cells: [
+              DataGridCell<String>(
+                  columnName: 'date', value: e.formattedCreatedDate),
+              DataGridCell<String>(
+                  columnName: 'authoriserEmail', value: e.authoriserEmail),
+              DataGridCell<String>(
+                  columnName: 'requestEmail', value: e.requestEmail),
+              DataGridCell<String>(
+                  columnName: 'status', value: e.requestStatus),
+            ],
+          ),
+        )
+        .toList();
+  }
+
+  List<DataGridRow> dataGridRows = [];
+
+  @override
+  List<DataGridRow> get rows => dataGridRows;
+
+  @override
+  DataGridRowAdapter? buildRow(DataGridRow row) {
+    return DataGridRowAdapter(
+      cells: row.getCells().map<Widget>((e) {
+        return Container(
+          padding: const EdgeInsets.all(8),
+          alignment: Alignment.center,
+          child: Text(e.value.toString()),
+        );
+      }).toList(),
     );
+  }
+
+  void updateDataGridSource() {
+    notifyListeners();
   }
 }
