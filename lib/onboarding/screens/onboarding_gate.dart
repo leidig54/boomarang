@@ -1,6 +1,5 @@
 import 'package:boomarang/data/user_provider.dart';
 import 'package:boomarang/holder/screens/home.dart';
-import 'package:boomarang/main.dart';
 import 'package:boomarang/onboarding/screens/enter_email_verification_code.dart';
 import 'package:boomarang/onboarding/screens/resend_email_verification_code.dart';
 import 'package:boomarang/onboarding/screens/select_user_type.dart';
@@ -23,18 +22,13 @@ class _OnboardingGateScreenState extends State<OnboardingGateScreen> {
     BoomarangUser? user = context.watch<UserProvider>().user;
 
     if (user == null) {
-      return Scaffold(
+      return const Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(),
-              const Text("Creating user profile..."),
-              TextButton(
-                  onPressed: () {
-                    auth.signOut();
-                  },
-                  child: const Text('Sign out'))
+              CircularProgressIndicator(),
+              Text("Creating user profile...")
             ],
           ),
         ),
