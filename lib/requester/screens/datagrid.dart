@@ -70,11 +70,11 @@ class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
               child: const Text('Subject'),
             )),
         GridColumn(
-            columnName: 'holderEmail',
+            columnName: 'requestEmail',
             label: Container(
               padding: const EdgeInsets.all(8),
               alignment: Alignment.center,
-              child: const Text('Healthcare Provider'),
+              child: const Text('Requester'),
             )),
         GridColumn(
           columnName: 'status',
@@ -104,9 +104,9 @@ class RequesterDataSource extends DataGridSource {
               DataGridCell<String>(
                   columnName: 'subjectEmail', value: e.subjectEmail),
               DataGridCell<String>(
-                  columnName: 'holderEmail', value: e.holderEmail),
+                  columnName: 'requestEmail', value: e.requestEmail),
               DataGridCell<String>(
-                  columnName: 'status', value: e.formattedRequestStatus),
+                  columnName: 'status', value: e.requestStatus),
             ],
           ),
         )
