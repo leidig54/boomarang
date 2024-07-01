@@ -1,11 +1,13 @@
 import 'package:boomarang/holder/logic/generate_report.dart';
 import 'package:boomarang/main.dart';
+import 'package:boomarang/misc/custom_stepper.dart';
 import 'package:boomarang/shared/alert_dialog.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/response.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart' hide Stepper, Step, StepperType;
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -27,7 +29,6 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
   final _consultationsFormKey = GlobalKey<FormBuilderState>();
 
   BoomarangRequest get request => widget.request;
-  BoomarangResponse? response;
 
   int _currentStep = 0;
   bool isGeneratingReport = false;
@@ -43,24 +44,6 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
   @override
   void initState() {
     id = request.id;
-    firestore.collection('responses').doc(id).get().then((value) {
-      if (value.exists) {
-        response = BoomarangResponse.fromMap(value.data()!);
-        reportQuillController.document = Document.fromJson(response!.report);
-      }
-    });
-    storage.ref('consultations/$id/consultation_form').list().then((value) {
-      if (value.items.isNotEmpty) {
-        setState(() {
-          consultationFormName = value.items.first.name;
-        });
-        value.items.first.getDownloadURL().then((value) {
-          setState(() {
-            consultationFormRef = value;
-          });
-        });
-      }
-    });
     super.initState();
   }
 
@@ -68,263 +51,442 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
   Widget build(BuildContext context) {
     List<Step> steps = [
       Step(
-        title: const Text("Subject"),
+        title: const Text("Request"),
         isActive: _currentStep == 0,
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            RichText(
-              text: TextSpan(
-                text: 'Name: ',
-                style: Theme.of(context).textTheme.bodyMedium,
-                children: [
-                  TextSpan(
-                      text:
-                          '${request.subjectFirstName} ${request.subjectLastName}',
-                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          fontWeight: FontWeight.bold, color: Colors.black87))
-                ],
+        content: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.7,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Patient Details",
+                        style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: 10),
+                    RichText(
+                      text: TextSpan(
+                        text: 'Name: ',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        children: [
+                          TextSpan(
+                              text:
+                                  '${request.subjectFirstName} ${request.subjectLastName}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87))
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    RichText(
+                      text: TextSpan(
+                        text: 'Date of Birth: ',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        children: [
+                          TextSpan(
+                              text: request.formattedSubjectDob,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87))
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            text: 'Email: ',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                            children: [
+                              TextSpan(
+                                  text: request.subjectEmail,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87))
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        //separator
+                        Container(
+                          height: 16,
+                          width: 1,
+                          color: Colors.black26,
+                        ),
+                        const SizedBox(width: 8),
+                        //email verified
+                        Text(
+                            request.subjectEmailVerified == true
+                                ? 'Verified'
+                                : 'Not Verified',
+                            style:
+                                Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    )),
+
+                        const SizedBox(width: 8),
+                        Icon(
+                          request.subjectEmailVerified == true
+                              ? Icons.check_circle
+                              : Icons.cancel,
+                          color: request.subjectEmailVerified == true
+                              ? Colors.green
+                              : Colors.red,
+                          size: 16,
+                        )
+                      ],
+                    ),
+                    //consent
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            text: 'Consent: ',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                            children: [
+                              //link to consent file wth recogniser
+                              TextSpan(
+                                text: 'View',
+                                //theme color and bold
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).primaryColor),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    launchUrl(
+                                        Uri.parse(request.consentFormRef!));
+                                  },
+                              ),
+                            ],
+                          ),
+                        ),
+                        //spacer
+                        const SizedBox(width: 8),
+                        //separator
+                        Container(
+                          height: 16,
+                          width: 1,
+                          color: Colors.black26,
+                        ),
+                        const SizedBox(width: 8),
+                        //consent verified
+                        Text(
+                            request.consentVerified == true
+                                ? 'Verified'
+                                : 'Not Verified',
+                            style:
+                                Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    )),
+                        const SizedBox(width: 8),
+                        Icon(
+                          request.consentVerified == true
+                              ? Icons.check_circle
+                              : Icons.cancel,
+                          color: request.consentVerified == true
+                              ? Colors.green
+                              : Colors.red,
+                          size: 16,
+                        )
+                      ],
+                    ),
+
+                    const SizedBox(height: 4),
+                    //Request Details
+                    if (request.requestDetails != null)
+                      RichText(
+                        text: TextSpan(
+                          text: 'Details: \n',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          children: [
+                            TextSpan(
+                                text: request.requestDetails,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87))
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                RichText(
-                  text: TextSpan(
-                    text: 'Date of Birth: ',
-                    style: Theme.of(context).textTheme.bodyMedium,
+              if (request.requestFormRef != null) ...[
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextSpan(
-                          text: request.formattedSubjectDob,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
-                              .copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87))
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Text("Request Details",
+                          style: Theme.of(context).textTheme.titleLarge),
+                      RichText(
+                        text: TextSpan(
+                          text: 'Type: ',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          children: [
+                            TextSpan(
+                                text: request.requestType,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87))
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.grey,
+                            ),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          height: MediaQuery.of(context).size.height * 0.35,
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: SfPdfViewer.network(
+                              request.requestFormRef!,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                //separator
-                Container(
-                  height: 16,
-                  width: 1,
-                  color: Colors.black26,
-                ),
-                const SizedBox(width: 8),
-                //dob verified
-                RichText(
-                  text: TextSpan(
-                    text: 'DOB Verified: ',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    children: [
-                      TextSpan(
-                          text:
-                              request.subjectDOBVerified == true ? 'Yes' : 'No',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
-                              .copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87))
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  request.subjectDOBVerified == true
-                      ? Icons.check_circle
-                      : Icons.cancel,
-                  color: request.subjectDOBVerified == true
-                      ? Colors.green
-                      : Colors.red,
-                  size: 16,
-                )
               ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                RichText(
-                  text: TextSpan(
-                    text: 'Email: ',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    children: [
-                      TextSpan(
-                          text: request.subjectEmail,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
-                              .copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87))
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                //separator
-                Container(
-                  height: 16,
-                  width: 1,
-                  color: Colors.black26,
-                ),
-                const SizedBox(width: 8),
-                //email verified
-                RichText(
-                  text: TextSpan(
-                    text: 'Email Verified: ',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    children: [
-                      TextSpan(
-                          text: request.subjectEmailVerified == true
-                              ? 'Yes'
-                              : 'No',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
-                              .copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87))
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  request.subjectEmailVerified == true
-                      ? Icons.check_circle
-                      : Icons.cancel,
-                  color: request.subjectEmailVerified == true
-                      ? Colors.green
-                      : Colors.red,
-                  size: 16,
-                )
-              ],
-            ),
-          ],
-        ),
-      ),
-      Step(
-        title: const Text("Consent"),
-        isActive: _currentStep == 1,
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (request.consentFormRef != null) ...[
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.35,
-                child: SfPdfViewer.network(request.consentFormRef!),
+              const SizedBox(
+                height: 20,
               ),
-              const SizedBox(height: 8),
               TextButton.icon(
                 onPressed: () {
-                  launchUrl(Uri.parse(request.consentFormRef!));
+                  launchUrl(Uri.parse(request.requestFormRef!));
                 },
                 icon: const Icon(Icons.download),
-                label: const Text('Download'),
-              ),
-            ]
-          ],
-        ),
-      ),
-      Step(
-        title: const Text("Request"),
-        isActive: _currentStep == 2,
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            //type
-            RichText(
-              text: TextSpan(
-                text: 'Type: ',
-                style: Theme.of(context).textTheme.bodyMedium,
-                children: [
-                  TextSpan(
-                      text: request.requestType,
-                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          fontWeight: FontWeight.bold, color: Colors.black87))
-                ],
-              ),
-            ),
-            const SizedBox(height: 4),
-            //Request Details
-            if (request.requestDetails != null)
-              RichText(
-                text: TextSpan(
-                  text: 'Details: \n',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  children: [
-                    TextSpan(
-                        text: request.requestDetails,
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                            fontWeight: FontWeight.bold, color: Colors.black87))
-                  ],
-                ),
-              ),
-            if (request.requestFormRef != null) ...[
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.35,
-                child: SfPdfViewer.network(request.requestFormRef!),
+                label: const Text('Download Request Form'),
               ),
             ],
-            const SizedBox(height: 8),
-            TextButton.icon(
-              onPressed: () {
-                launchUrl(Uri.parse(request.requestFormRef!));
-              },
-              icon: const Icon(Icons.download),
-              label: const Text('Download Request Form'),
-            ),
-          ],
+          ),
         ),
       ),
       Step(
-        title: const Text("Consultations"),
-        isActive: _currentStep == 3,
+        title: const Text("Report"),
+        isActive: _currentStep == 1,
         content: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text("AI Assistant", style: Theme.of(context).textTheme.titleLarge),
+            const Text(
+                "Upload consultations to automatically generate a tailored report"),
+            //learn more
+            const SizedBox(
+              height: 4,
+            ),
+            RichText(
+              text: TextSpan(
+                text: 'Learn more',
+                style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 600),
+                                child: SimpleDialog(
+                                  title: const Text('AI Assistant'),
+                                  contentPadding: const EdgeInsets.all(20),
+                                  children: [
+                                    Text("How does it work?",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.copyWith(
+                                                decoration:
+                                                    TextDecoration.underline)),
+                                    const Text(
+                                        'Boomarang AI uses the details of the request, along with the consultation data you upload, to generate a tailored report for the insurer.'),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    Text(
+                                      "Is it secure?",
+                                      //underline
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium!
+                                          .copyWith(
+                                              decoration:
+                                                  TextDecoration.underline),
+                                    ),
+                                    const Text(
+                                        'Yes, all data is encrypted and stored securely. The patients are fully consented before their data is shared, and the consultation data is only used for generating the report.\n\nThe consultation data is never made available to the insurer and is deleted immediately after the report is submitted.'),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    Text(
+                                      "Is is accurate?",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium!
+                                          .copyWith(
+                                              decoration:
+                                                  TextDecoration.underline),
+                                    ),
+                                    const Text(
+                                        "Boomarang AI uses the most advanced AI models available. It is capable of reliably extracting relevant information and producing accurate and detailed reports.\n\nHowever, the final report should always be reviewed by a medical professional before being submitted to the insurer."),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('Close'))
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        });
+                  },
+              ),
+            ),
+            const SizedBox(height: 20),
             //upload consultations
-            if (consultationFormName != null && consultationFormRef != null)
-              //show pdf
-              ...[
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.35,
-                child: SfPdfViewer.network(consultationFormRef!),
-              ),
-              FormBuilderField(
-                name: 'consultation_form_ref',
-                builder: (context) => Row(
-                  children: [
-                    Text('Consultations: $consultationFormName'),
-                    //delete button
-                    IconButton(
-                      onPressed: () {
-                        storage
-                            .ref(
-                                'consultations/$id/consultation_form/$consultationFormName')
-                            .delete()
-                            .then((value) {
-                          setState(() {
-                            consultationFormName = null;
-                            consultationFormRef = null;
-                          });
-                        }).catchError(
-                          (error) {
-                            buildErrorAlertDialog(error);
-                            throw error;
+            SizedBox(
+              height: 60,
+              child: Column(
+                children: [
+                  if (isUploadingConsultations || isGeneratingReport) ...[
+                    const LinearProgressIndicator(),
+                    if (isGeneratingReport) ...[
+                      const SizedBox(
+                        height: 5,
+                      ),
+                      Text("Report generation can take up to 30 seconds",
+                          style: Theme.of(context).textTheme.bodySmall)
+                    ],
+                  ] else if (consultationFormName != null &&
+                      consultationFormRef != null) ...[
+                    Row(
+                      children: [
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.create),
+                          onPressed: () async {
+                            if (!reportQuillController.document.isEmpty()) {
+                              bool? result = await showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                        title: const Text('Warning'),
+                                        content: const Text(
+                                            'Are you sure you want to overwrite the current report?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop(false);
+                                            },
+                                            child: const Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: const Text('Continue'),
+                                          ),
+                                        ],
+                                      ));
+
+                              if (result == false) {
+                                return;
+                              }
+                            }
+                            setState(() {
+                              isGeneratingReport = true;
+                            });
+
+                            reportQuillController.document =
+                                await generateReport(
+                              requestData: RequestData(
+                                text: request.requestDetails,
+                                file: request.requestFormRef,
+                              ),
+                              consultationData: ConsultationData(
+                                text: null,
+                                file: consultationFormRef,
+                              ),
+                            ).whenComplete(() {
+                              setState(() {
+                                isGeneratingReport = false;
+                              });
+                            });
                           },
-                        );
-                      },
-                      icon: const Icon(Icons.close),
+                          label: const Text('Generate Report'),
+                        ),
+                        const SizedBox(width: 20),
+                        FormBuilderField(
+                          name: 'consultation_form_ref',
+                          builder: (context) => Row(
+                            children: [
+                              Text('$consultationFormName'),
+                              //delete button
+                              IconButton(
+                                onPressed: () {
+                                  storage
+                                      .ref(
+                                          'consultations/$id/consultation_form/$consultationFormName')
+                                      .delete()
+                                      .then((value) {
+                                    setState(() {
+                                      consultationFormName = null;
+                                      consultationFormRef = null;
+                                    });
+                                  }).catchError(
+                                    (error) {
+                                      buildErrorAlertDialog(error);
+                                      throw error;
+                                    },
+                                  );
+                                },
+                                icon: const Icon(Icons.close),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            ] else
-              isUploadingConsultations
-                  ? const LinearProgressIndicator()
-                  : Row(
+                  ] else
+                    Row(
                       children: [
                         TextButton.icon(
                           onPressed: () async {
@@ -389,233 +551,125 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                         ),
                       ],
                     ),
-          ],
-        ),
-      ),
-      Step(
-        title: const Text("Report"),
-        isActive: _currentStep == 4,
-        content: Column(
-          children: [
-            if (reportQuillController.document.isEmpty())
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                ],
+              ),
+            ),
+
+            Column(
+              children: [
                 const SizedBox(
                   height: 20,
                 ),
-                FloatingActionButton.extended(
-                  icon: isGeneratingReport
-                      ? const CircularProgressIndicator.adaptive()
-                      : const Icon(Icons.create),
-                  onPressed: isGeneratingReport
-                      ? null
-                      : () async {
-                          setState(() {
-                            isGeneratingReport = true;
-                          });
-                          reportQuillController.document = await generateReport(
-                            requestData: RequestData(
-                              text: request.requestDetails,
-                              file: request.requestFormRef,
-                            ),
-                            consultationData: ConsultationData(
-                              text: null,
-                              file: consultationFormRef,
-                            ),
-                          ).whenComplete(() {
-                            setState(() {
-                              isGeneratingReport = false;
-                            });
-                          });
-                        },
-                  label: isGeneratingReport
-                      ? const Text('Generating')
-                      : const Text('Generate Report'),
+                QuillToolbar.simple(
+                  configurations: QuillSimpleToolbarConfigurations(
+                    controller: reportQuillController,
+                    showInlineCode: false,
+                    showColorButton: false,
+                    showCodeBlock: false,
+                    showSubscript: false,
+                    showSuperscript: false,
+                    showLink: false,
+                    showFontFamily: false,
+                    showSearchButton: false,
+                    showClipboardCopy: false,
+                    showClipboardCut: false,
+                    showClipboardPaste: false,
+                    showQuote: false,
+                    showBackgroundColorButton: false,
+                    showStrikeThrough: false,
+                  ),
                 ),
-              ])
-            else
-              Column(
-                children: [
-                  QuillToolbar.simple(
-                    configurations: QuillSimpleToolbarConfigurations(
-                      controller: reportQuillController,
-                      showInlineCode: false,
-                      showColorButton: false,
-                      showCodeBlock: false,
-                      showSubscript: false,
-                      showSuperscript: false,
-                      showLink: false,
-                      showFontFamily: false,
-                      showSearchButton: false,
-                      showClipboardCopy: false,
-                      showClipboardCut: false,
-                      showClipboardPaste: false,
-                      showQuote: false,
-                      showBackgroundColorButton: false,
-                      showStrikeThrough: false,
+                const SizedBox(height: 20),
+                Container(
+                  height: MediaQuery.of(context).size.height * 0.5,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey,
+                    ),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: QuillEditor.basic(
+                      configurations: QuillEditorConfigurations(
+                        controller: reportQuillController,
+                        showCursor: true,
+                      ),
+                      // scrollController: requestScrollController,
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Container(
-                    height: MediaQuery.of(context).size.height * 0.4,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.grey,
-                      ),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: QuillEditor.basic(
-                        configurations: QuillEditorConfigurations(
-                          controller: reportQuillController,
-                          showCursor: true,
-                        ),
-                        // scrollController: requestScrollController,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
+            ),
           ],
         ),
       )
     ];
 
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Respond'),
-          centerTitle: false,
-          actions: [
-            //save Draft
-            TextButton.icon(
-              onPressed: () async {
-                if (_consultationsFormKey.currentState!.saveAndValidate()) {
-                  await saveResponse(isSubmitted: false);
-                  navigatorKey.currentState!.pop();
-                }
-              },
-              icon: const Icon(Icons.save),
-              label: const Text('Save Draft'),
-            ),
-          ],
-        ),
         body: FormBuilder(
-          key: _consultationsFormKey,
-          child: Padding(
-            padding: const EdgeInsets.only(right: 20.0),
-            child: Column(
-              children: [
-                Text(
-                  '${request.subjectFirstName} ${request.subjectLastName}',
-                  textAlign: TextAlign.end,
-                ),
-                //subjectDOB
-                Text(
-                  request.formattedSubjectDob,
-                  textAlign: TextAlign.end,
-                ),
-                Expanded(
-                  child: ScrollConfiguration(
-                    behavior: ScrollConfiguration.of(context)
-                        .copyWith(scrollbars: false),
-                    child: Stepper(
-                      currentStep: _currentStep,
-                      physics: const NeverScrollableScrollPhysics(),
-                      type: StepperType.horizontal,
-                      controlsBuilder: (context, controlsDetails) {
-                        final colorScheme = Theme.of(context).colorScheme;
-                        const OutlinedBorder buttonShape =
-                            RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(2)));
-                        const EdgeInsets buttonPadding =
-                            EdgeInsets.symmetric(horizontal: 16.0);
-                        ButtonStyle buttonStyle = ButtonStyle(
-                          foregroundColor:
-                              WidgetStateProperty.resolveWith<Color?>(
-                                  (Set<WidgetState> states) {
-                            return states.contains(WidgetState.disabled)
-                                ? null
-                                : colorScheme.onPrimary;
-                          }),
-                          backgroundColor:
-                              WidgetStateProperty.resolveWith<Color?>(
-                                  (Set<WidgetState> states) {
-                            return colorScheme.primary;
-                          }),
-                          padding:
-                              const WidgetStatePropertyAll<EdgeInsetsGeometry>(
-                                  buttonPadding),
-                          shape: const WidgetStatePropertyAll<OutlinedBorder>(
-                              buttonShape),
-                        );
-                        return Column(
-                          children: [
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                if (_currentStep != 0)
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
-                                    child: TextButton(
-                                      style: buttonStyle,
-                                      onPressed: controlsDetails.onStepCancel,
-                                      child: const Text('Back'),
-                                    ),
-                                  ),
-                                if (_currentStep != steps.length - 1)
-                                  TextButton(
-                                    style: buttonStyle,
-                                    onPressed: controlsDetails.onStepContinue,
-                                    child: const Text('Next'),
-                                  ),
-                                if (_currentStep == steps.length - 1)
-                                  TextButton(
-                                    style: buttonStyle,
-                                    onPressed: () async {
-                                      if (_consultationsFormKey.currentState!
-                                          .saveAndValidate()) {
-                                        await saveResponse(isSubmitted: true);
-                                        navigatorKey.currentState!.pop();
-                                      }
-                                    },
-                                    child: const Text('Submit'),
-                                  ),
-                              ],
-                            ),
-                          ],
-                        );
-                      },
-                      onStepTapped: (step) {
-                        setState(() {
-                          _currentStep = step;
-                        });
-                      },
-                      onStepContinue: () {
-                        setState(() {
-                          if (_currentStep < steps.length - 1) {
-                            _currentStep++;
-                          }
-                        });
-                      },
-                      onStepCancel: () {
-                        setState(() {
-                          if (_currentStep > 0) {
-                            _currentStep--;
-                          }
-                        });
-                      },
-                      steps: steps,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ));
+      key: _consultationsFormKey,
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        child: Stepper(
+          currentStep: _currentStep,
+          physics: const NeverScrollableScrollPhysics(),
+          type: StepperType.horizontal,
+          onStepTapped: (step) {
+            setState(() {
+              _currentStep = step;
+            });
+          },
+          onStepContinue: () {
+            setState(() {
+              if (_currentStep < steps.length - 1) {
+                _currentStep++;
+              } else {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Submit Response'),
+                        content: const Text(
+                            'Are you sure you want to submit this response?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              await submitResponse();
+                              if (!context.mounted) return;
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Submit'),
+                          ),
+                        ],
+                      );
+                    });
+              }
+            });
+          },
+          onStepCancel: () {
+            setState(() {
+              if (_currentStep > 0) {
+                _currentStep--;
+              } else {
+                Navigator.of(context).pop();
+              }
+            });
+          },
+          steps: steps,
+        ),
+      ),
+    ));
   }
 
-  Future<void> saveResponse({required bool isSubmitted}) async {
+  Future<void> submitResponse() async {
     BoomarangResponse response = BoomarangResponse(
       id: id,
       holderUserId: auth.currentUser!.uid,
@@ -623,13 +677,8 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
       consultationFormRef: consultationFormRef,
       consultationDetails: null,
       report: reportQuillController.document.toDelta().toJson(),
-      isSubmitted: isSubmitted,
-      status: isSubmitted ? 'Complete' : 'Draft',
     );
 
-    return await firestore
-        .collection('responses')
-        .doc(id)
-        .set(response.toMap());
+    await firestore.collection('responses').doc(id).set(response.toMap());
   }
 }
