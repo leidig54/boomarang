@@ -12,10 +12,6 @@ import * as z from "zod";
 import serviceAccount from "./serviceKey.json";
 import admin = require("firebase-admin");
 
-// TODO: improve templating
-// TODO: add feedback space
-// TODO: payments - should we set the prices?
-
 
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 
@@ -32,7 +28,7 @@ configureGenkit({
     firebase(),
     vertexAI({ location: "europe-west2" }),
   ],
-  logLevel: "error",
+  logLevel: "debug",
   enableTracingAndMetrics: true,
 });
 
@@ -43,7 +39,6 @@ export const generateReport = onFlow({
   },
   inputSchema: z.object({
     requestData: z.object({
-      requestType: z.string(),
       text: z.string().nullable(),
       fileUrl: z.string().nullable(),
     }),
@@ -51,7 +46,6 @@ export const generateReport = onFlow({
       text: z.string().nullable(),
       fileUrl: z.string().nullable(),
     }),
-    id: z.string(),
   }),
   outputSchema: z.string(),
   authPolicy: firebaseAuth((user) => {
@@ -61,35 +55,15 @@ export const generateReport = onFlow({
   }),
 },
 async (subject) => {
-  console.log("Generating report...");
-  // get the user id
-  const userId = subject.id;
-
-  // get the user document
-  const userDoc = admin.firestore().collection("users").doc(userId);
-
-  // get the title, firstName and lastName from the user document
-  const user = await userDoc.get();
-  if (!user.exists) {
-    throw new Error("User not found");
-  }
-  const title = user.data()?.title;
-  const firstName = user.data()?.firstName;
-  const lastName = user.data()?.lastName;
-
-
   // create the prompt for the model, given the text or the urls can be null
   const prompt = [];
   prompt.push({ text: "You are a report writing assistant. You have to write a report based on the following request details:" });
   if (subject.requestData.text) {
     prompt.push({ text: subject.requestData.text });
   }
-  // the report type is
-  prompt.push({ text: `The report type is ${subject.requestData.requestType}` });
   if (subject.requestData.fileUrl) {
     prompt.push({ media: { url: subject.requestData.fileUrl, contentType: "application/pdf" } });
   }
-
   prompt.push({ text: "You have to include the following consultation details in the report:" });
   if (subject.consultationData.text) {
     prompt.push({ text: subject.consultationData.text });
@@ -97,10 +71,7 @@ async (subject) => {
   if (subject.consultationData.fileUrl) {
     prompt.push({ media: { url: subject.consultationData.fileUrl, contentType: "application/pdf" } });
   }
-  prompt.push({ text: "Respond in raw html. Do not use ** etc. Make good use of headings or bold text to separate the components. Sign with the following details: " });
-  prompt.push({ text: `${title} ` });
-  prompt.push({ text: `${firstName} ` });
-  prompt.push({ text: `${lastName}` });
+  prompt.push({ text: "Respond in raw html. Do not use ** etc. Make good use of headings or bold text to separate the components." });
 
 
   let result;
@@ -123,16 +94,8 @@ async (subject) => {
 export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("requests/{requestId}").onCreate(async (change, context) => {
   // we need to check if to see if the isSubmitted field is true when the request is created or updated (i.e. when the request is submitted), but we only want to send the email once, so we need to check if the isSubmitted field is true and the request has not been submitted before
 
-  const request = change.data();
-
-  console.log("IsDemo: ", request?.isDemo);
-
-  // if isDemo, dont send email
-  if (request?.isDemo) {
-    return "Demo request";
-  }
-
   console.log("Request has been submitted. Sending email to subject...");
+  const request = change.data();
 
 
   // generate a unique token for the consenting process
@@ -195,12 +158,6 @@ export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("
 });
 
 export const createUserDocument = functions.auth.user().onCreate(async (user) => {
-  // if already email verified, return
-  if (user.emailVerified) {
-    console.log("User email already verified. Is a demo user. Exiting...");
-    return null;
-  }
-
   // create the user document
   const userDoc = admin.firestore().collection("users").doc(user.uid);
   await userDoc.set({
@@ -328,10 +285,6 @@ export const sendVerificationEmail = async (userId: string, ) => {
     throw new Error("User email is null");
   }
 
-  // if isDemo, dont send email
-  if (user.data()?.isDemo) {
-    return "Demo user";
-  }
 
   // send a verification code (6 digits) to the users email
   const code = Math.floor(100000 + Math.random() * 900000);

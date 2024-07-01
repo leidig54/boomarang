@@ -30,36 +30,32 @@ By using the Boomerang platform, you acknowledge and consent to the collection, 
 By clicking "I Agree," you confirm that you have read, understood, and agreed to these terms. You also affirm that you are consenting freely and without any duress or undue influence.
 `;
 
-//upload consent template to firebase storage
+//upload consent template to firestore
+
+const consentTemplateCollection = db.collection('consentTemplates');
 
 const createConsentTemplate = async () => {
-    // Create a random version number for the consent template
-    const version = Math.floor(Math.random() * 100) + 1; // Adjusted for a broader range
 
-    // Get a random date in the past - assuming this part is completed in your code
+    //create a random version number for the consent template
+    const version = Math.floor(Math.random() * 10) + 1;
 
-    // Convert the consent text to a Blob
-    const blob = new Blob([consentText], { type: 'text/plain' });
+    //get a random date in the past
+    const date = new Date();
+    date.setDate(date.getDate() - Math.floor(Math.random() * 365));
 
-    // Define a path for the file in Firebase Storage
-    const filePath = `consentTemplates/version_${version}.txt`;
 
-    // Upload the file to Firebase Storage
-    const fileRef = storage.ref().child(filePath);
-    await fileRef.put(blob);
+    const consentTemplate = {
+        version: version,
+        text: consentText,
+        createdAt: date,
+    }
 
-    // Get the URL of the uploaded file
-    const fileURL = await fileRef.getDownloadURL();
+    await consentTemplateCollection.doc(version.toString()).set(consentTemplate);
+}
 
-    // Save the file URL and other metadata to Firestore (or your preferred database)
-    const consentTemplateCollection = db.collection('consentTemplates');
-    await consentTemplateCollection.add({
-        version,
-        fileURL,
-        // Add other metadata as needed, e.g., creation date
-    });
+//add 10 consent templates
+for (let i = 0; i < 10; i++) {
+    createConsentTemplate();
+}
 
-    console.log('Consent template uploaded and metadata saved:', fileURL);
-};
-
-createConsentTemplate().catch(console.error);
+//
