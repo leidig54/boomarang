@@ -5,11 +5,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-// TODO(dragostis): Missing functionality:
-//   * mobile horizontal mode with adding/removing steps
-//   * alternative labeling
-//   * stepper feedback in the case of high-latency interactions
-
 /// The state of a [Step] which is used to control the style of the circle and
 /// text.
 ///
