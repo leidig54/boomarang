@@ -4,7 +4,6 @@ import 'package:boomarang/firebase_options.dart';
 import 'package:boomarang/misc/tab_index_provider.dart';
 import 'package:boomarang/requester/screens/add_request.dart';
 import 'package:boomarang/shared/auth_gate.dart';
-import 'package:boomarang_shared/theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
@@ -12,10 +11,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-//TODO: make stepper scrollable
-
+//TODO: move conset upload on to request details screen
+//TODO: verify the report before sending disclaimer
 FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions =
     FirebaseFunctions.instanceFor(region: 'us-central1');
@@ -57,7 +57,13 @@ class _MainAppState extends State<MainApp> {
             child: MaterialApp(
               debugShowCheckedModeBanner: false,
               navigatorKey: navigatorKey,
-              theme: themeData,
+              theme: ThemeData(
+                fontFamily: GoogleFonts.balooPaaji2().fontFamily,
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.indigo,
+                ),
+                scaffoldBackgroundColor: Colors.white,
+              ),
               localizationsDelegates: const [
                 GlobalMaterialLocalizations.delegate,
                 GlobalWidgetsLocalizations.delegate,
