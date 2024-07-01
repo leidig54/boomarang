@@ -54,18 +54,13 @@ class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
         gridLinesVisibility: GridLinesVisibility.both,
         headerGridLinesVisibility: GridLinesVisibility.both,
         onCellDoubleTap: (details) {
-          BoomarangRequest request =
-              _requests[details.rowColumnIndex.rowIndex - 1];
-
-          if (request.requestStatus == 'awaiting_response') {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => RespondRequestScreen(
-                  request: request,
-                ),
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => RespondRequestScreen(
+                request: _requests[details.rowColumnIndex.rowIndex - 1],
               ),
-            );
-          }
+            ),
+          );
         },
         columns: [
           GridColumn(
