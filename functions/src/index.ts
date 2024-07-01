@@ -392,3 +392,15 @@ export const checkEmailVerificationCode = functions.https.onCall(async (data, co
 
   return "Email verified";
 });
+
+export const markRequestAsCompleteWhenResponseSubmitted = functions.firestore.document("responses/{responseId}").onCreate(async (change) => {
+  // when a response is created, mark the request as complete
+  const response = change.data();
+  const requestId = response.id;
+  const requestDoc = admin.firestore().collection("requests").doc(requestId);
+  await requestDoc.update({
+    requestStatus: "complete",
+  });
+  return null;
+}
+);
