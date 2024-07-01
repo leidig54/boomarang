@@ -1,5 +1,6 @@
 import 'package:boomarang/data/user_provider.dart';
 import 'package:boomarang/firebase_options.dart';
+import 'package:boomarang/misc/tab_index_provider.dart';
 import 'package:boomarang/requester/screens/add_request.dart';
 import 'package:boomarang/shared/auth_gate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -38,6 +39,7 @@ class _MainAppState extends State<MainApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
+        ChangeNotifierProvider(create: (context) => TabIndexProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

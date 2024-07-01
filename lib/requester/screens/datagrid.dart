@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
-import 'package:boomarang/requester/screens/add_request.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -50,68 +49,43 @@ class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: FloatingActionButton.extended(
-          label: const Text('Add Request'),
-          onPressed: () {
-            showDialog(
-                context: context,
-                builder: (context) {
-                  return Dialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: const SizedBox(
-                      width: 1200,
-                      height: 800,
-                      child: AddRequestScreen(),
-                    ),
-                  );
-                });
-          },
-          icon: const Icon(Icons.add),
-        ),
         body: SfDataGrid(
-          source: _dataSource,
-          columnWidthMode: ColumnWidthMode.fill,
-          frozenRowsCount: 1,
-          gridLinesVisibility: GridLinesVisibility.both,
-          headerGridLinesVisibility: GridLinesVisibility.both,
-          allowSorting: true,
-          allowFiltering: true,
-          columns: [
-            GridColumn(
-                columnName: 'date',
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: const Text('Date'),
-                )),
-            GridColumn(
-                columnName: 'subjectEmail',
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: const Text('Subject'),
-                )),
-            GridColumn(
-                columnName: 'requestEmail',
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: const Text('Requester'),
-                )),
-            GridColumn(
-              columnName: 'status',
-              label: Container(
-                padding: const EdgeInsets.all(8),
-                alignment: Alignment.center,
-                child: const Text('Status'),
-              ),
-            ),
-          ],
-        ));
+      source: _dataSource,
+      columnWidthMode: ColumnWidthMode.fill,
+      gridLinesVisibility: GridLinesVisibility.both,
+      headerGridLinesVisibility: GridLinesVisibility.both,
+      columns: [
+        GridColumn(
+            columnName: 'date',
+            label: Container(
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+              child: const Text('Date'),
+            )),
+        GridColumn(
+            columnName: 'subjectEmail',
+            label: Container(
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+              child: const Text('Subject'),
+            )),
+        GridColumn(
+            columnName: 'requestEmail',
+            label: Container(
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+              child: const Text('Requester'),
+            )),
+        GridColumn(
+          columnName: 'status',
+          label: Container(
+            padding: const EdgeInsets.all(8),
+            alignment: Alignment.center,
+            child: const Text('Status'),
+          ),
+        ),
+      ],
+    ));
   }
 }
 

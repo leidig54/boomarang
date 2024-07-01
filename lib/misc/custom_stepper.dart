@@ -5,6 +5,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+// TODO(dragostis): Missing functionality:
+//   * mobile horizontal mode with adding/removing steps
+//   * alternative labeling
+//   * stepper feedback in the case of high-latency interactions
+
 /// The state of a [Step] which is used to control the style of the circle and
 /// text.
 ///
@@ -831,6 +836,7 @@ class _StepperState extends State<Stepper> with TickerProviderStateMixin {
               bottom: 24.0,
             ),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 widget.steps[index].content,
                 _buildVerticalControls(index),
@@ -859,22 +865,21 @@ class _StepperState extends State<Stepper> with TickerProviderStateMixin {
           Column(
             key: _keys[i],
             children: <Widget>[
-              // InkWell(
-              //   onTap: widget.steps[i].state != StepState.disabled ? () {
-              //     // In the vertical case we need to scroll to the newly tapped
-              //     // step.
-              //     Scrollable.ensureVisible(
-              //       _keys[i].currentContext!,
-              //       curve: Curves.fastOutSlowIn,
-              //       duration: kThemeAnimationDuration,
-              //     );
+              InkWell(
+                onTap: widget.steps[i].state != StepState.disabled
+                    ? () {
+                        // In the vertical case we need to scroll to the newly tapped
+                        // step.
+                        Scrollable.ensureVisible(
+                          _keys[i].currentContext!,
+                          curve: Curves.fastOutSlowIn,
+                          duration: kThemeAnimationDuration,
+                        );
 
-              //     widget.onStepTapped?.call(i);
-              //   } : null,
-              //   canRequestFocus: widget.steps[i].state != StepState.disabled,
-              //   child: _buildVerticalHeader(i),
-              // ),
-              Container(
+                        widget.onStepTapped?.call(i);
+                      }
+                    : null,
+                canRequestFocus: widget.steps[i].state != StepState.disabled,
                 child: _buildVerticalHeader(i),
               ),
               _buildVerticalBody(i),
@@ -888,11 +893,13 @@ class _StepperState extends State<Stepper> with TickerProviderStateMixin {
     final List<Widget> children = <Widget>[
       for (int i = 0; i < widget.steps.length; i += 1) ...<Widget>[
         InkResponse(
-          onTap: widget.steps[i].state != StepState.disabled
-              ? () {
-                  widget.onStepTapped?.call(i);
-                }
-              : null,
+          onTap: !kDebugMode
+              ? null
+              : widget.steps[i].state != StepState.disabled
+                  ? () {
+                      widget.onStepTapped?.call(i);
+                    }
+                  : null,
           canRequestFocus: widget.steps[i].state != StepState.disabled,
           child: Row(
             children: <Widget>[
@@ -964,20 +971,31 @@ class _StepperState extends State<Stepper> with TickerProviderStateMixin {
           ),
         ),
         Expanded(
-          child: ListView(
-            controller: widget.controller,
-            physics: widget.physics,
+          child: Padding(
             padding: const EdgeInsets.all(24.0),
-            children: <Widget>[
-              AnimatedSize(
-                curve: Curves.fastOutSlowIn,
-                duration: kThemeAnimationDuration,
-                child: Column(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 600,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: stepPanels),
-              ),
-              _buildVerticalControls(widget.currentStep),
-            ],
+                    children: <Widget>[
+                      AnimatedSize(
+                        curve: Curves.fastOutSlowIn,
+                        duration: kThemeAnimationDuration,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: stepPanels,
+                        ),
+                      ),
+                      _buildVerticalControls(widget.currentStep),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
