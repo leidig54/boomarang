@@ -16,6 +16,7 @@ import 'package:provider/provider.dart';
 
 //TODO: move conset upload on to request details screen
 //TODO: verify the report before sending disclaimer
+
 FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions =
     FirebaseFunctions.instanceFor(region: 'us-central1');
