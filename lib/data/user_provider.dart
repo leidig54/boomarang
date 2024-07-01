@@ -10,7 +10,6 @@ class UserProvider extends ChangeNotifier {
   StreamSubscription? userSubscription;
 
   UserProvider() {
-    //TODO: Doesn't clear when the user logs out
     userSubscription = firestore
         .collection('users')
         .doc(auth.currentUser?.uid)
