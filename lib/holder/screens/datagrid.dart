@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:boomarang/holder/screens/respond_request.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +24,7 @@ class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
     requestStreamSubscription = firestore
         .collection('requests')
         .where('holderUserId', isEqualTo: auth.currentUser!.uid)
+        .where('isSubmitted', isEqualTo: true)
         .snapshots()
         .listen((snapshot) {
       _requests =
@@ -50,23 +50,10 @@ class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
     return Scaffold(
       body: SfDataGrid(
         source: _dataSource,
+        frozenRowsCount: 1,
         columnWidthMode: ColumnWidthMode.fill,
         gridLinesVisibility: GridLinesVisibility.both,
-        headerGridLinesVisibility: GridLinesVisibility.both,
-        onCellDoubleTap: (details) {
-          BoomarangRequest request =
-              _requests[details.rowColumnIndex.rowIndex - 1];
-
-          if (request.requestStatus == 'awaiting_response') {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => RespondRequestScreen(
-                  request: request,
-                ),
-              ),
-            );
-          }
-        },
+        headerGridLinesVisibility: GridLinesVisibility.none,
         columns: [
           GridColumn(
               columnName: 'date',
@@ -120,7 +107,7 @@ class HolderDataSource extends DataGridSource {
               DataGridCell<String>(
                   columnName: 'requestEmail', value: e.requestEmail),
               DataGridCell<String>(
-                  columnName: 'status', value: e.formattedRequestStatus),
+                  columnName: 'status', value: e.requestStatus),
             ],
           ),
         )
