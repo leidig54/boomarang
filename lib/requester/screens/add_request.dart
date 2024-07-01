@@ -2,7 +2,6 @@ import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/custom_stepper.dart';
 import 'package:boomarang/misc/tab_index_provider.dart';
 import 'package:boomarang/shared/alert_dialog.dart';
-import 'package:boomarang_shared/data/request_types.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -184,12 +183,72 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                             labelText: 'Type',
                             border: UnderlineInputBorder(),
                           ),
-                          items: requestTypes
-                              .map((e) => DropdownMenuItem(
-                                    value: e.id,
-                                    child: Text(e.name),
-                                  ))
-                              .toList(),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'Subject Access Request',
+                              child: Text('Subject Access Request'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Occupational Health',
+                              child: Text('Occupational Health'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Private Medical Insurance',
+                              child: Text('Private Medical Insurance'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Police Report',
+                              child: Text('Police Report'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Clinical Trial',
+                              child: Text('Clinical Trial'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Health Assessment',
+                              child: Text('Health Assessment'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'DWP UC113',
+                              child: Text('DWP UC113'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Advisory Service',
+                              child: Text('Advisory Service'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'DWP PIP',
+                              child: Text('DWP PIP'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Legal Aid',
+                              child: Text('Legal Aid'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Disability Student Allowance',
+                              child: Text('Disability Student Allowance'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Disability Living Allowance',
+                              child: Text('Disability Living Allowance'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'MoD - PHCR',
+                              child: Text('MoD - PHCR'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'MoD - Veterans',
+                              child: Text('MoD - Veterans'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'MoD - CDRM',
+                              child: Text('MoD - CDRM'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Other',
+                              child: Text('Other'),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 16),
                         FormBuilderTextField(
@@ -565,9 +624,15 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
               ""),
       subjectEmailVerified: false,
       requesterUserId: auth.currentUser!.uid,
+      requesterOrgName: null,
+      requestEmail: auth.currentUser!.email,
       holderUserId: null,
+      holderOrgId: null,
       dateCreated: DateTime.now(),
+      dateUpdated: DateTime.now(),
+      dateSubmitted: DateTime.now(),
       consentVerified: false,
+      paymentStatus: 'payment_pending',
       requestStatus: 'awaiting_response',
       requestType: _requestDetailsFormKey.currentState!.fields['type']?.value,
       requestDetails:
@@ -576,6 +641,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           ? null
           : _requestDetailsFormKey
               .currentState!.fields['request_form_ref']?.value,
+      consentTemplateId: _consentDetailsFormKey
+          .currentState!.fields['consent_template']?.value,
       consentFormRef: consentFormName == null
           ? null
           : _consentDetailsFormKey
