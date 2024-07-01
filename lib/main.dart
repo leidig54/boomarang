@@ -1,3 +1,4 @@
+import 'package:boomarang/data/auth_provider.dart';
 import 'package:boomarang/data/user_provider.dart';
 import 'package:boomarang/firebase_options.dart';
 import 'package:boomarang/misc/tab_index_provider.dart';
@@ -13,6 +14,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+//TODO: move conset upload on to request details screen
+//TODO: verify the report before sending disclaimer
 FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions =
     FirebaseFunctions.instanceFor(region: 'us-central1');
@@ -23,6 +26,11 @@ bool useEmulators = true;
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    name: null,
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MainApp());
 }
 
@@ -36,73 +44,42 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => UserProvider()),
-        ChangeNotifierProvider(create: (context) => TabIndexProvider()),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        navigatorKey: navigatorKey,
-        theme: ThemeData(
-          fontFamily: GoogleFonts.balooPaaji2().fontFamily,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.indigo,
-          ),
-          scaffoldBackgroundColor: Colors.white,
-        ),
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('en', 'GB'), // English, UK
-        ],
-        routes: {
-          '/': (context) => const InitApp(),
-          '/add-request': (context) => const AddRequestScreen(),
-        },
-        initialRoute: '/',
-        //add google font
-      ),
-    );
-  }
-}
-
-class InitApp extends StatelessWidget {
-  const InitApp({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: Firebase.initializeApp(
-          name: null,
-          options: DefaultFirebaseOptions.currentPlatform,
-        ),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    Text('Initialising Firebase...'),
-                  ],
+    return ChangeNotifierProvider(
+        create: (context) => UserAuthProvider(),
+        lazy: false,
+        builder: (context, child) {
+          return MultiProvider(
+            key: ValueKey(context.watch<UserAuthProvider>().user?.uid),
+            providers: [
+              ChangeNotifierProvider(create: (context) => UserProvider()),
+              ChangeNotifierProvider(create: (context) => TabIndexProvider()),
+            ],
+            child: MaterialApp(
+              debugShowCheckedModeBanner: false,
+              navigatorKey: navigatorKey,
+              theme: ThemeData(
+                fontFamily: GoogleFonts.balooPaaji2().fontFamily,
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.indigo,
                 ),
+                scaffoldBackgroundColor: Colors.white,
               ),
-            );
-          } else if (snapshot.hasError) {
-            return Scaffold(
-              body: Center(
-                child: Text('Error: ${snapshot.error}'),
-              ),
-            );
-          }
-          return const AuthGate();
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale('en', 'GB'), // English, UK
+              ],
+              routes: {
+                '/': (context) => const AuthGate(),
+                '/add-request': (context) => const AddRequestScreen(),
+              },
+              initialRoute: '/',
+              //add google font
+            ),
+          );
         });
   }
 }
