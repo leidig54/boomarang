@@ -127,7 +127,7 @@ class RequesterDataSource extends DataGridSource {
           (e) => DataGridRow(
             cells: [
               DataGridCell<String>(
-                  columnName: 'date', value: e.formattedCreatedDateOrTime),
+                  columnName: 'date', value: e.formattedCreatedDate),
               DataGridCell<String>(
                   columnName: 'subjectEmail', value: e.subjectEmail),
               DataGridCell<String>(
