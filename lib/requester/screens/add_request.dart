@@ -89,26 +89,31 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     //subject dob
                     const SizedBox(height: 16),
                     FormBuilderTextField(
-                        name: 'subject_dob',
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(),
-                        ]),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(10),
-                          DateFormatInputFormatter(DateFormat('dd/MM/yyyy')),
-                        ],
-                        valueTransformer: (value) {
-                          if (value == null) {
-                            return null;
-                          }
-                          return DateFormat('dd/MM/yyyy').parse(value);
-                        },
-                        decoration: const InputDecoration(
-                          labelText: 'Date of Birth',
-                          hintText: 'dd/mm/yyyy',
-                          border: UnderlineInputBorder(),
-                        )),
+                      name: 'subject_dob',
+                      validator: FormBuilderValidators.compose([
+                        FormBuilderValidators.required(),
+                      ]),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                        DateFormatInputFormatter(DateFormat('dd/MM/yyyy')),
+                      ],
+                      valueTransformer: (value) {
+                        if (value == null) {
+                          return null;
+                        }
+                        // Parse the date, set to start of the day, and convert to UTC
+                        DateTime localDate =
+                            DateFormat('dd/MM/yyyy').parse(value, true).toUtc();
+                        return DateTime.utc(
+                            localDate.year, localDate.month, localDate.day);
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Date of Birth',
+                        hintText: 'dd/mm/yyyy',
+                        border: UnderlineInputBorder(),
+                      ),
+                    ),
                     //subject email
                     const SizedBox(height: 16),
                     FormBuilderTextField(
