@@ -51,24 +51,4 @@ for (let i = 0; i < 50; i++) {
 }
 
 
-
-
-//request models (in Dart) 
-// String id;
-//   String subjectFirstName;
-//   String subjectLastName;
-//   String subjectEmail;
-//   String? requesterUserId;
-//   String? requesterOrgName;
-//   String? holderUserId;
-//   String? holderOrgId;
-//   DateTime dateCreated;
-//   DateTime dateUpdated;
-//   String consentStatus;
-//   String paymentStatus;
-//   String requestStatus;
-//   String requestType;
-//   String? requestDetails;
-//   String? requestFormRef;
-//   String? consentTemplateId;
-//   String? consentFormRef;
+ 
