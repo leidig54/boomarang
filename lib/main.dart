@@ -15,11 +15,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 //TODO: make stepper scrollable
-//TODO: fix delay when navgating back
 
 FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions =
-    FirebaseFunctions.instanceFor(region: 'europe-west2');
+    FirebaseFunctions.instanceFor(region: 'us-central1');
 FirebaseStorage storage = FirebaseStorage.instance;
 FirebaseFirestore firestore = FirebaseFirestore.instance;
 
