@@ -629,10 +629,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       holderUserId: null,
       holderOrgId: null,
       dateCreated: DateTime.now(),
-      dateUpdated: DateTime.now(),
-      dateSubmitted: DateTime.now(),
       consentVerified: false,
-      paymentStatus: 'payment_pending',
       requestStatus: 'awaiting_response',
       requestType: _requestDetailsFormKey.currentState!.fields['type']?.value,
       requestDetails:
@@ -641,8 +638,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           ? null
           : _requestDetailsFormKey
               .currentState!.fields['request_form_ref']?.value,
-      consentTemplateId: _consentDetailsFormKey
-          .currentState!.fields['consent_template']?.value,
       consentFormRef: consentFormName == null
           ? null
           : _consentDetailsFormKey
