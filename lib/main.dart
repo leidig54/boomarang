@@ -14,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
-//TODO: move conset upload on to request details screen
 //TODO: verify the report before sending disclaimer
 
 FirebaseAuth auth = FirebaseAuth.instance;

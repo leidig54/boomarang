@@ -28,7 +28,7 @@ configureGenkit({
     firebase(),
     vertexAI({ location: "europe-west2" }),
   ],
-  logLevel: "debug",
+  logLevel: "error",
   enableTracingAndMetrics: true,
 });
 
@@ -39,6 +39,7 @@ export const generateReport = onFlow({
   },
   inputSchema: z.object({
     requestData: z.object({
+      requestType: z.string(),
       text: z.string().nullable(),
       fileUrl: z.string().nullable(),
     }),
@@ -46,6 +47,7 @@ export const generateReport = onFlow({
       text: z.string().nullable(),
       fileUrl: z.string().nullable(),
     }),
+    id: z.string(),
   }),
   outputSchema: z.string(),
   authPolicy: firebaseAuth((user) => {
@@ -55,15 +57,34 @@ export const generateReport = onFlow({
   }),
 },
 async (subject) => {
+  // get the user id
+  const userId = subject.id;
+
+  // get the user document
+  const userDoc = admin.firestore().collection("users").doc(userId);
+
+  // get the title, firstName and lastName from the user document
+  const user = await userDoc.get();
+  if (!user.exists) {
+    throw new Error("User not found");
+  }
+  const title = user.data()?.title;
+  const firstName = user.data()?.firstName;
+  const lastName = user.data()?.lastName;
+
+
   // create the prompt for the model, given the text or the urls can be null
   const prompt = [];
   prompt.push({ text: "You are a report writing assistant. You have to write a report based on the following request details:" });
   if (subject.requestData.text) {
     prompt.push({ text: subject.requestData.text });
   }
+  // the report type is
+  prompt.push({ text: `The report type is ${subject.requestData.requestType}` });
   if (subject.requestData.fileUrl) {
     prompt.push({ media: { url: subject.requestData.fileUrl, contentType: "application/pdf" } });
   }
+
   prompt.push({ text: "You have to include the following consultation details in the report:" });
   if (subject.consultationData.text) {
     prompt.push({ text: subject.consultationData.text });
@@ -71,7 +92,10 @@ async (subject) => {
   if (subject.consultationData.fileUrl) {
     prompt.push({ media: { url: subject.consultationData.fileUrl, contentType: "application/pdf" } });
   }
-  prompt.push({ text: "Respond in raw html. Do not use ** etc. Make good use of headings or bold text to separate the components." });
+  prompt.push({ text: "Respond in raw html. Do not use ** etc. Make good use of headings or bold text to separate the components. Sign with the following details:" });
+  prompt.push({ text: `Title: ${title}` });
+  prompt.push({ text: `First Name: ${firstName}` });
+  prompt.push({ text: `Last Name: ${lastName}` });
 
 
   let result;

@@ -440,6 +440,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                               requestData: RequestData(
                                 text: request.requestDetails,
                                 file: request.requestFormRef,
+                                requestType: request.requestType!,
                               ),
                               consultationData: ConsultationData(
                                 text: null,
