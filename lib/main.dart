@@ -14,7 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
-//TODO: make stepper scrollable
+//TODO: verify the report before sending disclaimer
 
 FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions =
