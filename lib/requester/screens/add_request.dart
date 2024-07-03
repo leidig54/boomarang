@@ -1,8 +1,7 @@
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/custom_stepper.dart';
-import 'package:boomarang/requester/screens/dialogs/submit_request.dart';
+import 'package:boomarang/misc/tab_index_provider.dart';
 import 'package:boomarang/shared/alert_dialog.dart';
-import 'package:boomarang_shared/data/request_types.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -12,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 class AddRequestScreen extends StatefulWidget {
@@ -183,12 +183,72 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                             labelText: 'Type',
                             border: UnderlineInputBorder(),
                           ),
-                          items: requestTypes
-                              .map((e) => DropdownMenuItem(
-                                    value: e.id,
-                                    child: Text(e.name),
-                                  ))
-                              .toList(),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'Subject Access Request',
+                              child: Text('Subject Access Request'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Occupational Health',
+                              child: Text('Occupational Health'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Private Medical Insurance',
+                              child: Text('Private Medical Insurance'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Police Report',
+                              child: Text('Police Report'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Clinical Trial',
+                              child: Text('Clinical Trial'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Health Assessment',
+                              child: Text('Health Assessment'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'DWP UC113',
+                              child: Text('DWP UC113'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Advisory Service',
+                              child: Text('Advisory Service'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'DWP PIP',
+                              child: Text('DWP PIP'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Legal Aid',
+                              child: Text('Legal Aid'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Disability Student Allowance',
+                              child: Text('Disability Student Allowance'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Disability Living Allowance',
+                              child: Text('Disability Living Allowance'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'MoD - PHCR',
+                              child: Text('MoD - PHCR'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'MoD - Veterans',
+                              child: Text('MoD - Veterans'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'MoD - CDRM',
+                              child: Text('MoD - CDRM'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Other',
+                              child: Text('Other'),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 16),
                         FormBuilderTextField(
@@ -514,10 +574,30 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           } else if (currentStep == 1) {
             if (_consentDetailsFormKey.currentState!.saveAndValidate() &&
                 _requestDetailsFormKey.currentState!.saveAndValidate()) {
+              //TODO: Extract this widget
               showDialog(
                 context: context,
-                builder: (context) => SubmitRequestDialog(
-                  submitRequest: submitRequest,
+                builder: (context) => AlertDialog(
+                  title: const Text('Submit Request'),
+                  content: const Text(
+                      'Are you sure you want to submit this request?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await submitRequest();
+                        if (!context.mounted) return;
+                        Navigator.of(context).pop();
+                        context.read<TabIndexProvider>().setTabIndex(1);
+                      },
+                      child: const Text('Submit'),
+                    ),
+                  ],
                 ),
               );
             }
@@ -544,7 +624,10 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
               ""),
       subjectEmailVerified: false,
       requesterUserId: auth.currentUser!.uid,
+      requesterOrgName: null,
+      requestEmail: auth.currentUser!.email,
       holderUserId: null,
+      holderOrgId: null,
       dateCreated: DateTime.now(),
       consentVerified: false,
       requestStatus: 'awaiting_response',
