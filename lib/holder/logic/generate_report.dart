@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:boomarang/main.dart';
 import 'package:boomarang/shared/alert_dialog.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
@@ -16,11 +18,13 @@ Future<Document> generateReport({
       'requestData': {
         'text': requestData.text,
         'fileUrl': requestData.file,
+        'requestType': requestData.requestType,
       },
       'consultationData': {
         'text': consultationData.text,
         'fileUrl': consultationData.file,
       },
+      'id': auth.currentUser?.uid,
     },
   ).catchError((error) {
     String errorText = "Error generating report: $error";
@@ -40,8 +44,13 @@ Future<Document> generateReport({
 class RequestData {
   String? text;
   String? file;
+  String requestType;
 
-  RequestData({this.text, this.file});
+  RequestData({
+    this.text,
+    this.file,
+    required this.requestType,
+  });
 }
 
 class ConsultationData {
