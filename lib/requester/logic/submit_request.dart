@@ -31,10 +31,7 @@ Future<void> submitRequest({
     holderUserId: null,
     holderOrgId: null,
     dateCreated: DateTime.now(),
-    dateUpdated: DateTime.now(),
-    dateSubmitted: DateTime.now(),
     consentVerified: false,
-    paymentStatus: 'payment_pending',
     requestStatus: 'awaiting_response',
     requestType: requestDetailsFormKey.currentState!.fields['type']?.value,
     requestDetails:
@@ -42,8 +39,6 @@ Future<void> submitRequest({
     requestFormRef: requestFormName == null
         ? null
         : requestDetailsFormKey.currentState!.fields['request_form_ref']?.value,
-    consentTemplateId:
-        consentDetailsFormKey.currentState!.fields['consent_template']?.value,
     consentFormRef: consentFormName == null
         ? null
         : consentDetailsFormKey.currentState!.fields['consent_form_ref']?.value,
