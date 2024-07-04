@@ -10,14 +10,16 @@ import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-class HolderDatagridScreen extends StatefulWidget {
-  const HolderDatagridScreen({super.key});
+class HolderPaymentsDatagridScreen extends StatefulWidget {
+  const HolderPaymentsDatagridScreen({super.key});
 
   @override
-  State<HolderDatagridScreen> createState() => _HolderDatagridScreenState();
+  State<HolderPaymentsDatagridScreen> createState() =>
+      _HolderPaymentsDatagridScreenState();
 }
 
-class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
+class _HolderPaymentsDatagridScreenState
+    extends State<HolderPaymentsDatagridScreen> {
   List<BoomarangRequest> _requests = [];
   late StreamSubscription requestStreamSubscription;
 

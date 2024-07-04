@@ -1,5 +1,8 @@
 import 'package:boomarang/misc/tab_index_provider.dart';
+import 'package:boomarang/requester/screens/add_request.dart';
+import 'package:boomarang/requester/screens/datagrid.dart';
 import 'package:boomarang/shared/navigation_bottom_widget.dart';
+import 'package:boomarang/shared/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,6 +16,12 @@ class RequesterHome extends StatefulWidget {
 }
 
 class _RequesterHomeState extends State<RequesterHome> {
+  List<Widget> screens = [
+    const AddRequestScreen(),
+    const RequesterDatagridScreen(),
+    const BoomarangProfileScreen(),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -76,7 +85,7 @@ class _RequesterHomeState extends State<RequesterHome> {
         ),
         Expanded(
           child: Scaffold(
-            body: context.watch<TabIndexProvider>().screen,
+            body: screens[context.watch<TabIndexProvider>().tabIndex],
           ),
         ),
       ],
