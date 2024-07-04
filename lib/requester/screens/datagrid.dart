@@ -1,12 +1,10 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
-import 'package:boomarang/misc/tab_index_provider.dart';
 import 'package:boomarang/requester/screens/view_response.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/response.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 class RequesterDatagridScreen extends StatefulWidget {
@@ -61,11 +59,6 @@ class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
       onCellDoubleTap: (details) async {
         final row = details.rowColumnIndex.rowIndex;
 
-        //if request status is pending_completion, navigate to the add request screen
-        if (_requests[row - 1].requestStatus == 'pending_completion') {
-          context.read<TabIndexProvider>().setScreen(_requests[row - 1]);
-          return;
-        }
         //get the response for the request
         final responseData = await firestore
             .collection('responses')
@@ -97,7 +90,7 @@ class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
               child: const Text('Date'),
             )),
         GridColumn(
-            columnName: 'subject',
+            columnName: 'subjectEmail',
             label: Container(
               padding: const EdgeInsets.all(8),
               alignment: Alignment.center,
@@ -108,7 +101,7 @@ class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
             label: Container(
               padding: const EdgeInsets.all(8),
               alignment: Alignment.center,
-              child: const Text('Holder'),
+              child: const Text('Healthcare Provider'),
             )),
         GridColumn(
           columnName: 'status',
@@ -136,8 +129,7 @@ class RequesterDataSource extends DataGridSource {
               DataGridCell<String>(
                   columnName: 'date', value: e.formattedCreatedDateOrTime),
               DataGridCell<String>(
-                  columnName: 'subject',
-                  value: "${e.subjectFirstName} ${e.subjectLastName}"),
+                  columnName: 'subjectEmail', value: e.subjectEmail),
               DataGridCell<String>(
                   columnName: 'holderEmail', value: e.holderEmail),
               DataGridCell<String>(
