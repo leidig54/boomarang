@@ -77,7 +77,7 @@ class _RequesterHomeState extends State<RequesterHome> {
           onDestinationSelected: (int index) {
             context.read<TabIndexProvider>().setTabIndex(index);
           },
-          extended: MediaQuery.of(context).size.width > 1400,
+          extended: true,
         ),
         const VerticalDivider(
           thickness: 3,
