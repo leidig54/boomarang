@@ -12,6 +12,10 @@ import * as z from "zod";
 import serviceAccount from "./serviceKey.json";
 import admin = require("firebase-admin");
 
+// TODO: improve templating
+// TODO: add feedback space
+// TODO: payments - should we set the prices?
+
 
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 
@@ -57,6 +61,7 @@ export const generateReport = onFlow({
   }),
 },
 async (subject) => {
+  console.log("Generating report...");
   // get the user id
   const userId = subject.id;
 
@@ -92,10 +97,10 @@ async (subject) => {
   if (subject.consultationData.fileUrl) {
     prompt.push({ media: { url: subject.consultationData.fileUrl, contentType: "application/pdf" } });
   }
-  prompt.push({ text: "Respond in raw html. Do not use ** etc. Make good use of headings or bold text to separate the components. Sign with the following details:" });
-  prompt.push({ text: `Title: ${title}` });
-  prompt.push({ text: `First Name: ${firstName}` });
-  prompt.push({ text: `Last Name: ${lastName}` });
+  prompt.push({ text: "Respond in raw html. Do not use ** etc. Make good use of headings or bold text to separate the components. Sign with the following details: " });
+  prompt.push({ text: `${title} ` });
+  prompt.push({ text: `${firstName} ` });
+  prompt.push({ text: `${lastName}` });
 
 
   let result;
@@ -118,8 +123,16 @@ async (subject) => {
 export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("requests/{requestId}").onCreate(async (change, context) => {
   // we need to check if to see if the isSubmitted field is true when the request is created or updated (i.e. when the request is submitted), but we only want to send the email once, so we need to check if the isSubmitted field is true and the request has not been submitted before
 
-  console.log("Request has been submitted. Sending email to subject...");
   const request = change.data();
+
+  console.log("IsDemo: ", request?.isDemo);
+
+  // if isDemo, dont send email
+  if (request?.isDemo) {
+    return "Demo request";
+  }
+
+  console.log("Request has been submitted. Sending email to subject...");
 
 
   // generate a unique token for the consenting process
@@ -182,6 +195,12 @@ export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("
 });
 
 export const createUserDocument = functions.auth.user().onCreate(async (user) => {
+  // if already email verified, return
+  if (user.emailVerified) {
+    console.log("User email already verified. Is a demo user. Exiting...");
+    return null;
+  }
+
   // create the user document
   const userDoc = admin.firestore().collection("users").doc(user.uid);
   await userDoc.set({
@@ -309,6 +328,10 @@ export const sendVerificationEmail = async (userId: string, ) => {
     throw new Error("User email is null");
   }
 
+  // if isDemo, dont send email
+  if (user.data()?.isDemo) {
+    return "Demo user";
+  }
 
   // send a verification code (6 digits) to the users email
   const code = Math.floor(100000 + Math.random() * 900000);
