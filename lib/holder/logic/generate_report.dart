@@ -4,8 +4,6 @@ import 'package:boomarang/shared/alert_dialog.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:flutter_quill/quill_delta.dart';
-import 'package:flutter_quill_delta_from_html/flutter_quill_delta_from_html.dart';
 
 Future<Document> generateReport({
   required RequestData requestData,
@@ -33,13 +31,11 @@ Future<Document> generateReport({
   });
 
   //return the generated report
-  String reportTextHtml = results.data;
+  String reportText = results.data;
 
-  debugPrint('Generated report: $reportTextHtml');
+  debugPrint('Generated report: $reportText');
 
-  Delta reportTextDelta = HtmlToDelta().convert(reportTextHtml);
-
-  return Document.fromDelta(reportTextDelta);
+  return Document.fromHtml(reportText);
 }
 
 class RequestData {
