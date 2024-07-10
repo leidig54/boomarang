@@ -11,10 +11,10 @@ admin.initializeApp(
 );
 
 const db = admin.firestore();
-db.settings({
-    host: "localhost:8080",
-    ssl: false
-})
+// db.settings({
+//     host: "localhost:8080",
+//     ssl: false
+// })
 
 async function createDemoEnvironment()   {
 

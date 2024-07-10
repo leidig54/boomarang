@@ -47,7 +47,6 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
   late String id;
 
   bool isUploadingConsultations = false;
-  bool includeConsultationDetailsInReport = false;
 
   @override
   void initState() {
@@ -306,27 +305,8 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                           ],
                         ),
                       ),
-                      //requester
-                      const SizedBox(height: 4),
-                      RichText(
-                        text: TextSpan(
-                          text: 'Requester: ',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                          children: [
-                            TextSpan(
-                                text: request.requesterOrgName,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge!
-                                    .copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87))
-                          ],
-                        ),
-                      ),
-
                       //submitted date
-
+                      //
                       const SizedBox(height: 4),
                       RichText(
                         text: TextSpan(
@@ -529,71 +509,64 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
             SizedBox(
               height: 90,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.create),
-                        onPressed: consultationFormName == null &&
-                                consultationFormRef == null
-                            ? null
-                            : () async {
-                                if (!reportQuillController.document.isEmpty()) {
-                                  bool? result = await showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                            title: const Text('Warning'),
-                                            content: const Text(
-                                                'Are you sure you want to overwrite the current report?'),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context)
-                                                      .pop(false);
-                                                },
-                                                child: const Text('Cancel'),
-                                              ),
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: const Text('Continue'),
-                                              ),
-                                            ],
-                                          ));
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.create),
+                    onPressed: consultationFormName == null &&
+                            consultationFormRef == null
+                        ? null
+                        : () async {
+                            if (!reportQuillController.document.isEmpty()) {
+                              bool? result = await showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                        title: const Text('Warning'),
+                                        content: const Text(
+                                            'Are you sure you want to overwrite the current report?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop(false);
+                                            },
+                                            child: const Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: const Text('Continue'),
+                                          ),
+                                        ],
+                                      ));
 
-                                  if (result == false) {
-                                    return;
-                                  }
-                                }
-                                setState(() {
-                                  isGeneratingReport = true;
-                                });
+                              if (result == false) {
+                                return;
+                              }
+                            }
+                            setState(() {
+                              isGeneratingReport = true;
+                            });
 
-                                reportQuillController.document =
-                                    await generateReport(
-                                  requestData: RequestData(
-                                    text: request.requestDetails,
-                                    file: request.requestFormRef,
-                                    requestType: request.requestType!,
-                                  ),
-                                  consultationData: ConsultationData(
-                                    text: null,
-                                    file: consultationFormRef,
-                                  ),
-                                ).whenComplete(() {
-                                  hasGeneratedReport = true;
-                                  setState(() {
-                                    isGeneratingReport = false;
-                                  });
-                                });
-                              },
-                        label: Text(hasGeneratedReport
-                            ? "Redo Report"
-                            : 'Write Report'),
-                      ),
-                    ],
+                            reportQuillController.document =
+                                await generateReport(
+                              requestData: RequestData(
+                                text: request.requestDetails,
+                                file: request.requestFormRef,
+                                requestType: request.requestType!,
+                              ),
+                              consultationData: ConsultationData(
+                                text: null,
+                                file: consultationFormRef,
+                              ),
+                            ).whenComplete(() {
+                              hasGeneratedReport = true;
+                              setState(() {
+                                isGeneratingReport = false;
+                              });
+                            });
+                          },
+                    label: Text(
+                        hasGeneratedReport ? "Redo Report" : 'Write Report'),
                   ),
                   const SizedBox(
                     height: 10,
@@ -612,6 +585,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                     FormBuilderField(
                       name: 'consultation_form_ref',
                       builder: (context) => Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text('$consultationFormName'),
                           //delete button
@@ -635,26 +609,12 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                             },
                             icon: const Icon(Icons.close),
                           ),
-                          //include consultation details in report button
-                          const SizedBox(width: 10),
-                          SizedBox(
-                            width: 200,
-                            child: FormBuilderCheckbox(
-                                name: 'include_consultation_details',
-                                initialValue: false,
-                                title: const Text('Include in report'),
-                                onChanged: (value) {
-                                  setState(() {
-                                    includeConsultationDetailsInReport = value!;
-                                  });
-                                }),
-                          ),
                         ],
                       ),
                     ),
                   ] else
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextButton.icon(
                           onPressed: () async {
@@ -709,12 +669,13 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                                 isUploadingConsultations = false;
                               });
                             }
+
                             setState(() {
                               isUploadingConsultations = false;
                             });
                           },
                           icon: const Icon(Icons.upload_file),
-                          label: const Text('Import Consultations'),
+                          label: const Text('Upload Consultations'),
                         ),
                       ],
                     ),
@@ -863,16 +824,12 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
   }
 
   Future<void> submitResponse() async {
-    //if include_consultation_details is true, add consultation details to response, otherwise delete consultation details
-    bool includeConsultationDetails = _consultationsFormKey
-        .currentState!.fields['include_consultation_details']!.value as bool;
-
     BoomarangResponse response = BoomarangResponse(
       id: id,
       holderUserId: auth.currentUser!.uid,
       requesterUserId: request.requesterUserId,
-      consultationFormRef:
-          includeConsultationDetails ? consultationFormRef : null,
+      consultationFormRef: consultationFormRef,
+      consultationDetails: null,
       report: reportQuillController.document.toDelta().toJson(),
     );
 
