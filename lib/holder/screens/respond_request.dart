@@ -47,6 +47,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
   late String id;
 
   bool isUploadingConsultations = false;
+  bool includeConsultationDetailsInReport = false;
 
   @override
   void initState() {
@@ -305,8 +306,27 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                           ],
                         ),
                       ),
+                      //requester
+                      const SizedBox(height: 4),
+                      RichText(
+                        text: TextSpan(
+                          text: 'Requester: ',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          children: [
+                            TextSpan(
+                                text: request.requesterOrgName,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87))
+                          ],
+                        ),
+                      ),
+
                       //submitted date
-                      //
+
                       const SizedBox(height: 4),
                       RichText(
                         text: TextSpan(
@@ -609,6 +629,16 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                             },
                             icon: const Icon(Icons.close),
                           ),
+                          //include consultation details in report button
+                          const SizedBox(width: 10),
+                          const Text('Include in report'),
+                          Checkbox(
+                              value: includeConsultationDetailsInReport,
+                              onChanged: (value) {
+                                setState(() {
+                                  includeConsultationDetailsInReport = value!;
+                                });
+                              }),
                         ],
                       ),
                     ),
@@ -669,13 +699,12 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                                 isUploadingConsultations = false;
                               });
                             }
-
                             setState(() {
                               isUploadingConsultations = false;
                             });
                           },
                           icon: const Icon(Icons.upload_file),
-                          label: const Text('Upload Consultations'),
+                          label: const Text('Import Consultations'),
                         ),
                       ],
                     ),
