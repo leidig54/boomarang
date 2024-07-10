@@ -13,10 +13,9 @@ class HolderHome extends StatefulWidget {
 }
 
 class _HolderHomeState extends State<HolderHome> {
-  int selectedIndex = 1;
+  int selectedIndex = 0;
 
   List<Widget> screens = [
-    // Container(),
     const HolderDatagridScreen(),
     Container(),
     const BoomarangProfileScreen(),
@@ -51,14 +50,6 @@ class _HolderHomeState extends State<HolderHome> {
             //Boomerang
           ),
           destinations: [
-            // NavigationRailDestination(
-            //   icon: const Icon(Icons.dashboard),
-            //   disabled: true,
-            //   label: Text(
-            //     'Dashboard',
-            //     style: Theme.of(context).textTheme.bodyLarge,
-            //   ),
-            // ),
             NavigationRailDestination(
               icon: const Icon(Icons.mail),
               label: Text(
