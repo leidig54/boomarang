@@ -9,9 +9,9 @@ Future<Document> generateReport({
   required RequestData requestData,
   required ConsultationData consultationData,
 }) async {
-  final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable(
-    'generateReport',
-  );
+  final HttpsCallable callable =
+      FirebaseFunctions.instanceFor(region: "us-central1")
+          .httpsCallable("generateReport");
 
   final HttpsCallableResult results = await callable.call(
     <String, dynamic>{

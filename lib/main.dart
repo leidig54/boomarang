@@ -19,7 +19,7 @@ import 'package:provider/provider.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions =
-    FirebaseFunctions.instanceFor(region: 'us-central1');
+    FirebaseFunctions.instanceFor(region: 'europe-west2');
 FirebaseStorage storage = FirebaseStorage.instance;
 FirebaseFirestore firestore = FirebaseFirestore.instance;
 
