@@ -2,11 +2,9 @@ import 'dart:async';
 
 import 'package:boomarang/holder/screens/respond_request.dart';
 import 'package:boomarang/main.dart';
-import 'package:boomarang/misc/routing_no_animation.dart';
 import 'package:boomarang_shared/data/request_types.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/request_type.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
@@ -72,67 +70,90 @@ class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
                 _requests[details.rowColumnIndex.rowIndex - 1];
 
             if (request.requestStatus == 'awaiting_response') {
-              navigateWithoutTransition(
-                context,
-                RespondRequestScreen(request: request),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => RespondRequestScreen(
+                    request: request,
+                  ),
+                ),
               );
             }
           },
           columns: [
             GridColumn(
-              columnName: 'received',
-              allowFiltering: false,
-              allowSorting: true,
-              columnWidthMode: ColumnWidthMode.auto,
-              label: Container(
-                padding: const EdgeInsets.all(8),
-                alignment: Alignment.center,
-                child: Text(
-                  'Received',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium!
-                      .copyWith(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+                columnName: 'received',
+                allowFiltering: false,
+                allowSorting: true,
+                columnWidthMode: ColumnWidthMode.auto,
+                label: Container(
+                  padding: const EdgeInsets.all(8),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Received',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium!
+                        .copyWith(fontWeight: FontWeight.bold),
+                  ),
+                )),
             GridColumn(
-              columnName: 'subjectName',
-              allowSorting: true,
-              filterPopupMenuOptions: const FilterPopupMenuOptions(
-                canShowSortingOptions: false,
-                showColumnName: false,
-                filterMode: FilterMode.checkboxFilter,
-              ),
-              label: Container(
-                padding: const EdgeInsets.all(8),
-                alignment: Alignment.center,
-                child: Text(
-                  'Patient',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium!
-                      .copyWith(fontWeight: FontWeight.bold),
+                columnName: 'subjectName',
+                allowSorting: false,
+                //TODO: Fix sorting by last name
+                filterPopupMenuOptions: const FilterPopupMenuOptions(
+                  canShowSortingOptions: false,
+                  showColumnName: false,
+                  filterMode: FilterMode.checkboxFilter,
                 ),
-              ),
-            ),
+                label: Container(
+                  padding: const EdgeInsets.all(8),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Patient',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium!
+                        .copyWith(fontWeight: FontWeight.bold),
+                  ),
+                )),
             GridColumn(
-              columnName: 'fee_charged',
-              allowSorting: false,
-              allowFiltering: false,
-              columnWidthMode: ColumnWidthMode.fitByColumnName,
-              label: Container(
-                padding: const EdgeInsets.all(8),
-                alignment: Alignment.center,
-                child: Text(
-                  'Fee Charged',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium!
-                      .copyWith(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+                columnName: 'fee_charged',
+                allowSorting: false,
+                allowFiltering: false,
+                columnWidthMode: ColumnWidthMode.fitByColumnName,
+                label: Container(
+                  padding: const EdgeInsets.all(8),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Fee Charged',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium!
+                        .copyWith(fontWeight: FontWeight.bold),
+                  ),
+                )),
+            //feePaid
+            // GridColumn(
+            //     columnName: 'fee_paid',
+            //     allowSorting: false,
+            //     allowFiltering: false,
+            //     columnWidthMode: ColumnWidthMode.fitByColumnName,
+            //     filterPopupMenuOptions: const FilterPopupMenuOptions(
+            //       canShowSortingOptions: false,
+            //       showColumnName: false,
+            //       filterMode: FilterMode.checkboxFilter,
+            //     ),
+            //     label: Container(
+            //       padding: const EdgeInsets.all(8),
+            //       alignment: Alignment.center,
+            //       child: Text(
+            //         'Paid',
+            //         style: Theme.of(context)
+            //             .textTheme
+            //             .titleMedium!
+            //             .copyWith(fontWeight: FontWeight.bold),
+            //       ),
+            //     )),
             GridColumn(
               columnName: 'requestType',
               allowSorting: true,
@@ -214,43 +235,11 @@ class HolderDataSource extends DataGridSource {
   List<DataGridRow> get rows => dataGridRows;
 
   @override
-  int compare(DataGridRow? a, DataGridRow? b, SortColumnDetails sortColumn) {
-    //if subjectName, sort by last name
-    if (sortColumn.name == 'subjectName') {
-      final String? value1 = a
-          ?.getCells()
-          .firstWhereOrNull((element) => element.columnName == sortColumn.name)
-          ?.value
-          .toString();
-      final String? value2 = b
-          ?.getCells()
-          .firstWhereOrNull((element) => element.columnName == sortColumn.name)
-          ?.value
-          .toString();
-
-      if (value1 == null || value2 == null) {
-        return 0;
-      }
-
-      final List<String> aName = value1.split(' ');
-      final List<String> bName = value2.split(' ');
-
-      final String aLastName = aName.last;
-      final String bLastName = bName.last;
-
-      if (sortColumn.sortDirection == DataGridSortDirection.ascending) {
-        return aLastName.compareTo(bLastName);
-      } else {
-        return bLastName.compareTo(aLastName);
-      }
-    }
-    return super.compare(a, b, sortColumn);
-  }
-
-  @override
   DataGridRowAdapter? buildRow(DataGridRow row) {
     return DataGridRowAdapter(
       cells: row.getCells().map<Widget>((e) {
+        //if 'received' column, format date like this
+        // 4th Jan 23, 19:00
         if (e.columnName == 'received') {
           late String formattedDateTime;
 
