@@ -2,16 +2,22 @@ import 'package:boomarang/holder/logic/generate_report.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/custom_stepper.dart';
 import 'package:boomarang/shared/alert_dialog.dart';
+import 'package:boomarang_shared/data/request_types.dart';
 import 'package:boomarang_shared/models/request.dart';
+import 'package:boomarang_shared/models/request_type.dart';
 import 'package:boomarang_shared/models/response.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Stepper, Step, StepperType;
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+//TODO: add a warnings area for concerns (patient mididentification, insufficient information etc)
+//TODO: accept or decline report with amendments
 
 class RespondRequestScreen extends StatefulWidget {
   const RespondRequestScreen({
@@ -32,6 +38,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
 
   int _currentStep = 0;
   bool isGeneratingReport = false;
+  bool hasGeneratedReport = false;
   QuillController reportQuillController = QuillController.basic();
 
   String? consultationFormName;
@@ -49,6 +56,9 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    RequestType requestType =
+        requestTypes.firstWhere((element) => element.id == request.requestType);
+
     List<Step> steps = [
       Step(
         title: const Text("Request"),
@@ -65,7 +75,6 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                   children: [
                     Text("Patient Details",
                         style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: 10),
                     RichText(
                       text: TextSpan(
                         text: 'Name: ',
@@ -247,7 +256,65 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                           style: Theme.of(context).textTheme.bodyLarge,
                           children: [
                             TextSpan(
-                                text: request.requestType,
+                                text: requestType.name,
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = requestType.holderDescription ==
+                                          null
+                                      ? null
+                                      : () {
+                                          showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return SimpleDialog(
+                                                  title: Text(requestType.name),
+                                                  contentPadding:
+                                                      const EdgeInsets.all(20),
+                                                  children: [
+                                                    SizedBox(
+                                                      width: 600,
+                                                      height: 600,
+                                                      child: Markdown(
+                                                        data: requestType
+                                                            .holderDescription!,
+                                                        shrinkWrap: true,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(20),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 20,
+                                                    ),
+                                                    TextButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child:
+                                                            const Text('Close'))
+                                                  ],
+                                                );
+                                              });
+                                        },
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).primaryColor)),
+                          ],
+                        ),
+                      ),
+                      //submitted date
+                      //
+                      const SizedBox(height: 4),
+                      RichText(
+                        text: TextSpan(
+                          text: 'Submitted: ',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          children: [
+                            TextSpan(
+                                text: request.formattedCreatedFullDate,
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyLarge!
@@ -257,6 +324,61 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                           ],
                         ),
                       ),
+                      const SizedBox(
+                        height: 4,
+                      ),
+                      //fee amount and if paid
+                      Row(
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              text: 'Fee: ',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              children: [
+                                TextSpan(
+                                    text: request.fee == 0
+                                        ? "N/A"
+                                        : request.formattedFee,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge!
+                                        .copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87))
+                              ],
+                            ),
+                          ),
+                          if (request.feePaid != null) ...[
+                            const SizedBox(width: 8),
+                            //separator
+                            Container(
+                              height: 16,
+                              width: 1,
+                              color: Colors.black26,
+                            ),
+                            const SizedBox(width: 8),
+                            //fee paid
+                            Text(request.feePaid == true ? 'Paid' : 'Not Paid',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    )),
+                            const SizedBox(width: 8),
+                            Icon(
+                              request.feePaid == true
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              color: request.feePaid == true
+                                  ? Colors.green
+                                  : Colors.red,
+                              size: 16,
+                            )
+                          ]
+                        ],
+                      ),
+
                       const SizedBox(height: 10),
                       Expanded(
                         child: Container(
@@ -299,9 +421,9 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("AI Assistant", style: Theme.of(context).textTheme.titleLarge),
-            const Text(
-                "Upload consultations to automatically generate a tailored report"),
+            Text("Writing Assistant",
+                style: Theme.of(context).textTheme.titleLarge),
+            const Text("Upload consultations to create a tailored report"),
             //learn more
             const SizedBox(
               height: 4,
@@ -385,25 +507,15 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
             const SizedBox(height: 20),
             //upload consultations
             SizedBox(
-              height: 60,
+              height: 90,
               child: Column(
                 children: [
-                  if (isUploadingConsultations || isGeneratingReport) ...[
-                    const LinearProgressIndicator(),
-                    if (isGeneratingReport) ...[
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Text("Report generation can take up to 30 seconds",
-                          style: Theme.of(context).textTheme.bodySmall)
-                    ],
-                  ] else if (consultationFormName != null &&
-                      consultationFormRef != null) ...[
-                    Row(
-                      children: [
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.create),
-                          onPressed: () async {
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.create),
+                    onPressed: consultationFormName == null &&
+                            consultationFormRef == null
+                        ? null
+                        : () async {
                             if (!reportQuillController.document.isEmpty()) {
                               bool? result = await showDialog(
                                   context: context,
@@ -447,47 +559,62 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                                 file: consultationFormRef,
                               ),
                             ).whenComplete(() {
+                              hasGeneratedReport = true;
                               setState(() {
                                 isGeneratingReport = false;
                               });
                             });
                           },
-                          label: const Text('Generate Report'),
-                        ),
-                        const SizedBox(width: 20),
-                        FormBuilderField(
-                          name: 'consultation_form_ref',
-                          builder: (context) => Row(
-                            children: [
-                              Text('$consultationFormName'),
-                              //delete button
-                              IconButton(
-                                onPressed: () {
-                                  storage
-                                      .ref(
-                                          'consultations/$id/consultation_form/$consultationFormName')
-                                      .delete()
-                                      .then((value) {
-                                    setState(() {
-                                      consultationFormName = null;
-                                      consultationFormRef = null;
-                                    });
-                                  }).catchError(
-                                    (error) {
-                                      buildErrorAlertDialog(error);
-                                      throw error;
-                                    },
-                                  );
+                    label: Text(
+                        hasGeneratedReport ? "Redo Report" : 'Write Report'),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  if (isUploadingConsultations || isGeneratingReport) ...[
+                    const LinearProgressIndicator(),
+                    if (isGeneratingReport) ...[
+                      const SizedBox(
+                        height: 5,
+                      ),
+                      Text("Report generation can take up to 30 seconds",
+                          style: Theme.of(context).textTheme.bodySmall)
+                    ],
+                  ] else if (consultationFormName != null &&
+                      consultationFormRef != null) ...[
+                    FormBuilderField(
+                      name: 'consultation_form_ref',
+                      builder: (context) => Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('$consultationFormName'),
+                          //delete button
+                          IconButton(
+                            onPressed: () {
+                              storage
+                                  .ref(
+                                      'consultations/$id/consultation_form/$consultationFormName')
+                                  .delete()
+                                  .then((value) {
+                                setState(() {
+                                  consultationFormName = null;
+                                  consultationFormRef = null;
+                                });
+                              }).catchError(
+                                (error) {
+                                  buildErrorAlertDialog(error);
+                                  throw error;
                                 },
-                                icon: const Icon(Icons.close),
-                              ),
-                            ],
+                              );
+                            },
+                            icon: const Icon(Icons.close),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ] else
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextButton.icon(
                           onPressed: () async {
@@ -556,50 +683,75 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
               ),
             ),
 
-            Column(
+            Stack(
               children: [
-                const SizedBox(
-                  height: 20,
-                ),
-                QuillToolbar.simple(
-                  configurations: QuillSimpleToolbarConfigurations(
-                    controller: reportQuillController,
-                    showInlineCode: false,
-                    showColorButton: false,
-                    showCodeBlock: false,
-                    showSubscript: false,
-                    showSuperscript: false,
-                    showLink: false,
-                    showFontFamily: false,
-                    showSearchButton: false,
-                    showClipboardCopy: false,
-                    showClipboardCut: false,
-                    showClipboardPaste: false,
-                    showQuote: false,
-                    showBackgroundColorButton: false,
-                    showStrikeThrough: false,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Container(
-                  height: MediaQuery.of(context).size.height * 0.5,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.grey,
+                Column(
+                  children: [
+                    const SizedBox(
+                      height: 20,
                     ),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: QuillEditor.basic(
-                      configurations: QuillEditorConfigurations(
+                    QuillToolbar.simple(
+                      configurations: QuillSimpleToolbarConfigurations(
                         controller: reportQuillController,
-                        showCursor: true,
+                        showInlineCode: false,
+                        showColorButton: false,
+                        showCodeBlock: false,
+                        showSubscript: false,
+                        showSuperscript: false,
+                        showLink: false,
+                        showFontFamily: false,
+                        showSearchButton: false,
+                        showClipboardCopy: false,
+                        showClipboardCut: false,
+                        showClipboardPaste: false,
+                        showQuote: false,
+                        showBackgroundColorButton: false,
+                        showStrikeThrough: false,
                       ),
-                      // scrollController: requestScrollController,
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      height: MediaQuery.of(context).size.height * 0.5,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: QuillEditor.basic(
+                          configurations: QuillEditorConfigurations(
+                            controller: reportQuillController,
+                            showCursor: true,
+                          ),
+                          // scrollController: requestScrollController,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (isGeneratingReport) // This condition checks if the report is being generated
+                  Positioned.fill(
+                    // Overlay that covers the entire Quill editor area
+                    child: Container(
+                      //border radius
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+
+                      child: const Center(
+                        child: Text(
+                          'Creating Report...',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ), // Optional: Show a loading indicator
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ],
@@ -621,6 +773,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
               _currentStep = step;
             });
           },
+          //TODO: [prevent submission if report is empty]
           onStepContinue: () {
             setState(() {
               if (_currentStep < steps.length - 1) {

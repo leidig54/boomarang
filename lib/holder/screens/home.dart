@@ -1,3 +1,4 @@
+import 'package:boomarang/holder/screens/payments_datagrid.dart';
 import 'package:boomarang/holder/screens/request_datagrid.dart';
 import 'package:boomarang/shared/navigation_bottom_widget.dart';
 import 'package:boomarang/shared/profile.dart';
@@ -16,9 +17,9 @@ class _HolderHomeState extends State<HolderHome> {
   int selectedIndex = 1;
 
   List<Widget> screens = [
-    // Container(),
-    const HolderDatagridScreen(),
     Container(),
+    const HolderDatagridScreen(),
+    const HolderPaymentsDatagridScreen(),
     const BoomarangProfileScreen(),
     Container(),
   ];
@@ -51,14 +52,14 @@ class _HolderHomeState extends State<HolderHome> {
             //Boomerang
           ),
           destinations: [
-            // NavigationRailDestination(
-            //   icon: const Icon(Icons.dashboard),
-            //   disabled: true,
-            //   label: Text(
-            //     'Dashboard',
-            //     style: Theme.of(context).textTheme.bodyLarge,
-            //   ),
-            // ),
+            NavigationRailDestination(
+              icon: const Icon(Icons.dashboard),
+              disabled: true,
+              label: Text(
+                'Dashboard',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ),
             NavigationRailDestination(
               icon: const Icon(Icons.mail),
               label: Text(
@@ -69,7 +70,6 @@ class _HolderHomeState extends State<HolderHome> {
             //payments
             NavigationRailDestination(
               icon: const Icon(Icons.payment),
-              disabled: true,
               label: Text(
                 'Payments',
                 style: Theme.of(context).textTheme.bodyLarge,
