@@ -7,10 +7,12 @@ import { gemini15ProPreview, vertexAI } from "@genkit-ai/vertexai";
 import * as crypto from "crypto";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import * as functions from "firebase-functions";
+import { setGlobalOptions } from "firebase-functions/v2/options";
 import nodemailer from "nodemailer";
 import * as z from "zod";
 import serviceAccount from "./serviceKey.json";
 import admin = require("firebase-admin");
+
 
 // TODO: improve templating
 // TODO: add feedback space
@@ -20,12 +22,21 @@ import admin = require("firebase-admin");
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 
 
-admin.initializeApp(
-  {
-    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-    storageBucket: "boomarang-ac130.appspot.com",
-  }
-);
+if (!isEmulator) {
+  setGlobalOptions({ region: "europe-west2" });
+}
+
+if (isEmulator) {
+  admin.initializeApp(
+    {
+      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+      storageBucket: "boomarang-ac130.appspot.com",
+    }
+  );
+} else {
+  admin.initializeApp();
+}
+
 
 configureGenkit({
   plugins: [
