@@ -324,6 +324,60 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                           ],
                         ),
                       ),
+                      const SizedBox(
+                        height: 4,
+                      ),
+                      //fee amount and if paid
+                      Row(
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              text: 'Fee: ',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              children: [
+                                TextSpan(
+                                    text: request.fee == 0
+                                        ? "N/A"
+                                        : request.formattedFee,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge!
+                                        .copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87))
+                              ],
+                            ),
+                          ),
+                          if (request.feePaid != null) ...[
+                            const SizedBox(width: 8),
+                            //separator
+                            Container(
+                              height: 16,
+                              width: 1,
+                              color: Colors.black26,
+                            ),
+                            const SizedBox(width: 8),
+                            //fee paid
+                            Text(request.feePaid == true ? 'Paid' : 'Not Paid',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    )),
+                            const SizedBox(width: 8),
+                            Icon(
+                              request.feePaid == true
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              color: request.feePaid == true
+                                  ? Colors.green
+                                  : Colors.red,
+                              size: 16,
+                            )
+                          ]
+                        ],
+                      ),
 
                       const SizedBox(height: 10),
                       Expanded(

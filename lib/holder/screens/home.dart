@@ -1,4 +1,5 @@
-import 'package:boomarang/holder/screens/datagrid.dart';
+import 'package:boomarang/holder/screens/payments_datagrid.dart';
+import 'package:boomarang/holder/screens/request_datagrid.dart';
 import 'package:boomarang/shared/navigation_bottom_widget.dart';
 import 'package:boomarang/shared/profile.dart';
 import 'package:flutter/material.dart';
@@ -13,12 +14,14 @@ class HolderHome extends StatefulWidget {
 }
 
 class _HolderHomeState extends State<HolderHome> {
-  int selectedIndex = 0;
+  int selectedIndex = 1;
 
   List<Widget> screens = [
     Container(),
     const HolderDatagridScreen(),
+    const HolderPaymentsDatagridScreen(),
     const BoomarangProfileScreen(),
+    Container(),
   ];
 
   @override
@@ -49,9 +52,9 @@ class _HolderHomeState extends State<HolderHome> {
             //Boomerang
           ),
           destinations: [
-            //Dashboard
             NavigationRailDestination(
               icon: const Icon(Icons.dashboard),
+              disabled: true,
               label: Text(
                 'Dashboard',
                 style: Theme.of(context).textTheme.bodyLarge,
@@ -64,10 +67,27 @@ class _HolderHomeState extends State<HolderHome> {
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
+            //payments
+            NavigationRailDestination(
+              icon: const Icon(Icons.payment),
+              label: Text(
+                'Payments',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ),
             NavigationRailDestination(
               icon: const Icon(Icons.person),
               label: Text(
                 'Profile',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ),
+            //admin
+            NavigationRailDestination(
+              icon: const Icon(Icons.admin_panel_settings),
+              disabled: true,
+              label: Text(
+                'Admin',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
