@@ -107,7 +107,7 @@ async (subject) => {
   if (subject.consultationData.fileUrl) {
     prompt.push({ media: { url: subject.consultationData.fileUrl, contentType: "application/pdf" } });
   }
-  prompt.push({ text: "Respond in raw html. Do not use ** etc. Do not include any information pertaining to any other individuals that may be within the consultation details. Sign with the following details: " });
+  prompt.push({ text: "Respond in raw html. Do not use ** etc. Make good use of headings or bold text to separate the components. Sign with the following details: " });
   prompt.push({ text: `${title} ` });
   prompt.push({ text: `${firstName} ` });
   prompt.push({ text: `${lastName}` });
@@ -264,7 +264,6 @@ export const assignHolderToRequestOnRequestCreate = functions.region("europe-wes
           });
 
           // Email the holder to create an account
-          // TODO: attach the email to the link to create an account
           const emailMessageHtml = `<p>Dear Holder,</p>
           <p>A new request has been created for you. Please create an account with this email to view and manage the request.</p>
           <p>Click <a href="https://boomarang.web.app">here</a> to create an account.</p>
@@ -595,27 +594,4 @@ export const confirmEmailAddress = functions.region("europe-west2").https.onCall
 }
 );
 
-export const rejectRequest = functions.region("europe-west2").https.onCall(async (data, context) => {
-  // get the requestId from the call data, then update the request document to mark the request as rejected
-  const requestId = data.requestId;
-  const requestDoc = admin.firestore().collection("requests").doc(requestId);
-
-  // check if the user uid is the same as the holderUserId in the request document
-  const request = await requestDoc.get();
-  if (!request.exists) {
-    throw new functions.https.HttpsError("not-found", "Request not found");
-  }
-
-  if (request.data()?.holderUserId !== context.auth?.uid) {
-    throw new functions.https.HttpsError("permission-denied", "User does not have permission to reject request");
-  }
-
-  await requestDoc.update({
-    requestStatus: "rejected",
-    rejectionReason: data.reason,
-  });
-
-  return "Request rejected";
-}
-);
 
