@@ -1,5 +1,4 @@
 import 'package:boomarang/main.dart';
-import 'package:boomarang/misc/loading.dart';
 import 'package:boomarang/onboarding/screens/onboarding_gate.dart';
 import 'package:boomarang/shared/alert_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -40,7 +39,17 @@ class _AuthGateState extends State<AuthGate> {
         stream: auth.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const LoadingScreen(message: 'Checking authentication...');
+            return const Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    Text('Checking authentication...'),
+                  ],
+                ),
+              ),
+            );
           } else if (snapshot.hasError) {
             return Scaffold(
               body: Center(
