@@ -11,10 +11,10 @@ admin.initializeApp(
 );
 
 const db = admin.firestore();
-db.settings({
-    host: "localhost:8080",
-    ssl: false
-})
+// db.settings({
+//     host: "localhost:8080",
+//     ssl: false
+// })
 
 async function createDemoEnvironment()   {
 
@@ -148,7 +148,16 @@ await Promise.all(requests.docs.map(request => requestCollection.doc(request.id)
             feePaid =  Math.random() < 0.5;
         }
 
-        //if 
+        const potentialPayers = [
+            'requester',
+            'subject',
+        ]
+
+        //for 10% of requests, set the status to rejected. for the others, set to awaiting_response
+        const requestStatus = Math.random() < 0.1 ? 'rejected' : 'awaiting_response';
+
+
+
 
         
         
@@ -171,7 +180,7 @@ await Promise.all(requests.docs.map(request => requestCollection.doc(request.id)
 
             ),
             consentVerified: true,
-            requestStatus: faker.helpers.arrayElement(['awaiting_response']),
+            requestStatus: requestStatus,
             requestType: requestType,
             requestDetails: null,
             requestFormRef: 'https://firebasestorage.googleapis.com/v0/b/boomarang-ac130.appspot.com/o/demo%2FRequest%20Details.pdf?alt=media&token=67700154-72bf-4e97-b5b1-10891d54b7b2',
@@ -180,6 +189,7 @@ await Promise.all(requests.docs.map(request => requestCollection.doc(request.id)
             fee: fee,
             feePaid: feePaid,
             paymentDate: feePaid ? faker.date.recent() : null,
+            payer: fee != 0 ? faker.helpers.arrayElement(potentialPayers) : null,
          }
 
         await requestCollection.doc(request.id).set(request);
@@ -187,7 +197,7 @@ await Promise.all(requests.docs.map(request => requestCollection.doc(request.id)
     }
 
     //add 30 requests
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 90; i++) {
         await createRequest();
     }
      
