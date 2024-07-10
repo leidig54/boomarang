@@ -4,14 +4,14 @@ import 'package:boomarang/shared/alert_dialog.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:flutter_quill/quill_delta.dart';
-import 'package:flutter_quill_delta_from_html/flutter_quill_delta_from_html.dart';
 
 Future<Document> generateReport({
   required RequestData requestData,
   required ConsultationData consultationData,
 }) async {
-  final HttpsCallable callable = functions.httpsCallable('generateReport');
+  final HttpsCallable callable =
+      FirebaseFunctions.instanceFor(region: "us-central1")
+          .httpsCallable("generateReport");
 
   final HttpsCallableResult results = await callable.call(
     <String, dynamic>{
@@ -28,18 +28,17 @@ Future<Document> generateReport({
     },
   ).catchError((error) {
     String errorText = "Error generating report: $error";
+    debugPrint(errorText);
     buildErrorAlertDialog(errorText);
     throw error;
   });
 
   //return the generated report
-  String reportTextHtml = results.data;
+  String reportText = results.data;
 
-  debugPrint('Generated report: $reportTextHtml');
+  debugPrint('Generated report: $reportText');
 
-  Delta reportTextDelta = HtmlToDelta().convert(reportTextHtml);
-
-  return Document.fromDelta(reportTextDelta);
+  return Document.fromHtml(reportText);
 }
 
 class RequestData {
