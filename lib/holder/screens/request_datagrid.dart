@@ -117,24 +117,43 @@ class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
                   ),
                 )),
             GridColumn(
-                columnName: 'requesterOrgName',
-                allowSorting: true,
-                filterPopupMenuOptions: const FilterPopupMenuOptions(
-                  canShowSortingOptions: false,
-                  showColumnName: false,
-                  filterMode: FilterMode.checkboxFilter,
-                ),
+                columnName: 'fee_charged',
+                allowSorting: false,
+                allowFiltering: false,
+                columnWidthMode: ColumnWidthMode.fitByColumnName,
                 label: Container(
                   padding: const EdgeInsets.all(8),
                   alignment: Alignment.center,
                   child: Text(
-                    'Requester',
+                    'Fee Charged',
                     style: Theme.of(context)
                         .textTheme
                         .titleMedium!
                         .copyWith(fontWeight: FontWeight.bold),
                   ),
                 )),
+            //feePaid
+            // GridColumn(
+            //     columnName: 'fee_paid',
+            //     allowSorting: false,
+            //     allowFiltering: false,
+            //     columnWidthMode: ColumnWidthMode.fitByColumnName,
+            //     filterPopupMenuOptions: const FilterPopupMenuOptions(
+            //       canShowSortingOptions: false,
+            //       showColumnName: false,
+            //       filterMode: FilterMode.checkboxFilter,
+            //     ),
+            //     label: Container(
+            //       padding: const EdgeInsets.all(8),
+            //       alignment: Alignment.center,
+            //       child: Text(
+            //         'Paid',
+            //         style: Theme.of(context)
+            //             .textTheme
+            //             .titleMedium!
+            //             .copyWith(fontWeight: FontWeight.bold),
+            //       ),
+            //     )),
             GridColumn(
               columnName: 'requestType',
               allowSorting: true,
@@ -198,8 +217,8 @@ class HolderDataSource extends DataGridSource {
             DataGridCell<String>(
                 columnName: 'subjectName',
                 value: "${e.subjectFirstName} ${e.subjectLastName}"),
-            DataGridCell<String>(
-                columnName: 'requesterOrgName', value: e.requesterOrgName),
+            DataGridCell<String>(columnName: 'fee', value: e.formattedFee),
+            // DataGridCell<bool>(columnName: 'fee_paid', value: e.feePaid),
             DataGridCell<String>(
                 columnName: 'requestType', value: requestType.name),
             DataGridCell<String>(
@@ -250,16 +269,78 @@ class HolderDataSource extends DataGridSource {
           return Container(
             padding: const EdgeInsets.all(8),
             alignment: Alignment.center,
-            child: e.value != 'Awaiting Response'
-                ? Icon(
-                    Icons.check_box,
-                    color: Theme.of(navigatorKey.currentContext!).primaryColor,
-                  )
-                : const Icon(
+            child: Builder(builder: (context) {
+              print(e.value);
+              if (e.value == 'Awaiting Response') {
+                return const Tooltip(
+                  message: 'Awaiting Response',
+                  child: Icon(
                     Icons.check_box_outline_blank,
                     color: Colors.grey,
                   ),
+                );
+              } else if (e.value == 'Rejected') {
+                return const Tooltip(
+                  message: 'Rejected',
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.red,
+                  ),
+                );
+              } else {
+                return Tooltip(
+                  message: 'Complete',
+                  child: Icon(
+                    Icons.check_box,
+                    color: Theme.of(navigatorKey.currentContext!).primaryColor,
+                  ),
+                );
+              }
+            }),
           );
+        }
+
+        //if column is "fee_paid", show a checkbox icon
+        if (e.columnName == 'fee_paid') {
+          return Container(
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+              child: Builder(
+                builder: (context) {
+                  //if null, show a dash
+                  if (e.value == null) {
+                    return const Text('-');
+                  } else {
+                    return e.value
+                        ? Icon(
+                            Icons.check_box,
+                            color: Theme.of(navigatorKey.currentContext!)
+                                .primaryColor,
+                          )
+                        : const Icon(
+                            Icons.check_box_outline_blank,
+                            color: Colors.grey,
+                          );
+                  }
+                },
+              ));
+        }
+
+        //in fee column, if fee = £0.00, show a dash
+        if (e.columnName == 'fee') {
+          if (e.value == '£0.00') {
+            return Container(
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.centerRight,
+              child: const Text(
+                '-',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                ),
+              ),
+            );
+          }
         }
 
         return Container(
