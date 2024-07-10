@@ -9,9 +9,7 @@ Future<Document> generateReport({
   required RequestData requestData,
   required ConsultationData consultationData,
 }) async {
-  final HttpsCallable callable =
-      FirebaseFunctions.instanceFor(region: "us-central1")
-          .httpsCallable("generateReport");
+  final HttpsCallable callable = functions.httpsCallable('generateReport');
 
   final HttpsCallableResult results = await callable.call(
     <String, dynamic>{
@@ -28,7 +26,6 @@ Future<Document> generateReport({
     },
   ).catchError((error) {
     String errorText = "Error generating report: $error";
-    debugPrint(errorText);
     buildErrorAlertDialog(errorText);
     throw error;
   });
