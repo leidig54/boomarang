@@ -16,14 +16,13 @@ import 'package:provider/provider.dart';
 
 //TODO: make stepper scrollable
 //TODO: fix delay when navgating back
+bool useEmulators = true;
 
 FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFunctions functions =
     FirebaseFunctions.instanceFor(region: 'europe-west2');
 FirebaseStorage storage = FirebaseStorage.instance;
 FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-bool useEmulators = true;
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
