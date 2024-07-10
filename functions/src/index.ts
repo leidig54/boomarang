@@ -22,8 +22,9 @@ import admin = require("firebase-admin");
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 
 
-setGlobalOptions({ region: "europe-west2" });
-
+if (!isEmulator) {
+  setGlobalOptions({ region: "europe-west2" });
+}
 
 if (isEmulator) {
   admin.initializeApp(
@@ -107,7 +108,7 @@ async (subject) => {
   if (subject.consultationData.fileUrl) {
     prompt.push({ media: { url: subject.consultationData.fileUrl, contentType: "application/pdf" } });
   }
-  prompt.push({ text: "Respond in raw html. Do not use ** etc. Do not include any information pertaining to any other individuals that may be within the consultation details. Sign with the following details: " });
+  prompt.push({ text: "Respond in raw html. Do not use ** etc. Make good use of headings or bold text to separate the components. Sign with the following details: " });
   prompt.push({ text: `${title} ` });
   prompt.push({ text: `${firstName} ` });
   prompt.push({ text: `${lastName}` });
@@ -130,7 +131,7 @@ async (subject) => {
 }
 );
 
-export const sendConsentAppWhenRequestSubmitted = functions.region("europe-west2").firestore.document("requests/{requestId}").onCreate(async (change, context) => {
+export const sendConsentAppWhenRequestSubmitted = functions.firestore.document("requests/{requestId}").onCreate(async (change, context) => {
   // we need to check if to see if the isSubmitted field is true when the request is created or updated (i.e. when the request is submitted), but we only want to send the email once, so we need to check if the isSubmitted field is true and the request has not been submitted before
 
   const request = change.data();
@@ -204,7 +205,7 @@ export const sendConsentAppWhenRequestSubmitted = functions.region("europe-west2
   }
 });
 
-export const createUserDocument = functions.region("europe-west2").auth.user().onCreate(async (user) => {
+export const createUserDocument = functions.auth.user().onCreate(async (user) => {
   // if already email verified, return
   if (user.emailVerified) {
     console.log("User email already verified. Is a demo user. Exiting...");
@@ -227,7 +228,7 @@ export const createUserDocument = functions.region("europe-west2").auth.user().o
 });
 
 // when a request is updated and the holderEmail field is no longer null or has changed, check to see if the user with that holderEmail already exists. if it does, assign the userId to the holderUserId field in the request
-export const assignHolderToRequestOnRequestCreate = functions.region("europe-west2").firestore.document("requests/{requestId}")
+export const assignHolderToRequestOnRequestCreate = functions.firestore.document("requests/{requestId}")
   .onWrite(async (change) => {
     const before = change.before.data();
     const after = change.after.data();
@@ -264,7 +265,6 @@ export const assignHolderToRequestOnRequestCreate = functions.region("europe-wes
           });
 
           // Email the holder to create an account
-          // TODO: attach the email to the link to create an account
           const emailMessageHtml = `<p>Dear Holder,</p>
           <p>A new request has been created for you. Please create an account with this email to view and manage the request.</p>
           <p>Click <a href="https://boomarang.web.app">here</a> to create an account.</p>
@@ -295,7 +295,7 @@ export const assignHolderToRequestOnRequestCreate = functions.region("europe-wes
   });
 
 // when a user is verified, check if the user has a request with a holderEmail that matches the user's email. if it does, assign the userId to the holderUserId field in the request
-export const assignRequestToHolderOnUserVerification = functions.region("europe-west2").firestore.document("users/{userId}").onWrite(async (change) => {
+export const assignRequestToHolderOnUserVerification = functions.firestore.document("users/{userId}").onWrite(async (change) => {
   const before = change.before.data();
   const after = change.after.data();
 
@@ -404,7 +404,7 @@ export const sendVerificationEmail = async (userId: string, ) => {
   return "Verification email sent";
 };
 
-export const sendVerificationEmailCallable = functions.region("europe-west2").https.onCall(async (data, context) => {
+export const sendVerificationEmailCallable = functions.https.onCall(async (data, context) => {
   // check if the user is authenticated
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "User must be authenticated to send verification email");
@@ -419,7 +419,7 @@ export const sendVerificationEmailCallable = functions.region("europe-west2").ht
   return "Verification email sent";
 });
 
-export const checkEmailVerificationCode = functions.region("europe-west2").https.onCall(async (data, context) => {
+export const checkEmailVerificationCode = functions.https.onCall(async (data, context) => {
   // check if the user is authenticated
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "User must be authenticated to verify email");
@@ -466,7 +466,7 @@ export const checkEmailVerificationCode = functions.region("europe-west2").https
   return "Email verified";
 });
 
-export const markRequestAsCompleteWhenResponseSubmitted = functions.region("europe-west2").firestore.document("responses/{responseId}").onCreate(async (change) => {
+export const markRequestAsCompleteWhenResponseSubmitted = functions.firestore.document("responses/{responseId}").onCreate(async (change) => {
   // when a response is created, mark the request as complete
   const response = change.data();
   const requestId = response.id;
@@ -478,7 +478,7 @@ export const markRequestAsCompleteWhenResponseSubmitted = functions.region("euro
 }
 );
 
-export const getFirstandLastName = functions.region("europe-west2").https.onCall(async (data) => {
+export const getFirstandLastName = functions.https.onCall(async (data) => {
   // given the requestId, get the subjectFirstName and subjectLastName from the request document
   const requestId = data.requestId;
   const requestDoc = admin.firestore().collection("requests").doc(requestId);
@@ -492,7 +492,7 @@ export const getFirstandLastName = functions.region("europe-west2").https.onCall
 }
 );
 
-export const verifyDateOfBirth = functions.region("europe-west2").https.onCall(async (data) => {
+export const verifyDateOfBirth = functions.https.onCall(async (data) => {
   // get the dateOfBirth and requestId from the call data, then get the dateOfBirth from the request document, and compare the two. return the result as 'verified' key in the response
   const requestId = data.requestId;
   const dateOfBirthISO = data.dateOfBirth;
@@ -535,7 +535,7 @@ export const verifyDateOfBirth = functions.region("europe-west2").https.onCall(a
 }
 );
 
-export const verifyConsent = functions.region("europe-west2").https.onCall(async (data) => {
+export const verifyConsent = functions.https.onCall(async (data) => {
   // get the consent token and requestId from the call data, then get the token from the consent tokens collection and compare the two. return the result as 'verified' key in the response
   const requestId = data.requestId;
   const token = data.token;
@@ -562,7 +562,7 @@ export const verifyConsent = functions.region("europe-west2").https.onCall(async
 }
 );
 
-export const confirmEmailAddress = functions.region("europe-west2").https.onCall(async (data) => {
+export const confirmEmailAddress = functions.https.onCall(async (data) => {
   // get the requestId and the token and check if the token matches the token in the consent_tokens collection
   const requestId = data.requestId;
   const token = data.token;
@@ -595,27 +595,4 @@ export const confirmEmailAddress = functions.region("europe-west2").https.onCall
 }
 );
 
-export const rejectRequest = functions.region("europe-west2").https.onCall(async (data, context) => {
-  // get the requestId from the call data, then update the request document to mark the request as rejected
-  const requestId = data.requestId;
-  const requestDoc = admin.firestore().collection("requests").doc(requestId);
-
-  // check if the user uid is the same as the holderUserId in the request document
-  const request = await requestDoc.get();
-  if (!request.exists) {
-    throw new functions.https.HttpsError("not-found", "Request not found");
-  }
-
-  if (request.data()?.holderUserId !== context.auth?.uid) {
-    throw new functions.https.HttpsError("permission-denied", "User does not have permission to reject request");
-  }
-
-  await requestDoc.update({
-    requestStatus: "rejected",
-    rejectionReason: data.reason,
-  });
-
-  return "Request rejected";
-}
-);
 
