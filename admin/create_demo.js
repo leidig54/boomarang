@@ -156,7 +156,17 @@ await Promise.all(requests.docs.map(request => requestCollection.doc(request.id)
         //for 10% of requests, set the status to rejected. for the others, set to awaiting_response
         const requestStatus = Math.random() < 0.1 ? 'rejected' : 'awaiting_response';
 
+        let requestDetails;
+        let requestFormRef;
 
+        //if the requesterOrg is self, set the request details to lorem ipsum, 4 to 8 sentences, and set the form ref to null
+        if (org === 'self') {
+            requestDetails = faker.lorem.sentences( Math.floor(Math.random() * 4) + 4);
+            requestFormRef = null;
+        } else {
+            requestDetails = null;
+            requestFormRef = 'https://firebasestorage.googleapis.com/v0/b/boomarang-ac130.appspot.com/o/demo%2FRequest%20Details.pdf?alt=media&token=67700154-72bf-4e97-b5b1-10891d54b7b2';
+        }
 
 
         
@@ -182,8 +192,8 @@ await Promise.all(requests.docs.map(request => requestCollection.doc(request.id)
             consentVerified: true,
             requestStatus: requestStatus,
             requestType: requestType,
-            requestDetails: null,
-            requestFormRef: 'https://firebasestorage.googleapis.com/v0/b/boomarang-ac130.appspot.com/o/demo%2FRequest%20Details.pdf?alt=media&token=67700154-72bf-4e97-b5b1-10891d54b7b2',
+            requestDetails: requestDetails,
+            requestFormRef: requestFormRef,
             consentFormRef: 'https://firebasestorage.googleapis.com/v0/b/boomarang-ac130.appspot.com/o/demo%2FConsent%20Form.pdf?alt=media&token=655d6b8c-e21c-4dcf-9008-74941eebea71',
             isDemo: true,
             fee: fee,

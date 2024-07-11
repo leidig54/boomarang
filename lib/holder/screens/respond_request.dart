@@ -69,165 +69,25 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                flex: 1,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Patient Details",
-                        style: Theme.of(context).textTheme.titleLarge),
-                    RichText(
-                      text: TextSpan(
-                        text: 'Name: ',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                        children: [
-                          TextSpan(
-                              text:
-                                  '${request.subjectFirstName} ${request.subjectLastName}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87))
-                        ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Patient Details",
+                          style: Theme.of(context).textTheme.titleLarge),
+                      const SizedBox(
+                        height: 10,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    RichText(
-                      text: TextSpan(
-                        text: 'Date of Birth: ',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                        children: [
-                          TextSpan(
-                              text: request.formattedSubjectDob,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87))
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            text: 'Email: ',
-                            style: Theme.of(context).textTheme.bodyLarge,
-                            children: [
-                              TextSpan(
-                                  text: request.subjectEmail,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge!
-                                      .copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87))
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        //separator
-                        Container(
-                          height: 16,
-                          width: 1,
-                          color: Colors.black26,
-                        ),
-                        const SizedBox(width: 8),
-                        //email verified
-                        Text(
-                            request.subjectEmailVerified == true
-                                ? 'Verified'
-                                : 'Not Verified',
-                            style:
-                                Theme.of(context).textTheme.bodyLarge!.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    )),
-
-                        const SizedBox(width: 8),
-                        Icon(
-                          request.subjectEmailVerified == true
-                              ? Icons.check_circle
-                              : Icons.cancel,
-                          color: request.subjectEmailVerified == true
-                              ? Colors.green
-                              : Colors.red,
-                          size: 16,
-                        )
-                      ],
-                    ),
-                    //consent
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            text: 'Consent: ',
-                            style: Theme.of(context).textTheme.bodyLarge,
-                            children: [
-                              //link to consent file wth recogniser
-                              TextSpan(
-                                text: 'View',
-                                //theme color and bold
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge!
-                                    .copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).primaryColor),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    launchUrl(
-                                        Uri.parse(request.consentFormRef!));
-                                  },
-                              ),
-                            ],
-                          ),
-                        ),
-                        //spacer
-                        const SizedBox(width: 8),
-                        //separator
-                        Container(
-                          height: 16,
-                          width: 1,
-                          color: Colors.black26,
-                        ),
-                        const SizedBox(width: 8),
-                        //consent verified
-                        Text(
-                            request.consentVerified == true
-                                ? 'Verified'
-                                : 'Not Verified',
-                            style:
-                                Theme.of(context).textTheme.bodyLarge!.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    )),
-                        const SizedBox(width: 8),
-                        Icon(
-                          request.consentVerified == true
-                              ? Icons.check_circle
-                              : Icons.cancel,
-                          color: request.consentVerified == true
-                              ? Colors.green
-                              : Colors.red,
-                          size: 16,
-                        )
-                      ],
-                    ),
-
-                    const SizedBox(height: 4),
-                    //Request Details
-                    if (request.requestDetails != null)
                       RichText(
                         text: TextSpan(
-                          text: 'Details: \n',
+                          text: 'Name: ',
                           style: Theme.of(context).textTheme.bodyLarge,
                           children: [
                             TextSpan(
-                                text: request.requestDetails,
+                                text:
+                                    '${request.subjectFirstName} ${request.subjectLastName}',
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyLarge!
@@ -237,20 +97,179 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                           ],
                         ),
                       ),
-                  ],
-                ),
-              ),
-              if (request.requestFormRef != null) ...[
-                Expanded(
-                  flex: 3,
-                  child: Column(
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              text: 'Date of Birth: ',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              children: [
+                                TextSpan(
+                                    text: request.formattedSubjectDob,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge!
+                                        .copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87))
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          //separator]
+                          Container(
+                            height: 16,
+                            width: 1,
+                            color: Colors.black26,
+                          ),
+                          const SizedBox(width: 8),
+                          //dob verified
+                          Text(
+                              request.subjectDOBVerified == true
+                                  ? 'Verified'
+                                  : 'Not Verified',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                          const SizedBox(width: 8),
+                          Icon(
+                            request.subjectDOBVerified == true
+                                ? Icons.check_circle
+                                : Icons.cancel,
+                            color: request.subjectDOBVerified == true
+                                ? Colors.green
+                                : Colors.red,
+                            size: 16,
+                          )
+                        ],
+                      ),
+
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              text: 'Email: ',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              children: [
+                                TextSpan(
+                                    text: request.subjectEmail,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge!
+                                        .copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87))
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          //separator
+                          Container(
+                            height: 16,
+                            width: 1,
+                            color: Colors.black26,
+                          ),
+                          const SizedBox(width: 8),
+                          //email verified
+                          Text(
+                              request.subjectEmailVerified == true
+                                  ? 'Verified'
+                                  : 'Not Verified',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  )),
+
+                          const SizedBox(width: 8),
+                          Icon(
+                            request.subjectEmailVerified == true
+                                ? Icons.check_circle
+                                : Icons.cancel,
+                            color: request.subjectEmailVerified == true
+                                ? Colors.green
+                                : Colors.red,
+                            size: 16,
+                          )
+                        ],
+                      ),
+                      //consent
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              text: 'Consent: ',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              children: [
+                                //link to consent file wth recogniser
+                                TextSpan(
+                                  text: 'View',
+                                  //theme color and bold
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              Theme.of(context).primaryColor),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () {
+                                      launchUrl(
+                                          Uri.parse(request.consentFormRef!));
+                                    },
+                                ),
+                              ],
+                            ),
+                          ),
+                          //spacer
+                          const SizedBox(width: 8),
+                          //separator
+                          Container(
+                            height: 16,
+                            width: 1,
+                            color: Colors.black26,
+                          ),
+                          const SizedBox(width: 8),
+                          //consent verified
+                          Text(
+                              request.consentVerified == true
+                                  ? 'Verified'
+                                  : 'Not Verified',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                          const SizedBox(width: 8),
+                          Icon(
+                            request.consentVerified == true
+                                ? Icons.check_circle
+                                : Icons.cancel,
+                            color: request.consentVerified == true
+                                ? Colors.green
+                                : Colors.red,
+                            size: 16,
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(
-                        height: 20,
-                      ),
                       Text("Request Details",
                           style: Theme.of(context).textTheme.titleLarge),
+                      const SizedBox(
+                        height: 10,
+                      ),
                       RichText(
                         text: TextSpan(
                           text: 'Type: ',
@@ -398,26 +417,53 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                           ]
                         ],
                       ),
-
-                      const SizedBox(height: 10),
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Colors.grey,
-                            ),
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          height: MediaQuery.of(context).size.height * 0.35,
-                          child: Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: SfPdfViewer.network(
-                              request.requestFormRef!,
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
+                  )
+                ],
+              ),
+              const SizedBox(
+                height: 40,
+              ),
+              if (request.requestFormRef != null)
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey,
+                    ),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  height: MediaQuery.of(context).size.height * 0.45,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: SfPdfViewer.network(
+                      request.requestFormRef!,
+                    ),
+                  ),
+                ),
+              if (request.requestDetails != null) ...[
+                const SizedBox(
+                  height: 20,
+                ),
+                //request details
+                Text("Description",
+                    style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey,
+                    ),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  height: MediaQuery.of(context).size.height * 0.40,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(
+                      request.requestDetails!,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
                   ),
                 ),
               ],
@@ -426,10 +472,17 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
               ),
               TextButton.icon(
                 onPressed: () {
-                  launchUrl(Uri.parse(request.requestFormRef!));
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return RejectRequestDialog(id: id);
+                      });
                 },
-                icon: const Icon(Icons.download),
-                label: const Text('Download Request Form'),
+                label: const Text("Reject Request"),
+                icon: const Icon(Icons.cancel),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                ),
               ),
             ],
           ),
@@ -642,7 +695,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                             child: FormBuilderCheckbox(
                                 name: 'include_consultation_details',
                                 initialValue: false,
-                                title: const Text('Include in report'),
+                                title: const Text('Include file with report'),
                                 onChanged: (value) {
                                   setState(() {
                                     includeConsultationDetailsInReport = value!;
@@ -877,5 +930,105 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
     );
 
     await firestore.collection('responses').doc(id).set(response.toMap());
+  }
+}
+
+class RejectRequestDialog extends StatefulWidget {
+  const RejectRequestDialog({
+    super.key,
+    required this.id,
+  });
+
+  final String id;
+
+  @override
+  State<RejectRequestDialog> createState() => _RejectRequestDialogState();
+}
+
+class _RejectRequestDialogState extends State<RejectRequestDialog> {
+  bool isLoading = false;
+  TextEditingController reasonController = TextEditingController();
+
+  List reasons = [
+    'Insufficient information',
+    'Innapproriate request',
+    'Other',
+  ];
+
+  String value = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return SimpleDialog(
+      title: const Text('Are you sure you want to reject this request?'),
+      children: [
+        //radio list of reasons
+        ...List.generate(
+          reasons.length,
+          (index) => RadioListTile(
+            title: Text(reasons[index]),
+            value: reasons[index],
+            groupValue: value,
+            onChanged: (value) {
+              setState(() {
+                this.value = value as String;
+                if (value == 'Other') {
+                  reasonController.text = '';
+                } else {
+                  reasonController.text = value;
+                }
+              });
+            },
+          ),
+        ),
+        if (value == 'Other')
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: TextFormField(
+              autofocus: true,
+              controller: reasonController,
+              decoration: const InputDecoration(
+                labelText: 'Reason',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.only(right: 20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if (!isLoading)
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+              TextButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        setState(() {
+                          isLoading = true;
+                        });
+                        await Future.delayed(const Duration(seconds: 1));
+                        await functions.httpsCallable('rejectRequest').call({
+                          'requestId': widget.id,
+                          'reason': reasonController.text,
+                        });
+                        if (!context.mounted) return;
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                child: isLoading
+                    ? const CircularProgressIndicator.adaptive()
+                    : const Text('Reject'),
+              ),
+            ],
+          ),
+        )
+      ],
+    );
   }
 }
