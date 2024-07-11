@@ -594,4 +594,27 @@ export const confirmEmailAddress = functions.region("europe-west2").https.onCall
 }
 );
 
+export const rejectRequest = functions.region("europe-west2").https.onCall(async (data, context) => {
+  // get the requestId from the call data, then update the request document to mark the request as rejected
+  const requestId = data.requestId;
+  const requestDoc = admin.firestore().collection("requests").doc(requestId);
+
+  // check if the user uid is the same as the holderUserId in the request document
+  const request = await requestDoc.get();
+  if (!request.exists) {
+    throw new functions.https.HttpsError("not-found", "Request not found");
+  }
+
+  if (request.data()?.holderUserId !== context.auth?.uid) {
+    throw new functions.https.HttpsError("permission-denied", "User does not have permission to reject request");
+  }
+
+  await requestDoc.update({
+    requestStatus: "rejected",
+    rejectionReason: data.reason,
+  });
+
+  return "Request rejected";
+}
+);
 

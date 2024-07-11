@@ -1,8 +1,4 @@
 import 'package:boomarang/holder/logic/generate_report.dart';
-import 'package:boomarang/holder/screens/dialogs/llm_explainer.dart';
-import 'package:boomarang/holder/screens/dialogs/overwrite_report.dart';
-import 'package:boomarang/holder/screens/dialogs/reject_request.dart';
-import 'package:boomarang/holder/screens/dialogs/view_request_type.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/custom_stepper.dart';
 import 'package:boomarang/shared/alert_dialog.dart';
@@ -15,9 +11,13 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Stepper, Step, StepperType;
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+//TODO: add a warnings area for concerns (patient mididentification, insufficient information etc)
+//TODO: accept or decline report with amendments
 
 class RespondRequestScreen extends StatefulWidget {
   const RespondRequestScreen({
@@ -208,63 +208,56 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                               text: 'Consent: ',
                               style: Theme.of(context).textTheme.bodyLarge,
                               children: [
-                                request.consentFormRef == null
-                                    ? const TextSpan(
-                                        text: 'None',
-                                        style: TextStyle(
+                                //link to consent file wth recogniser
+                                TextSpan(
+                                  text: 'View',
+                                  //theme color and bold
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
                                           fontWeight: FontWeight.bold,
-                                        ))
-                                    : TextSpan(
-                                        text: 'View',
-                                        //theme color and bold
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge!
-                                            .copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                color: Theme.of(context)
-                                                    .primaryColor),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            launchUrl(Uri.parse(
-                                                request.consentFormRef!));
-                                          },
-                                      ),
+                                          color:
+                                              Theme.of(context).primaryColor),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () {
+                                      launchUrl(
+                                          Uri.parse(request.consentFormRef!));
+                                    },
+                                ),
                               ],
                             ),
                           ),
-                          if (request.consentFormRef != null) ...[
-                            //spacer
-                            const SizedBox(width: 8),
-                            //separator
-                            Container(
-                              height: 16,
-                              width: 1,
-                              color: Colors.black26,
-                            ),
-                            const SizedBox(width: 8),
-                            //consent verified
-                            Text(
-                                request.consentVerified == true
-                                    ? 'Verified'
-                                    : 'Not Verified',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge!
-                                    .copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    )),
-                            const SizedBox(width: 8),
-                            Icon(
+                          //spacer
+                          const SizedBox(width: 8),
+                          //separator
+                          Container(
+                            height: 16,
+                            width: 1,
+                            color: Colors.black26,
+                          ),
+                          const SizedBox(width: 8),
+                          //consent verified
+                          Text(
                               request.consentVerified == true
-                                  ? Icons.check_circle
-                                  : Icons.cancel,
-                              color: request.consentVerified == true
-                                  ? Colors.green
-                                  : Colors.red,
-                              size: 16,
-                            )
-                          ],
+                                  ? 'Verified'
+                                  : 'Not Verified',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                          const SizedBox(width: 8),
+                          Icon(
+                            request.consentVerified == true
+                                ? Icons.check_circle
+                                : Icons.cancel,
+                            color: request.consentVerified == true
+                                ? Colors.green
+                                : Colors.red,
+                            size: 16,
+                          )
                         ],
                       ),
                     ],
@@ -292,8 +285,35 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                                           showDialog(
                                               context: context,
                                               builder: (context) {
-                                                return ViwewRequestType(
-                                                    requestType: requestType);
+                                                return SimpleDialog(
+                                                  title: Text(requestType.name),
+                                                  contentPadding:
+                                                      const EdgeInsets.all(20),
+                                                  children: [
+                                                    SizedBox(
+                                                      width: 600,
+                                                      height: 600,
+                                                      child: Markdown(
+                                                        data: requestType
+                                                            .holderDescription!,
+                                                        shrinkWrap: true,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(20),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 20,
+                                                    ),
+                                                    TextButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child:
+                                                            const Text('Close'))
+                                                  ],
+                                                );
                                               });
                                         },
                                 style: Theme.of(context)
@@ -476,6 +496,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
           children: [
             Text("Writing Assistant",
                 style: Theme.of(context).textTheme.titleLarge),
+            const Text("Upload consultations to create a tailored report"),
             //learn more
             const SizedBox(
               height: 4,
@@ -497,7 +518,58 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                               ConstrainedBox(
                                 constraints:
                                     const BoxConstraints(maxWidth: 600),
-                                child: const LlmExplainerDialog(),
+                                child: SimpleDialog(
+                                  title: const Text('AI Assistant'),
+                                  contentPadding: const EdgeInsets.all(20),
+                                  children: [
+                                    Text("How does it work?",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.copyWith(
+                                                decoration:
+                                                    TextDecoration.underline)),
+                                    const Text(
+                                        'Boomarang AI uses the details of the request, along with the consultation data you upload, to generate a tailored report for the insurer.'),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    Text(
+                                      "Is it secure?",
+                                      //underline
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium!
+                                          .copyWith(
+                                              decoration:
+                                                  TextDecoration.underline),
+                                    ),
+                                    const Text(
+                                        'Yes, all data is encrypted and stored securely. The patients are fully consented before their data is shared, and the consultation data is only used for generating the report.\n\nThe consultation data is never made available to the insurer and is deleted immediately after the report is submitted.'),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    Text(
+                                      "Is is accurate?",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium!
+                                          .copyWith(
+                                              decoration:
+                                                  TextDecoration.underline),
+                                    ),
+                                    const Text(
+                                        "Boomarang AI uses the most advanced AI models available. It is capable of reliably extracting relevant information and producing accurate and detailed reports.\n\nHowever, the final report should always be reviewed by a medical professional before being submitted to the insurer."),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('Close'))
+                                  ],
+                                ),
                               ),
                             ],
                           );
@@ -505,229 +577,200 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                   },
               ),
             ),
+            const SizedBox(height: 20),
+            //upload consultations
             SizedBox(
               height: 90,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 2,
-                    child: Row(
+                  Row(
+                    children: [
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.create),
+                        onPressed: consultationFormName == null &&
+                                consultationFormRef == null
+                            ? null
+                            : () async {
+                                if (!reportQuillController.document.isEmpty()) {
+                                  bool? result = await showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                            title: const Text('Warning'),
+                                            content: const Text(
+                                                'Are you sure you want to overwrite the current report?'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context)
+                                                      .pop(false);
+                                                },
+                                                child: const Text('Cancel'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: const Text('Continue'),
+                                              ),
+                                            ],
+                                          ));
+
+                                  if (result == false) {
+                                    return;
+                                  }
+                                }
+                                setState(() {
+                                  isGeneratingReport = true;
+                                });
+
+                                reportQuillController.document =
+                                    await generateReport(
+                                  requestData: RequestData(
+                                    text: request.requestDetails,
+                                    file: request.requestFormRef,
+                                    requestType: request.requestType!,
+                                  ),
+                                  consultationData: ConsultationData(
+                                    text: null,
+                                    file: consultationFormRef,
+                                  ),
+                                ).whenComplete(() {
+                                  hasGeneratedReport = true;
+                                  setState(() {
+                                    isGeneratingReport = false;
+                                  });
+                                });
+                              },
+                        label: Text(hasGeneratedReport
+                            ? "Redo Report"
+                            : 'Write Report'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  if (isUploadingConsultations || isGeneratingReport) ...[
+                    const LinearProgressIndicator(),
+                    if (isGeneratingReport) ...[
+                      const SizedBox(
+                        height: 5,
+                      ),
+                      Text("Report generation can take up to 30 seconds",
+                          style: Theme.of(context).textTheme.bodySmall)
+                    ],
+                  ] else if (consultationFormName != null &&
+                      consultationFormRef != null) ...[
+                    FormBuilderField(
+                      name: 'consultation_form_ref',
+                      builder: (context) => Row(
+                        children: [
+                          Text('$consultationFormName'),
+                          //delete button
+                          IconButton(
+                            onPressed: () {
+                              storage
+                                  .ref(
+                                      'consultations/$id/consultation_form/$consultationFormName')
+                                  .delete()
+                                  .then((value) {
+                                setState(() {
+                                  consultationFormName = null;
+                                  consultationFormRef = null;
+                                });
+                              }).catchError(
+                                (error) {
+                                  buildErrorAlertDialog(error);
+                                  throw error;
+                                },
+                              );
+                            },
+                            icon: const Icon(Icons.close),
+                          ),
+                          //include consultation details in report button
+                          const SizedBox(width: 10),
+                          SizedBox(
+                            width: 200,
+                            child: FormBuilderCheckbox(
+                                name: 'include_consultation_details',
+                                initialValue: false,
+                                title: const Text('Include file with report'),
+                                onChanged: (value) {
+                                  setState(() {
+                                    includeConsultationDetailsInReport = value!;
+                                  });
+                                }),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ] else
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            ElevatedButton.icon(
-                              icon: const Icon(Icons.create),
-                              onPressed: consultationFormName == null &&
-                                      consultationFormRef == null
-                                  ? null
-                                  : () async {
-                                      if (!reportQuillController.document
-                                          .isEmpty()) {
-                                        bool? result = await showDialog(
-                                            context: context,
-                                            builder: (context) =>
-                                                const OverwriteReportDialog());
+                        TextButton.icon(
+                          onPressed: () async {
+                            setState(() {
+                              isUploadingConsultations = true;
+                            });
+                            final result = await FilePicker.platform.pickFiles(
+                              type: FileType.custom,
+                              allowedExtensions: ['pdf'],
+                              withData: true,
+                            );
 
-                                        if (result == false) {
-                                          return;
-                                        }
-                                      }
-                                      setState(() {
-                                        isGeneratingReport = true;
-                                      });
+                            if (result == null) {
+                              setState(() {
+                                isUploadingConsultations = false;
+                              });
+                              return;
+                            }
 
-                                      reportQuillController.document =
-                                          await generateReport(
-                                        requestData: RequestData(
-                                          text: request.requestDetails,
-                                          file: request.requestFormRef,
-                                          requestType: request.requestType!,
-                                        ),
-                                        consultationData: ConsultationData(
-                                          text: null,
-                                          file: consultationFormRef,
-                                        ),
-                                      ).whenComplete(() {
-                                        hasGeneratedReport = true;
-                                        setState(() {
-                                          isGeneratingReport = false;
-                                        });
-                                      });
-                                    },
-                              label: Text(hasGeneratedReport
-                                  ? "Redo Report"
-                                  : 'Write Report'),
-                            ),
-                            const SizedBox(width: 10),
-                            if (consultationFormName == null)
-                              Row(
-                                children: [
-                                  TextButton.icon(
-                                    onPressed: isUploadingConsultations
-                                        ? null
-                                        : () async {
-                                            setState(() {
-                                              isUploadingConsultations = true;
-                                            });
-                                            final result = await FilePicker
-                                                .platform
-                                                .pickFiles(
-                                              type: FileType.custom,
-                                              allowedExtensions: ['pdf'],
-                                              withData: true,
-                                            );
+                            String consultationFormFileName =
+                                result.files.first.name;
 
-                                            if (result == null) {
-                                              setState(() {
-                                                isUploadingConsultations =
-                                                    false;
-                                              });
-                                              return;
-                                            }
+                            try {
+                              await storage
+                                  .ref(
+                                      'consultations/$id/consultation_form/$consultationFormFileName')
+                                  .putData(
+                                      result.files.first.bytes!,
+                                      SettableMetadata(
+                                          contentType: 'application/pdf'));
 
-                                            String consultationFormFileName =
-                                                result.files.first.name;
+                              consultationFormRef = await storage
+                                  .ref(
+                                      'consultations/$id/consultation_form/$consultationFormFileName')
+                                  .getDownloadURL();
 
-                                            try {
-                                              await storage
-                                                  .ref(
-                                                      'consultations/$id/consultation_form/$consultationFormFileName')
-                                                  .putData(
-                                                      result.files.first.bytes!,
-                                                      SettableMetadata(
-                                                          contentType:
-                                                              'application/pdf'));
+                              _consultationsFormKey
+                                  .currentState!.fields['consultation_form_ref']
+                                  ?.didChange(consultationFormRef);
 
-                                              consultationFormRef = await storage
-                                                  .ref(
-                                                      'consultations/$id/consultation_form/$consultationFormFileName')
-                                                  .getDownloadURL();
+                              consultationFormName = await storage
+                                  .ref(
+                                      'consultations/$id/consultation_form/$consultationFormFileName')
+                                  .getMetadata()
+                                  .then((value) => value.name);
 
-                                              _consultationsFormKey
-                                                  .currentState!
-                                                  .fields[
-                                                      'consultation_form_ref']
-                                                  ?.didChange(
-                                                      consultationFormRef);
-
-                                              consultationFormName = await storage
-                                                  .ref(
-                                                      'consultations/$id/consultation_form/$consultationFormFileName')
-                                                  .getMetadata()
-                                                  .then((value) => value.name);
-
-                                              setState(() {});
-                                            } catch (error) {
-                                              buildErrorAlertDialog(error);
-                                            } finally {
-                                              setState(() {
-                                                isUploadingConsultations =
-                                                    false;
-                                              });
-                                            }
-                                            setState(() {
-                                              isUploadingConsultations = false;
-                                            });
-                                          },
-                                    icon: const Icon(Icons.upload_file),
-                                    label: const Text('Import Consultations'),
-                                  ),
-                                  isUploadingConsultations
-                                      ? const Padding(
-                                          padding: EdgeInsets.only(left: 10.0),
-                                          child: SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(),
-                                          ),
-                                        )
-                                      : const SizedBox(),
-                                ],
-                              ),
-                          ],
+                              setState(() {});
+                            } catch (error) {
+                              buildErrorAlertDialog(error);
+                            } finally {
+                              setState(() {
+                                isUploadingConsultations = false;
+                              });
+                            }
+                            setState(() {
+                              isUploadingConsultations = false;
+                            });
+                          },
+                          icon: const Icon(Icons.upload_file),
+                          label: const Text('Import Consultations'),
                         ),
-                        if (consultationFormName != null &&
-                            consultationFormRef != null) ...[
-                          FormBuilderField(
-                            name: 'consultation_form_ref',
-                            builder: (context) => Row(
-                              children: [
-                                Text('$consultationFormName'),
-                                Tooltip(
-                                  message: 'Delete file',
-                                  child: IconButton(
-                                    onPressed: isGeneratingReport
-                                        ? null
-                                        : () {
-                                            storage
-                                                .ref(
-                                                    'consultations/$id/consultation_form/$consultationFormName')
-                                                .delete()
-                                                .then((value) {
-                                              setState(() {
-                                                consultationFormName = null;
-                                                consultationFormRef = null;
-                                                includeConsultationDetailsInReport =
-                                                    false;
-                                              });
-                                            }).catchError(
-                                              (error) {
-                                                buildErrorAlertDialog(error);
-                                                throw error;
-                                              },
-                                            );
-                                          },
-                                    icon: const Icon(Icons.close),
-                                  ),
-                                ),
-                                //include consultation details in report button
-                                const SizedBox(width: 10),
-                                SizedBox(
-                                  width: 200,
-                                  child: Tooltip(
-                                    message:
-                                        'Checking this box will give the requester access to this file.',
-                                    child: FormBuilderCheckbox(
-                                        name: 'include_consultation_details',
-                                        initialValue:
-                                            includeConsultationDetailsInReport,
-                                        title: const Text(
-                                            'Include file with report'),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            includeConsultationDetailsInReport =
-                                                value!;
-                                          });
-                                        }),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ]
                       ],
                     ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        LinearProgressIndicator(
-                          value: isGeneratingReport ? null : 0,
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                            !isGeneratingReport
-                                ? ""
-                                : "Report generation can take up to 30 seconds",
-                            style: Theme.of(context).textTheme.bodySmall)
-                      ],
-                    ),
-                  )
                 ],
               ),
             ),
@@ -822,22 +865,38 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
               _currentStep = step;
             });
           },
+          //TODO: [prevent submission if report is empty]
           onStepContinue: () {
             setState(() {
               if (_currentStep < steps.length - 1) {
                 _currentStep++;
               } else {
-                if (reportQuillController.document.isEmpty()) {
-                  buildErrorAlertDialog(
-                      'Please write a report before submitting');
-                } else {
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return SubmitResponseDialog(
-                            submitResponse: submitResponse);
-                      });
-                }
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Submit Response'),
+                        content: const Text(
+                            'Are you sure you want to submit this response?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              await submitResponse();
+                              if (!context.mounted) return;
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Submit'),
+                          ),
+                        ],
+                      );
+                    });
               }
             });
           },
@@ -858,9 +917,8 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
 
   Future<void> submitResponse() async {
     //if include_consultation_details is true, add consultation details to response, otherwise delete consultation details
-    bool? includeConsultationDetails = _consultationsFormKey.currentState!
-            .fields['include_consultation_details']?.value as bool? ??
-        false;
+    bool includeConsultationDetails = _consultationsFormKey
+        .currentState!.fields['include_consultation_details']!.value as bool;
 
     BoomarangResponse response = BoomarangResponse(
       id: id,
@@ -875,35 +933,101 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
   }
 }
 
-class SubmitResponseDialog extends StatelessWidget {
-  const SubmitResponseDialog({
+class RejectRequestDialog extends StatefulWidget {
+  const RejectRequestDialog({
     super.key,
-    required this.submitResponse,
+    required this.id,
   });
 
-  final Future<void> Function() submitResponse;
+  final String id;
+
+  @override
+  State<RejectRequestDialog> createState() => _RejectRequestDialogState();
+}
+
+class _RejectRequestDialogState extends State<RejectRequestDialog> {
+  bool isLoading = false;
+  TextEditingController reasonController = TextEditingController();
+
+  List reasons = [
+    'Insufficient information',
+    'Innapproriate request',
+    'Other',
+  ];
+
+  String value = '';
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Submit Response'),
-      content: const Text('Are you sure you want to submit this response?'),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text('Cancel'),
+    return SimpleDialog(
+      title: const Text('Are you sure you want to reject this request?'),
+      children: [
+        //radio list of reasons
+        ...List.generate(
+          reasons.length,
+          (index) => RadioListTile(
+            title: Text(reasons[index]),
+            value: reasons[index],
+            groupValue: value,
+            onChanged: (value) {
+              setState(() {
+                this.value = value as String;
+                if (value == 'Other') {
+                  reasonController.text = '';
+                } else {
+                  reasonController.text = value;
+                }
+              });
+            },
+          ),
         ),
-        TextButton(
-          onPressed: () async {
-            await submitResponse();
-            if (!context.mounted) return;
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-          },
-          child: const Text('Submit'),
-        ),
+        if (value == 'Other')
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: TextFormField(
+              autofocus: true,
+              controller: reasonController,
+              decoration: const InputDecoration(
+                labelText: 'Reason',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.only(right: 20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if (!isLoading)
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+              TextButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        setState(() {
+                          isLoading = true;
+                        });
+                        await Future.delayed(const Duration(seconds: 1));
+                        await functions.httpsCallable('rejectRequest').call({
+                          'requestId': widget.id,
+                          'reason': reasonController.text,
+                        });
+                        if (!context.mounted) return;
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                child: isLoading
+                    ? const CircularProgressIndicator.adaptive()
+                    : const Text('Reject'),
+              ),
+            ],
+          ),
+        )
       ],
     );
   }
