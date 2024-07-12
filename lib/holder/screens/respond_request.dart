@@ -861,38 +861,42 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
               _currentStep = step;
             });
           },
-          //TODO: [prevent submission if report is empty]
           onStepContinue: () {
             setState(() {
               if (_currentStep < steps.length - 1) {
                 _currentStep++;
               } else {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('Submit Response'),
-                        content: const Text(
-                            'Are you sure you want to submit this response?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              await submitResponse();
-                              if (!context.mounted) return;
-                              Navigator.of(context).pop();
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Submit'),
-                          ),
-                        ],
-                      );
-                    });
+                if (reportQuillController.document.isEmpty()) {
+                  buildErrorAlertDialog(
+                      'Please write a report before submitting');
+                } else {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Submit Response'),
+                          content: const Text(
+                              'Are you sure you want to submit this response?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                await submitResponse();
+                                if (!context.mounted) return;
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Submit'),
+                            ),
+                          ],
+                        );
+                      });
+                }
               }
             });
           },
