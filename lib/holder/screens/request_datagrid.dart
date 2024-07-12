@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:boomarang/holder/screens/respond_request.dart';
 import 'package:boomarang/main.dart';
+import 'package:boomarang/misc/routing_no_animation.dart';
 import 'package:boomarang_shared/data/request_types.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/request_type.dart';
@@ -71,67 +72,67 @@ class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
                 _requests[details.rowColumnIndex.rowIndex - 1];
 
             if (request.requestStatus == 'awaiting_response') {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => RespondRequestScreen(
-                    request: request,
-                  ),
-                ),
+              navigateWithoutTransition(
+                context,
+                RespondRequestScreen(request: request),
               );
             }
           },
           columns: [
             GridColumn(
-                columnName: 'received',
-                allowFiltering: false,
-                allowSorting: true,
-                columnWidthMode: ColumnWidthMode.auto,
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'Received',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium!
-                        .copyWith(fontWeight: FontWeight.bold),
-                  ),
-                )),
-            GridColumn(
-                columnName: 'subjectName',
-                allowSorting: true,
-                filterPopupMenuOptions: const FilterPopupMenuOptions(
-                  canShowSortingOptions: false,
-                  showColumnName: false,
-                  filterMode: FilterMode.checkboxFilter,
+              columnName: 'received',
+              allowFiltering: false,
+              allowSorting: true,
+              columnWidthMode: ColumnWidthMode.auto,
+              label: Container(
+                padding: const EdgeInsets.all(8),
+                alignment: Alignment.center,
+                child: Text(
+                  'Received',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium!
+                      .copyWith(fontWeight: FontWeight.bold),
                 ),
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'Patient',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium!
-                        .copyWith(fontWeight: FontWeight.bold),
-                  ),
-                )),
+              ),
+            ),
             GridColumn(
-                columnName: 'fee_charged',
-                allowSorting: false,
-                allowFiltering: false,
-                columnWidthMode: ColumnWidthMode.fitByColumnName,
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'Fee Charged',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium!
-                        .copyWith(fontWeight: FontWeight.bold),
-                  ),
-                )),
+              columnName: 'subjectName',
+              allowSorting: true,
+              filterPopupMenuOptions: const FilterPopupMenuOptions(
+                canShowSortingOptions: false,
+                showColumnName: false,
+                filterMode: FilterMode.checkboxFilter,
+              ),
+              label: Container(
+                padding: const EdgeInsets.all(8),
+                alignment: Alignment.center,
+                child: Text(
+                  'Patient',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium!
+                      .copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            GridColumn(
+              columnName: 'fee_charged',
+              allowSorting: false,
+              allowFiltering: false,
+              columnWidthMode: ColumnWidthMode.fitByColumnName,
+              label: Container(
+                padding: const EdgeInsets.all(8),
+                alignment: Alignment.center,
+                child: Text(
+                  'Fee Charged',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium!
+                      .copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
             GridColumn(
               columnName: 'requestType',
               allowSorting: true,
