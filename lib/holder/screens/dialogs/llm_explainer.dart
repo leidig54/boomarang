@@ -30,7 +30,7 @@ class LlmExplainerDialog extends StatelessWidget {
               .copyWith(decoration: TextDecoration.underline),
         ),
         const Text(
-            'Yes, all data is encrypted and stored securely. The subjects are fully consented before their data is shared, and the consultation data is only used for generating the report.\n\nThe consultation data is never made available to the insurer and is deleted immediately after the report is submitted.'),
+            'Yes, all data is encrypted and stored securely. The patients are fully consented before their data is shared, and the consultation data is only used for generating the report.\n\nThe consultation data is never made available to the insurer and is deleted immediately after the report is submitted.'),
         const SizedBox(
           height: 20,
         ),
