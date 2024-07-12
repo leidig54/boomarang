@@ -1,6 +1,8 @@
 import 'package:boomarang/holder/logic/generate_report.dart';
 import 'package:boomarang/holder/screens/dialogs/llm_explainer.dart';
+import 'package:boomarang/holder/screens/dialogs/overwrite_report.dart';
 import 'package:boomarang/holder/screens/dialogs/reject_request.dart';
+import 'package:boomarang/holder/screens/dialogs/view_request_type.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/custom_stepper.dart';
 import 'package:boomarang/shared/alert_dialog.dart';
@@ -13,13 +15,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Stepper, Step, StepperType;
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-//TODO: add a warnings area for concerns (patient mididentification, insufficient information etc)
-//TODO: accept or decline report with amendments
 
 class RespondRequestScreen extends StatefulWidget {
   const RespondRequestScreen({
@@ -287,35 +285,8 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                                           showDialog(
                                               context: context,
                                               builder: (context) {
-                                                return SimpleDialog(
-                                                  title: Text(requestType.name),
-                                                  contentPadding:
-                                                      const EdgeInsets.all(20),
-                                                  children: [
-                                                    SizedBox(
-                                                      width: 600,
-                                                      height: 600,
-                                                      child: Markdown(
-                                                        data: requestType
-                                                            .holderDescription!,
-                                                        shrinkWrap: true,
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(20),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 20,
-                                                    ),
-                                                    TextButton(
-                                                        onPressed: () {
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                        child:
-                                                            const Text('Close'))
-                                                  ],
-                                                );
+                                                return ViwewRequestType(
+                                                    requestType: requestType);
                                               });
                                         },
                                 style: Theme.of(context)
@@ -549,29 +520,8 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                                           .isEmpty()) {
                                         bool? result = await showDialog(
                                             context: context,
-                                            builder: (context) => AlertDialog(
-                                                  title: const Text('Warning'),
-                                                  content: const Text(
-                                                      'Are you sure you want to overwrite the current report?'),
-                                                  actions: [
-                                                    TextButton(
-                                                      onPressed: () {
-                                                        Navigator.of(context)
-                                                            .pop(false);
-                                                      },
-                                                      child:
-                                                          const Text('Cancel'),
-                                                    ),
-                                                    TextButton(
-                                                      onPressed: () {
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      },
-                                                      child: const Text(
-                                                          'Continue'),
-                                                    ),
-                                                  ],
-                                                ));
+                                            builder: (context) =>
+                                                const OverwriteReportDialog());
 
                                         if (result == false) {
                                           return;
@@ -873,28 +823,8 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                   showDialog(
                       context: context,
                       builder: (context) {
-                        return AlertDialog(
-                          title: const Text('Submit Response'),
-                          content: const Text(
-                              'Are you sure you want to submit this response?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () async {
-                                await submitResponse();
-                                if (!context.mounted) return;
-                                Navigator.of(context).pop();
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Submit'),
-                            ),
-                          ],
-                        );
+                        return SubmitResponseDialog(
+                            submitResponse: submitResponse);
                       });
                 }
               }
@@ -917,8 +847,9 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
 
   Future<void> submitResponse() async {
     //if include_consultation_details is true, add consultation details to response, otherwise delete consultation details
-    bool includeConsultationDetails = _consultationsFormKey
-        .currentState!.fields['include_consultation_details']!.value as bool;
+    bool? includeConsultationDetails = _consultationsFormKey.currentState!
+            .fields['include_consultation_details']?.value as bool? ??
+        false;
 
     BoomarangResponse response = BoomarangResponse(
       id: id,
@@ -930,5 +861,39 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
     );
 
     await firestore.collection('responses').doc(id).set(response.toMap());
+  }
+}
+
+class SubmitResponseDialog extends StatelessWidget {
+  const SubmitResponseDialog({
+    super.key,
+    required this.submitResponse,
+  });
+
+  final Future<void> Function() submitResponse;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Submit Response'),
+      content: const Text('Are you sure you want to submit this response?'),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () async {
+            await submitResponse();
+            if (!context.mounted) return;
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+          },
+          child: const Text('Submit'),
+        ),
+      ],
+    );
   }
 }
