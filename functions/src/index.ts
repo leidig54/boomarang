@@ -107,7 +107,7 @@ async (subject) => {
   if (subject.consultationData.fileUrl) {
     prompt.push({ media: { url: subject.consultationData.fileUrl, contentType: "application/pdf" } });
   }
-  prompt.push({ text: "Respond in raw html. Do not use ** etc. Make good use of headings or bold text to separate the components. Sign with the following details: " });
+  prompt.push({ text: "Respond in raw html. Do not use ** etc. Do not include any information pertaining to any other individuals that may be within the consultation details. Sign with the following details: " });
   prompt.push({ text: `${title} ` });
   prompt.push({ text: `${firstName} ` });
   prompt.push({ text: `${lastName}` });
@@ -264,6 +264,7 @@ export const assignHolderToRequestOnRequestCreate = functions.region("europe-wes
           });
 
           // Email the holder to create an account
+          // TODO: attach the email to the link to create an account
           const emailMessageHtml = `<p>Dear Holder,</p>
           <p>A new request has been created for you. Please create an account with this email to view and manage the request.</p>
           <p>Click <a href="https://boomarang.web.app">here</a> to create an account.</p>
