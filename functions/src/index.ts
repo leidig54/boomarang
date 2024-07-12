@@ -130,10 +130,10 @@ async (subject) => {
 }
 );
 
-export const sendConsentAppWhenRequestSubmitted = functions.region("europe-west2").firestore.document("requests/{requestId}").onWrite(async (change, context) => {
+export const sendConsentAppWhenRequestSubmitted = functions.region("europe-west2").firestore.document("requests/{requestId}").onCreate(async (change, context) => {
   // we need to check if to see if the isSubmitted field is true when the request is created or updated (i.e. when the request is submitted), but we only want to send the email once, so we need to check if the isSubmitted field is true and the request has not been submitted before
-  const before = change.before.data();
-  const request = change.after.data();
+
+  const request = change.data();
 
   console.log("IsDemo: ", request?.isDemo);
 
@@ -141,13 +141,6 @@ export const sendConsentAppWhenRequestSubmitted = functions.region("europe-west2
   if (request?.isDemo) {
     return "Demo request";
   }
-
-  // if the subject email hasn't changed, return
-  if (before?.subjectEmail === request?.subjectEmail) {
-    console.log("Subject email has not changed. Exiting...");
-    return null;
-  }
-
 
   console.log("Request has been submitted. Sending email to subject...");
 
@@ -301,113 +294,25 @@ export const assignHolderToRequestOnRequestCreate = functions.region("europe-wes
     return null;
   });
 
-// when a request is added by a holder and the requester already exists, assign the requesterUserId to the request. otherwise email them to create an account
-export const assignRequesterToRequestOnRequestCreate = functions.region("europe-west2").firestore.document("requests/{requestId}")
-  .onWrite(async (change) => {
-    const before = change.before.data();
-    const after = change.after.data();
-
-    if (before?.requesterEmail !== after?.requesterEmail) {
-      console.log("Requester email has changed. Checking if user exists...");
-      const requesterEmail = after?.requesterEmail;
-      if (!requesterEmail) {
-        console.log("Requester email is null. Exiting...");
-        return null;
-      }
-      try {
-        const user = await admin.auth().getUserByEmail(requesterEmail);
-        console.log("User exists. Assigning requesterUserId to request...");
-        await change.after.ref.update({
-          requesterUserId: user.uid,
-        });
-      } catch (error) {
-        // Assert 'error' as an object with a 'code' property
-        const errorCode = (error as { code?: string }).code;
-        // If the user is not found, send an email to the requester to create an account
-        if (errorCode === "auth/user-not-found") {
-          console.log("User does not exist. Sending email to requester to create an account...");
-          // Configure the email transport using the provided SMTP server.
-          // email the requester with a link to sign up
-          // Configure the email transport using the provided SMTP server.
-          const email = "george@joinoto.com";
-          const password = "GHD9XULrYSFwdOKM"; // Ensure you're securely handling passwords and sensitive information
-          const mailTransport = nodemailer.createTransport({
-            host: "smtp-relay.brevo.com",
-            port: 587,
-            auth: {
-              user: email,
-              pass: password,
-            },
-          });
-
-          // get the holder email from the request
-          const holderEmail = after?.holderEmail;
-          // get the subject first and last name from the request
-          const subjectFirstName = after?.subjectFirstName;
-          const subjectLastName = after?.subjectLastName;
-
-          // Email the requester to create an account
-          // TODO: replace the email with the org name once we have it
-          const emailMessageHtml = `<p>Dear Requester,</p>
-  <p>Thank you for submitting a request to ${holderEmail} on behalf of ${subjectFirstName} ${subjectLastName}. A new request has been created for you. Please create an account with this email to finish submitting your request.</p>
-  <p>Click <a href="https://boomarang.web.app">here</a> to create an account.</p>
-  <p>Thank you.</p>`;
-
-          console.log("Email message: ", requesterEmail);
-
-
-          const mailOptions = {
-            from: "\"Boomarang Request\" <verificaton@boomarang.com>",
-            to: requesterEmail,
-            subject: "Create an account to submit your request",
-            html: emailMessageHtml,
-          };
-
-          try {
-            await mailTransport.sendMail(mailOptions);
-            console.log(`Email sent to: ${mailOptions.to}`);
-          } catch (emailError) {
-            console.error("There was an error while sending the email:", emailError);
-            throw new Error("Failed to send verification email");
-          }
-
-          return null;
-        }
-      }
-    }
-    return null;
-  }
-
-  );
-
-
 // when a user is verified, check if the user has a request with a holderEmail that matches the user's email. if it does, assign the userId to the holderUserId field in the request
-export const assignRequestToUserOnUserVerification = functions.region("europe-west2").firestore.document("users/{userId}").onWrite(async (change) => {
+export const assignRequestToHolderOnUserVerification = functions.region("europe-west2").firestore.document("users/{userId}").onWrite(async (change) => {
   const before = change.before.data();
   const after = change.after.data();
 
   // see if the email verification status has changed to true from null or false
   if (before?.emailVerified !== true && after?.emailVerified === true) {
     console.log("User email verified. Checking if user has any requests...");
-    const userEmail = after?.email;
-    if (!userEmail) {
-      console.log("User email is null. Exiting...");
+    const holderEmail = after?.email;
+    if (!holderEmail) {
+      console.log("Holder email is null. Exiting...");
       return null;
     }
     try {
-      const holderRequests = await admin.firestore().collection("requests").where("holderEmail", "==", userEmail).get();
-      holderRequests.forEach(async (request) => {
+      const requests = await admin.firestore().collection("requests").where("holderEmail", "==", holderEmail).get();
+      requests.forEach(async (request) => {
         console.log("Request found. Assigning holderUserId to request...");
         await request.ref.update({
           holderUserId: change.after.id,
-        });
-      });
-
-      const requesterRequests = await admin.firestore().collection("requests").where("requesterEmail", "==", userEmail).get();
-      requesterRequests.forEach(async (request) => {
-        console.log("Request found. Assigning requesterUserId to request...");
-        await request.ref.update({
-          requesterUserId: change.after.id,
         });
       });
     } catch (error) {
@@ -418,7 +323,6 @@ export const assignRequestToUserOnUserVerification = functions.region("europe-we
   }
   return null;
 });
-
 
 export const sendVerificationEmail = async (userId: string, ) => {
   console.log("Sending verification email to user...");
@@ -714,34 +618,4 @@ export const rejectRequest = functions.region("europe-west2").https.onCall(async
   return "Request rejected";
 }
 );
-
-export const requestBoomarang = functions.region("europe-west2").https.onCall(async (data, context) => {
-  // get the holder id from the context
-  const userId = context.auth?.uid;
-
-  // get the requester email from the data
-  const requesterEmail = data.requesterEmail;
-
-  // create a new request document
-  const requestDoc = admin.firestore().collection("requests").doc();
-
-  // create a new request
-  const request = {
-    id: requestDoc.id,
-    holderUserId: userId,
-    holderEmail: context.auth?.token.email,
-    subjectFirstName: data.subjectFirstName,
-    subjectLastName: data.subjectLastName,
-    requesterEmail: requesterEmail,
-    dateCreated: FieldValue.serverTimestamp(),
-    requestStatus: "pending_completion",
-  };
-
-  // set the request document
-  await requestDoc.set(request);
-
-  return requestDoc.id;
-}
-);
-
 
