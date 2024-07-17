@@ -5,40 +5,43 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 
 Future<void> submitRequest({
-  required GlobalKey<FormBuilderState> contactDetailsFormKey,
-  required GlobalKey<FormBuilderState> requestDetailsFormKey,
-  required GlobalKey<FormBuilderState> consentDetailsFormKey,
-  required String? requestFormName,
-  required String? consentFormName,
+  GlobalKey<FormBuilderState>? contactDetailsFormKey,
+  GlobalKey<FormBuilderState>? requestDetailsFormKey,
+  GlobalKey<FormBuilderState>? consentDetailsFormKey,
+  String? requestFormName,
+  String? consentFormName,
   required String id,
 }) async {
   BoomarangRequest newRequest = BoomarangRequest(
     id: id,
     holderEmail:
-        contactDetailsFormKey.currentState!.fields['holder_email']?.value,
-    subjectFirstName:
-        contactDetailsFormKey.currentState!.fields['subject_first_name']?.value,
+        contactDetailsFormKey?.currentState!.fields['holder_email']?.value,
+    subjectFirstName: contactDetailsFormKey
+        ?.currentState!.fields['subject_first_name']?.value,
     subjectLastName:
-        contactDetailsFormKey.currentState!.fields['subject_last_name']?.value,
+        contactDetailsFormKey?.currentState!.fields['subject_last_name']?.value,
     subjectEmail:
-        contactDetailsFormKey.currentState!.fields['subject_email']?.value,
+        contactDetailsFormKey?.currentState!.fields['subject_email']?.value,
     subjectDOB: DateFormat('dd/MM/yyyy').tryParse(
-        contactDetailsFormKey.currentState!.fields['subject_dob']?.value ?? ""),
+        contactDetailsFormKey?.currentState!.fields['subject_dob']?.value ??
+            ""),
     subjectEmailVerified: false,
     requesterUserId: auth.currentUser!.uid,
     holderUserId: null,
     dateCreated: DateTime.now(),
     consentVerified: false,
     requestStatus: 'awaiting_response',
-    requestType: requestDetailsFormKey.currentState!.fields['type']?.value,
+    requestType: requestDetailsFormKey?.currentState!.fields['type']?.value,
     requestDetails:
-        requestDetailsFormKey.currentState!.fields['request_details']?.value,
+        requestDetailsFormKey?.currentState!.fields['request_details']?.value,
     requestFormRef: requestFormName == null
         ? null
-        : requestDetailsFormKey.currentState!.fields['request_form_ref']?.value,
+        : requestDetailsFormKey
+            ?.currentState!.fields['request_form_ref']?.value,
     consentFormRef: consentFormName == null
         ? null
-        : consentDetailsFormKey.currentState!.fields['consent_form_ref']?.value,
+        : consentDetailsFormKey
+            ?.currentState!.fields['consent_form_ref']?.value,
   );
 
   return await firestore.collection('requests').doc(id).set(newRequest.toMap());
