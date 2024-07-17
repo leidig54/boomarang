@@ -15,22 +15,15 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 class AddRequestScreen extends StatefulWidget {
-  const AddRequestScreen({
-    super.key,
-    this.request,
-  });
-
-  final BoomarangRequest? request;
+  const AddRequestScreen({super.key});
 
   @override
   State<AddRequestScreen> createState() => _AddRequestScreenState();
 }
 
 class _AddRequestScreenState extends State<AddRequestScreen> {
-  final _subjectDetailsFormKey = GlobalKey<FormBuilderState>();
-  final _holderDetailsFormKey = GlobalKey<FormBuilderState>();
+  final _contactDetailsFormKey = GlobalKey<FormBuilderState>();
   final _requestDetailsFormKey = GlobalKey<FormBuilderState>();
-  final _consentDetailsFormKey = GlobalKey<FormBuilderState>();
 
   List<Widget> children = [];
 
@@ -47,15 +40,12 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   late String id;
 
   bool isSubmitting = false;
-  bool noConsentForm = false;
-  bool isUsingBoomarangConsent = false;
 
-  BoomarangRequest? request;
+  bool noConsentForm = false;
 
   @override
   void initState() {
-    request = widget.request;
-    id = request?.id ?? const Uuid().v4();
+    id = const Uuid().v4();
     super.initState();
   }
 
@@ -63,33 +53,25 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   Widget build(BuildContext context) {
     List<Step> steps = [
       Step(
-        title: const Text('Subject Details'),
+        title: const Text('Contact Details'),
         isActive: currentStep == 0,
         content: Row(
           children: [
             SizedBox(
               width: 600,
               child: FormBuilder(
-                key: _subjectDetailsFormKey,
+                key: _contactDetailsFormKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Subject",
+                      "Patient",
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    const SizedBox(height: 4),
-                    //who the request is about. this can be you or someone else
-                    Text(
-                      "Who is the request about? This can be you or someone else.",
-                      style: Theme.of(context).textTheme.labelMedium,
-                    ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
                     FormBuilderTextField(
                       name: 'subject_first_name',
-                      enabled: request?.subjectFirstName == null,
-                      initialValue: request?.subjectFirstName ??
-                          (kDebugMode ? "Dave" : null),
+                      initialValue: kDebugMode ? "David" : null,
                       autofocus: true,
                       validator: FormBuilderValidators.required(),
                       decoration: const InputDecoration(
@@ -100,9 +82,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     const SizedBox(height: 16),
                     FormBuilderTextField(
                       name: 'subject_last_name',
-                      enabled: request?.subjectLastName == null,
-                      initialValue: request?.subjectLastName ??
-                          (kDebugMode ? "Smith" : null),
+                      initialValue: kDebugMode ? "Smith" : null,
                       validator: FormBuilderValidators.required(),
                       decoration: const InputDecoration(
                         labelText: 'Last Name',
@@ -153,41 +133,15 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                         border: UnderlineInputBorder(),
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      Step(
-        title: const Text("Holder Details"),
-        isActive: currentStep == 1,
-        content: Row(
-          children: [
-            SizedBox(
-              width: 600,
-              child: FormBuilder(
-                key: _holderDetailsFormKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                    const SizedBox(height: 64),
                     Text(
-                      "Holder",
+                      "Healthcare Provider",
                       style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 4),
-                    //who are you sending the request to?
-                    Text(
-                      "Who are you sending the request to? e.g. a doctor, a hospital, etc.",
-                      style: Theme.of(context).textTheme.labelMedium,
                     ),
                     const SizedBox(height: 16),
                     FormBuilderTextField(
                       name: 'holder_email',
-                      initialValue: request?.holderEmail ??
-                          (kDebugMode ? "ed@doctors.com" : null),
-                      enabled: request?.holderEmail == null,
+                      initialValue: kDebugMode ? "ed@doctors.com" : null,
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(),
                         FormBuilderValidators.email(),
@@ -208,7 +162,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       ),
       Step(
         title: const Text('Request'),
-        isActive: currentStep == 2,
+        isActive: currentStep == 1,
         content: FormBuilder(
           key: _requestDetailsFormKey,
           child: Row(
@@ -221,7 +175,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     Text("Request Details",
                         style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(
-                      height: 32,
+                      height: 20,
                     ),
                     Column(
                       children: [
@@ -238,7 +192,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Type',
                             helperText: "Select the type of request",
-                            border: OutlineInputBorder(),
+                            border: UnderlineInputBorder(),
                           ),
                           items: requestTypes
                               .map((e) => DropdownMenuItem(
@@ -247,7 +201,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                                   ))
                               .toList(),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 16),
                         FormBuilderTextField(
                           name: 'request_details',
                           autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -272,7 +226,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                                 'Please describe the reason for the request, the data required, etc.',
                             helperText:
                                 'If you are uploading a request form, leave this blank.',
-                            border: OutlineInputBorder(),
+                            border: UnderlineInputBorder(),
                             alignLabelWithHint: true,
                           ),
                         ),
@@ -289,6 +243,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                                       title: const Text('Upload Request Form'),
                                       enabled:
                                           isUploadingRequestForm ? false : true,
+                                      subtitle: const Text(
+                                          'The patient will be asked to verify this form'),
                                       leading: SizedBox(
                                         width: 24,
                                         height: 24,
@@ -426,25 +382,9 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                             }),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      Step(
-        title: const Text('Consent'),
-        isActive: currentStep == 3,
-        content: FormBuilder(
-          key: _consentDetailsFormKey,
-          child: Row(
-            children: [
-              SizedBox(
-                width: 600,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                    const SizedBox(
+                      height: 40,
+                    ),
                     Text("Consent",
                         style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(
@@ -452,21 +392,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     ),
                     Column(
                       children: [
-                        FormBuilderRadioGroup(
-                            orientation: OptionsOrientation.vertical,
-                            name: 'consent_form_type',
-                            options: const [
-                              FormBuilderFieldOption(
-                                  value: "own_form",
-                                  child: Text("Upload a consent form")),
-                              FormBuilderFieldOption(
-                                  value: "boomarang_form",
-                                  child: Text("Use Boomarang consent form")),
-                              FormBuilderFieldOption(
-                                  value: "no_consent",
-                                  child: Text("No consent required")),
-                            ],
-                            onChanged: (value) {}),
                         FormBuilderField(
                           name: 'consent_form_ref',
                           autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -502,7 +427,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                                                     CircularProgressIndicator())
                                             : const Icon(Icons.upload_file),
                                         subtitle: const Text(
-                                            'The Subject will be asked to verify this form'),
+                                            'The patient will be asked to verify this form'),
                                         enabled: noConsentForm ||
                                                 isUploadingConsentForm
                                             ? false
@@ -584,46 +509,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                                                 });
                                               }),
                                     FormBuilderField(
-                                      builder: (formBuilderState) {
-                                        return ListTile(
-                                          title: const Text(
-                                              "Use Boomarang consent"),
-                                          subtitle: const Text(
-                                              "Use a pre-made consent form created by the Boomarang team"),
-                                          leading: Icon(
-                                            isUsingBoomarangConsent
-                                                ? Icons.check_box
-                                                : Icons.check_box_outline_blank,
-                                            color: isUsingBoomarangConsent
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                : null,
-                                          ),
-                                          onTap: () {
-                                            setState(() {
-                                              isUsingBoomarangConsent =
-                                                  !isUsingBoomarangConsent;
-                                            });
-
-                                            if (isUsingBoomarangConsent) {
-                                              _requestDetailsFormKey
-                                                  .currentState!
-                                                  .fields['consent_form_ref']!
-                                                  .didChange(
-                                                      'https://firebasestorage.googleapis.com/v0/b/boomarang-1.appspot.com/o/consent_forms%2Fboomarang_consent_form.pdf?alt=media&token=3b3b3b3b-3b3b-3b3b-3b3b-3b3b3b3b3b3b');
-                                            } else {
-                                              _requestDetailsFormKey
-                                                  .currentState!
-                                                  .fields['consent_form_ref']!
-                                                  .didChange(null);
-                                            }
-                                          },
-                                        );
-                                      },
-                                      name: "consent_template",
-                                    ),
-                                    FormBuilderField(
                                       name: 'has_consent_form',
                                       builder: (formBuilderState) {
                                         return ListTile(
@@ -639,10 +524,10 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                                                   : null,
                                             ),
                                             title: const Text(
-                                              'No consent required',
+                                              'No consent form available',
                                             ),
                                             subtitle: const Text(
-                                              'The holder may reject this request',
+                                              'The patient will still need to confirm their email address and DOB',
                                             ),
                                             onTap: () {
                                               setState(() {
@@ -729,25 +614,13 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         },
         onStepContinue: () async {
           if (currentStep == 0) {
-            if (_subjectDetailsFormKey.currentState!.saveAndValidate()) {
+            if (_contactDetailsFormKey.currentState!.saveAndValidate()) {
               setState(() {
                 currentStep++;
               });
             }
           } else if (currentStep == 1) {
-            if (_holderDetailsFormKey.currentState!.saveAndValidate()) {
-              setState(() {
-                currentStep++;
-              });
-            }
-          } else if (currentStep == 2) {
             if (_requestDetailsFormKey.currentState!.saveAndValidate()) {
-              setState(() {
-                currentStep++;
-              });
-            }
-          } else if (currentStep == 3) {
-            if (_consentDetailsFormKey.currentState!.saveAndValidate()) {
               showDialog(
                 context: context,
                 builder: (context) => SubmitRequestDialog(
@@ -766,15 +639,15 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
     BoomarangRequest newRequest = BoomarangRequest(
       id: id,
       holderEmail:
-          _subjectDetailsFormKey.currentState!.fields['holder_email']?.value,
-      subjectFirstName: _subjectDetailsFormKey
+          _contactDetailsFormKey.currentState!.fields['holder_email']?.value,
+      subjectFirstName: _contactDetailsFormKey
           .currentState!.fields['subject_first_name']?.value,
-      subjectLastName: _subjectDetailsFormKey
+      subjectLastName: _contactDetailsFormKey
           .currentState!.fields['subject_last_name']?.value,
       subjectEmail:
-          _subjectDetailsFormKey.currentState!.fields['subject_email']?.value,
+          _contactDetailsFormKey.currentState!.fields['subject_email']?.value,
       subjectDOB: DateFormat('dd/MM/yyyy').tryParse(
-          _subjectDetailsFormKey.currentState!.fields['subject_dob']?.value ??
+          _contactDetailsFormKey.currentState!.fields['subject_dob']?.value ??
               ""),
       subjectEmailVerified: false,
       requesterUserId: auth.currentUser!.uid,
