@@ -75,7 +75,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Subject Details",
+                      Text("Patient Details",
                           style: Theme.of(context).textTheme.titleLarge),
                       const SizedBox(
                         height: 10,
@@ -208,63 +208,56 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                               text: 'Consent: ',
                               style: Theme.of(context).textTheme.bodyLarge,
                               children: [
-                                request.consentFormRef == null
-                                    ? const TextSpan(
-                                        text: 'None',
-                                        style: TextStyle(
+                                //link to consent file wth recogniser
+                                TextSpan(
+                                  text: 'View',
+                                  //theme color and bold
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
                                           fontWeight: FontWeight.bold,
-                                        ))
-                                    : TextSpan(
-                                        text: 'View',
-                                        //theme color and bold
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge!
-                                            .copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                color: Theme.of(context)
-                                                    .primaryColor),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            launchUrl(Uri.parse(
-                                                request.consentFormRef!));
-                                          },
-                                      ),
+                                          color:
+                                              Theme.of(context).primaryColor),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () {
+                                      launchUrl(
+                                          Uri.parse(request.consentFormRef!));
+                                    },
+                                ),
                               ],
                             ),
                           ),
-                          if (request.consentFormRef != null) ...[
-                            //spacer
-                            const SizedBox(width: 8),
-                            //separator
-                            Container(
-                              height: 16,
-                              width: 1,
-                              color: Colors.black26,
-                            ),
-                            const SizedBox(width: 8),
-                            //consent verified
-                            Text(
-                                request.consentVerified == true
-                                    ? 'Verified'
-                                    : 'Not Verified',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge!
-                                    .copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    )),
-                            const SizedBox(width: 8),
-                            Icon(
+                          //spacer
+                          const SizedBox(width: 8),
+                          //separator
+                          Container(
+                            height: 16,
+                            width: 1,
+                            color: Colors.black26,
+                          ),
+                          const SizedBox(width: 8),
+                          //consent verified
+                          Text(
                               request.consentVerified == true
-                                  ? Icons.check_circle
-                                  : Icons.cancel,
-                              color: request.consentVerified == true
-                                  ? Colors.green
-                                  : Colors.red,
-                              size: 16,
-                            )
-                          ],
+                                  ? 'Verified'
+                                  : 'Not Verified',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                          const SizedBox(width: 8),
+                          Icon(
+                            request.consentVerified == true
+                                ? Icons.check_circle
+                                : Icons.cancel,
+                            color: request.consentVerified == true
+                                ? Colors.green
+                                : Colors.red,
+                            size: 16,
+                          )
                         ],
                       ),
                     ],
@@ -655,30 +648,27 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                             builder: (context) => Row(
                               children: [
                                 Text('$consultationFormName'),
+                                //delete button
                                 Tooltip(
                                   message: 'Delete file',
                                   child: IconButton(
-                                    onPressed: isGeneratingReport
-                                        ? null
-                                        : () {
-                                            storage
-                                                .ref(
-                                                    'consultations/$id/consultation_form/$consultationFormName')
-                                                .delete()
-                                                .then((value) {
-                                              setState(() {
-                                                consultationFormName = null;
-                                                consultationFormRef = null;
-                                                includeConsultationDetailsInReport =
-                                                    false;
-                                              });
-                                            }).catchError(
-                                              (error) {
-                                                buildErrorAlertDialog(error);
-                                                throw error;
-                                              },
-                                            );
-                                          },
+                                    onPressed: () {
+                                      storage
+                                          .ref(
+                                              'consultations/$id/consultation_form/$consultationFormName')
+                                          .delete()
+                                          .then((value) {
+                                        setState(() {
+                                          consultationFormName = null;
+                                          consultationFormRef = null;
+                                        });
+                                      }).catchError(
+                                        (error) {
+                                          buildErrorAlertDialog(error);
+                                          throw error;
+                                        },
+                                      );
+                                    },
                                     icon: const Icon(Icons.close),
                                   ),
                                 ),
@@ -691,8 +681,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                                         'Checking this box will give the requester access to this file.',
                                     child: FormBuilderCheckbox(
                                         name: 'include_consultation_details',
-                                        initialValue:
-                                            includeConsultationDetailsInReport,
+                                        initialValue: false,
                                         title: const Text(
                                             'Include file with report'),
                                         onChanged: (value) {
@@ -740,7 +729,8 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                       height: 20,
                     ),
                     QuillToolbar.simple(
-                      configurations: const QuillSimpleToolbarConfigurations(
+                      configurations: QuillSimpleToolbarConfigurations(
+                        controller: reportQuillController,
                         showInlineCode: false,
                         showColorButton: false,
                         showCodeBlock: false,
@@ -769,7 +759,8 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(2.0),
                         child: QuillEditor.basic(
-                          configurations: const QuillEditorConfigurations(
+                          configurations: QuillEditorConfigurations(
+                            controller: reportQuillController,
                             showCursor: true,
                           ),
                           // scrollController: requestScrollController,
