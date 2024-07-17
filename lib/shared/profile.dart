@@ -32,30 +32,20 @@ class _BoomarangProfileScreenState extends State<BoomarangProfileScreen> {
         }
       },
       child: Scaffold(
-        body: Column(
-          children: [
-            Container(
-              height: 150,
-              width: double.infinity,
-              color: Theme.of(context).canvasColor,
-              child: Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Text(
-                    "Profile",
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 16,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+        body: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 600),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Text(
+                    'Profile',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 32),
                   FormBuilderTextField(
                     name: 'title',
                     autofocus: user?.title == null,
@@ -66,7 +56,7 @@ class _BoomarangProfileScreenState extends State<BoomarangProfileScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Title',
                       hintText: 'Mr, Mrs, Dr, etc.',
-                      border: OutlineInputBorder(),
+                      border: UnderlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -79,7 +69,7 @@ class _BoomarangProfileScreenState extends State<BoomarangProfileScreen> {
                     initialValue: user?.firstName,
                     decoration: const InputDecoration(
                       labelText: 'First Name',
-                      border: OutlineInputBorder(),
+                      border: UnderlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -92,7 +82,7 @@ class _BoomarangProfileScreenState extends State<BoomarangProfileScreen> {
                     initialValue: user?.lastName,
                     decoration: const InputDecoration(
                       labelText: 'Last Name',
-                      border: OutlineInputBorder(),
+                      border: UnderlineInputBorder(),
                     ),
                   ),
 
@@ -106,7 +96,7 @@ class _BoomarangProfileScreenState extends State<BoomarangProfileScreen> {
                     initialValue: user?.email,
                     decoration: const InputDecoration(
                       labelText: 'Email',
-                      border: OutlineInputBorder(),
+                      border: UnderlineInputBorder(),
                       helperText: 'Email cannot be changed',
                     ),
                   ),
@@ -153,7 +143,7 @@ class _BoomarangProfileScreenState extends State<BoomarangProfileScreen> {
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
