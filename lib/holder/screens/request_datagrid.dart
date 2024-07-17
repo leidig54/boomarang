@@ -129,23 +129,23 @@ class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
                 ),
               ),
             ),
-            // GridColumn(
-            //   columnName: 'fee_charged',
-            //   allowSorting: false,
-            //   allowFiltering: false,
-            //   columnWidthMode: ColumnWidthMode.fitByColumnName,
-            //   label: Container(
-            //     padding: const EdgeInsets.all(8),
-            //     alignment: Alignment.center,
-            //     child: Text(
-            //       'Fee Charged',
-            //       style: Theme.of(context)
-            //           .textTheme
-            //           .titleMedium!
-            //           .copyWith(fontWeight: FontWeight.bold),
-            //     ),
-            //   ),
-            // ),
+            GridColumn(
+              columnName: 'fee_charged',
+              allowSorting: false,
+              allowFiltering: false,
+              columnWidthMode: ColumnWidthMode.fitByColumnName,
+              label: Container(
+                padding: const EdgeInsets.all(8),
+                alignment: Alignment.center,
+                child: Text(
+                  'Fee Charged',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium!
+                      .copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
             GridColumn(
               columnName: 'requestType',
               allowSorting: true,
@@ -209,7 +209,7 @@ class HolderDataSource extends DataGridSource {
             DataGridCell<String>(
                 columnName: 'subjectName',
                 value: "${e.subjectFirstName} ${e.subjectLastName}"),
-            // DataGridCell<String>(columnName: 'fee', value: e.formattedFee),
+            DataGridCell<String>(columnName: 'fee', value: e.formattedFee),
             // DataGridCell<bool>(columnName: 'fee_paid', value: e.feePaid),
             DataGridCell<String>(
                 columnName: 'requestType', value: requestType?.name ?? '-'),
