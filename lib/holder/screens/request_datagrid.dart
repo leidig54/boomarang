@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:boomarang/holder/screens/dialogs/request_boomarang.dart';
 import 'package:boomarang/holder/screens/respond_request.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/routing_no_animation.dart';
@@ -55,19 +54,6 @@ class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //request a boomarang
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showDialog(
-              context: context,
-              builder: (context) {
-                return const RequestBoomarangDialog();
-              });
-        },
-        label: const Text('Request a Boomarang'),
-        icon: const Icon(Icons.add),
-      ),
       body: SfDataGridTheme(
         data: SfDataGridThemeData(
           filterPopupTextStyle: Theme.of(context).textTheme.bodyMedium,
@@ -84,6 +70,7 @@ class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
           onCellDoubleTap: (details) {
             BoomarangRequest request =
                 _requests[details.rowColumnIndex.rowIndex - 1];
+
             if (request.requestStatus == 'awaiting_response') {
               navigateWithoutTransition(
                 context,
@@ -201,8 +188,8 @@ class HolderDataSource extends DataGridSource {
   void buildDataGridRows({required List<BoomarangRequest> requests}) {
     dataGridRows = requests.map(
       (e) {
-        RequestType? requestType = requestTypes
-            .firstWhereOrNull((element) => element.id == e.requestType);
+        RequestType requestType =
+            requestTypes.firstWhere((element) => element.id == e.requestType);
         return DataGridRow(
           cells: [
             DataGridCell(columnName: 'received', value: e.dateCreated),
@@ -212,7 +199,7 @@ class HolderDataSource extends DataGridSource {
             DataGridCell<String>(columnName: 'fee', value: e.formattedFee),
             // DataGridCell<bool>(columnName: 'fee_paid', value: e.feePaid),
             DataGridCell<String>(
-                columnName: 'requestType', value: requestType?.name ?? '-'),
+                columnName: 'requestType', value: requestType.name),
             DataGridCell<String>(
                 columnName: 'status', value: e.formattedRequestStatus),
           ],
@@ -309,12 +296,6 @@ class HolderDataSource extends DataGridSource {
                     Icons.close,
                     color: Colors.red,
                   ),
-                );
-              } else if (e.value == 'Pending Completion') {
-                return const Tooltip(
-                  message:
-                      'The requester has been messaged to complete the request',
-                  child: Text("-"),
                 );
               } else {
                 return Tooltip(

@@ -75,7 +75,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Subject Details",
+                      Text("Patient Details",
                           style: Theme.of(context).textTheme.titleLarge),
                       const SizedBox(
                         height: 10,
@@ -740,7 +740,8 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                       height: 20,
                     ),
                     QuillToolbar.simple(
-                      configurations: const QuillSimpleToolbarConfigurations(
+                      configurations: QuillSimpleToolbarConfigurations(
+                        controller: reportQuillController,
                         showInlineCode: false,
                         showColorButton: false,
                         showCodeBlock: false,
@@ -769,7 +770,8 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(2.0),
                         child: QuillEditor.basic(
-                          configurations: const QuillEditorConfigurations(
+                          configurations: QuillEditorConfigurations(
+                            controller: reportQuillController,
                             showCursor: true,
                           ),
                           // scrollController: requestScrollController,
