@@ -208,56 +208,63 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                               text: 'Consent: ',
                               style: Theme.of(context).textTheme.bodyLarge,
                               children: [
-                                //link to consent file wth recogniser
-                                TextSpan(
-                                  text: 'View',
-                                  //theme color and bold
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge!
-                                      .copyWith(
+                                request.consentFormRef == null
+                                    ? const TextSpan(
+                                        text: 'None',
+                                        style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color:
-                                              Theme.of(context).primaryColor),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () {
-                                      launchUrl(
-                                          Uri.parse(request.consentFormRef!));
-                                    },
-                                ),
+                                        ))
+                                    : TextSpan(
+                                        text: 'View',
+                                        //theme color and bold
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge!
+                                            .copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                color: Theme.of(context)
+                                                    .primaryColor),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            launchUrl(Uri.parse(
+                                                request.consentFormRef!));
+                                          },
+                                      ),
                               ],
                             ),
                           ),
-                          //spacer
-                          const SizedBox(width: 8),
-                          //separator
-                          Container(
-                            height: 16,
-                            width: 1,
-                            color: Colors.black26,
-                          ),
-                          const SizedBox(width: 8),
-                          //consent verified
-                          Text(
+                          if (request.consentFormRef != null) ...[
+                            //spacer
+                            const SizedBox(width: 8),
+                            //separator
+                            Container(
+                              height: 16,
+                              width: 1,
+                              color: Colors.black26,
+                            ),
+                            const SizedBox(width: 8),
+                            //consent verified
+                            Text(
+                                request.consentVerified == true
+                                    ? 'Verified'
+                                    : 'Not Verified',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    )),
+                            const SizedBox(width: 8),
+                            Icon(
                               request.consentVerified == true
-                                  ? 'Verified'
-                                  : 'Not Verified',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  )),
-                          const SizedBox(width: 8),
-                          Icon(
-                            request.consentVerified == true
-                                ? Icons.check_circle
-                                : Icons.cancel,
-                            color: request.consentVerified == true
-                                ? Colors.green
-                                : Colors.red,
-                            size: 16,
-                          )
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              color: request.consentVerified == true
+                                  ? Colors.green
+                                  : Colors.red,
+                              size: 16,
+                            )
+                          ],
                         ],
                       ),
                     ],
@@ -648,27 +655,30 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                             builder: (context) => Row(
                               children: [
                                 Text('$consultationFormName'),
-                                //delete button
                                 Tooltip(
                                   message: 'Delete file',
                                   child: IconButton(
-                                    onPressed: () {
-                                      storage
-                                          .ref(
-                                              'consultations/$id/consultation_form/$consultationFormName')
-                                          .delete()
-                                          .then((value) {
-                                        setState(() {
-                                          consultationFormName = null;
-                                          consultationFormRef = null;
-                                        });
-                                      }).catchError(
-                                        (error) {
-                                          buildErrorAlertDialog(error);
-                                          throw error;
-                                        },
-                                      );
-                                    },
+                                    onPressed: isGeneratingReport
+                                        ? null
+                                        : () {
+                                            storage
+                                                .ref(
+                                                    'consultations/$id/consultation_form/$consultationFormName')
+                                                .delete()
+                                                .then((value) {
+                                              setState(() {
+                                                consultationFormName = null;
+                                                consultationFormRef = null;
+                                                includeConsultationDetailsInReport =
+                                                    false;
+                                              });
+                                            }).catchError(
+                                              (error) {
+                                                buildErrorAlertDialog(error);
+                                                throw error;
+                                              },
+                                            );
+                                          },
                                     icon: const Icon(Icons.close),
                                   ),
                                 ),
@@ -681,7 +691,8 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                                         'Checking this box will give the requester access to this file.',
                                     child: FormBuilderCheckbox(
                                         name: 'include_consultation_details',
-                                        initialValue: false,
+                                        initialValue:
+                                            includeConsultationDetailsInReport,
                                         title: const Text(
                                             'Include file with report'),
                                         onChanged: (value) {
