@@ -75,7 +75,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Subject Details",
+                      Text("Patient Details",
                           style: Theme.of(context).textTheme.titleLarge),
                       const SizedBox(
                         height: 10,
@@ -345,6 +345,57 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                       ),
                       const SizedBox(
                         height: 4,
+                      ),
+                      //fee amount and if paid
+                      Row(
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              text: 'Fee: ',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              children: [
+                                TextSpan(
+                                    text: request.fee == 0
+                                        ? "N/A"
+                                        : request.formattedFee,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge!
+                                        .copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87))
+                              ],
+                            ),
+                          ),
+                          if (request.feePaid != null) ...[
+                            const SizedBox(width: 8),
+                            //separator
+                            Container(
+                              height: 16,
+                              width: 1,
+                              color: Colors.black26,
+                            ),
+                            const SizedBox(width: 8),
+                            //fee paid
+                            Text(request.feePaid == true ? 'Paid' : 'Not Paid',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    )),
+                            const SizedBox(width: 8),
+                            Icon(
+                              request.feePaid == true
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              color: request.feePaid == true
+                                  ? Colors.green
+                                  : Colors.red,
+                              size: 16,
+                            )
+                          ]
+                        ],
                       ),
                     ],
                   )
@@ -689,7 +740,6 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                       height: 20,
                     ),
                     QuillToolbar.simple(
-                      controller: reportQuillController,
                       configurations: const QuillSimpleToolbarConfigurations(
                         showInlineCode: false,
                         showColorButton: false,
@@ -719,7 +769,6 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(2.0),
                         child: QuillEditor.basic(
-                          controller: reportQuillController,
                           configurations: const QuillEditorConfigurations(
                             showCursor: true,
                           ),
