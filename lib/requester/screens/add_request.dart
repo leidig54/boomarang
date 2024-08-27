@@ -27,10 +27,8 @@ class AddRequestScreen extends StatefulWidget {
 }
 
 class _AddRequestScreenState extends State<AddRequestScreen> {
-  final _subjectDetailsFormKey = GlobalKey<FormBuilderState>();
-  final _holderDetailsFormKey = GlobalKey<FormBuilderState>();
+  final _contactDetailsFormKey = GlobalKey<FormBuilderState>();
   final _requestDetailsFormKey = GlobalKey<FormBuilderState>();
-  final _consentDetailsFormKey = GlobalKey<FormBuilderState>();
 
   List<Widget> children = [];
 
@@ -47,12 +45,10 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   late String id;
 
   bool isSubmitting = false;
+
   bool noConsentForm = false;
-  bool isUsingBoomarangConsent = false;
 
   BoomarangRequest? request;
-
-  bool hasFoundHolder = false;
 
   @override
   void initState() {
@@ -65,28 +61,22 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   Widget build(BuildContext context) {
     List<Step> steps = [
       Step(
-        title: const Text('Subject Details'),
+        title: const Text('Contact Details'),
         isActive: currentStep == 0,
         content: Row(
           children: [
             SizedBox(
               width: 600,
               child: FormBuilder(
-                key: _subjectDetailsFormKey,
+                key: _contactDetailsFormKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Subject",
+                      "Patient",
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    const SizedBox(height: 4),
-                    //who the request is about. this can be you or someone else
-                    Text(
-                      "Who is the request about? This can be you or someone else.",
-                      style: Theme.of(context).textTheme.labelMedium,
-                    ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
                     FormBuilderTextField(
                       name: 'subject_first_name',
                       enabled: request?.subjectFirstName == null,
@@ -155,34 +145,10 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                         border: UnderlineInputBorder(),
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      Step(
-        title: const Text("Holder Details"),
-        isActive: currentStep == 1,
-        content: Row(
-          children: [
-            SizedBox(
-              width: 600,
-              child: FormBuilder(
-                key: _holderDetailsFormKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                    const SizedBox(height: 64),
                     Text(
-                      "Holder",
+                      "Healthcare Provider",
                       style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 4),
-                    //who are you sending the request to?
-                    Text(
-                      "Who are you sending the request to? e.g. a doctor, a hospital, etc.",
-                      style: Theme.of(context).textTheme.labelMedium,
                     ),
                     const SizedBox(height: 16),
                     FormBuilderTextField(
@@ -194,42 +160,11 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                         FormBuilderValidators.required(),
                         FormBuilderValidators.email(),
                       ]),
-                      onChanged: (value) async {
-                        if (value == null || value.isEmpty) {
-                          setState(() {
-                            hasFoundHolder = false;
-                          });
-                          return;
-                        }
-
-                        await firestore
-                            .collection('users')
-                            .where('email', isEqualTo: value.trim())
-                            .where('userType', isEqualTo: 'holder')
-                            .get()
-                            .then((value) {
-                          if (value.docs.isNotEmpty) {
-                            setState(() {
-                              hasFoundHolder = true;
-                            });
-                          } else {
-                            setState(() {
-                              hasFoundHolder = false;
-                            });
-                          }
-                        });
-                      },
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Email',
-                        helperText: hasFoundHolder
-                            ? 'User found on Boomarang'
-                            : 'We will send the request to this email address',
-                        helperStyle: TextStyle(
-                          color: hasFoundHolder
-                              ? Theme.of(context).colorScheme.primary
-                              : null,
-                        ),
-                        border: const UnderlineInputBorder(),
+                        helperText:
+                            'We will send the request to this email address',
+                        border: UnderlineInputBorder(),
                       ),
                     ),
                   ],
@@ -241,7 +176,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
       ),
       Step(
         title: const Text('Request'),
-        isActive: currentStep == 2,
+        isActive: currentStep == 1,
         content: FormBuilder(
           key: _requestDetailsFormKey,
           child: Row(
@@ -254,7 +189,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     Text("Request Details",
                         style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(
-                      height: 32,
+                      height: 20,
                     ),
                     Column(
                       children: [
@@ -271,7 +206,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Type',
                             helperText: "Select the type of request",
-                            border: OutlineInputBorder(),
+                            border: UnderlineInputBorder(),
                           ),
                           items: requestTypes
                               .map((e) => DropdownMenuItem(
@@ -280,7 +215,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                                   ))
                               .toList(),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 16),
                         FormBuilderTextField(
                           name: 'request_details',
                           autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -305,7 +240,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                                 'Please describe the reason for the request, the data required, etc.',
                             helperText:
                                 'If you are uploading a request form, leave this blank.',
-                            border: OutlineInputBorder(),
+                            border: UnderlineInputBorder(),
                             alignLabelWithHint: true,
                           ),
                         ),
@@ -322,6 +257,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                                       title: const Text('Upload Request Form'),
                                       enabled:
                                           isUploadingRequestForm ? false : true,
+                                      subtitle: const Text(
+                                          'The patient will be asked to verify this form'),
                                       leading: SizedBox(
                                         width: 24,
                                         height: 24,
@@ -459,215 +396,207 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                             }),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      Step(
-        title: const Text('Consent'),
-        isActive: currentStep == 3,
-        content: FormBuilder(
-          key: _consentDetailsFormKey,
-          child: Row(
-            children: [
-              SizedBox(
-                width: 600,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                    const SizedBox(
+                      height: 40,
+                    ),
                     Text("Consent",
                         style: Theme.of(context).textTheme.titleLarge),
-                    //if you require consent to process or use this data from the subject, please upload your consent form here
-                    const SizedBox(
-                      height: 4,
-                    ),
-                    Text(
-                      "If you require consent to process or use this data from the subject, please upload your consent form here.",
-                      style: Theme.of(context).textTheme.labelMedium,
-                    ),
                     const SizedBox(
                       height: 20,
                     ),
-                    FormBuilderField(
-                      name: 'consent_form_ref',
-                      autovalidateMode: AutovalidateMode.disabled,
-                      validator: (value) {
-                        print('consent form ref validator');
-                        final formState = _consentDetailsFormKey.currentState;
-                        print(noConsentForm);
-                        if (noConsentForm) {
-                          print('no consent form');
-                          return null;
-                        }
-                        if (value == null) {
-                          final consentFormRefValue =
-                              formState?.fields['consent_form_ref']?.value;
-                          if ((consentFormRefValue == null ||
-                                  consentFormRefValue.isEmpty) &&
-                              !noConsentForm) {
-                            return 'Please upload a consent form or select "No consent required"';
-                          }
-                        }
-                        return null; // Return null if the validation passed
-                      },
-                      builder: (formBuilderState) => Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (consentFormName == null)
-                            ListTile(
-                                title: const Text("Upload consent form"),
-                                leading: isUploadingConsentForm
-                                    ? const SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator())
-                                    : const Icon(Icons.upload_file),
-                                subtitle: const Text(
-                                    'The subject will be asked to complete this form'),
-                                enabled: noConsentForm || isUploadingConsentForm
-                                    ? false
-                                    : true,
-                                onTap: noConsentForm
-                                    ? null
-                                    : () async {
-                                        setState(() {
-                                          isUploadingConsentForm = true;
-                                        });
-
-                                        FilePickerResult? consentFormFile =
-                                            await FilePicker.platform.pickFiles(
-                                          type: FileType.custom,
-                                          allowedExtensions: ['pdf'],
-                                          withData: true,
-                                        );
-
-                                        if (consentFormFile == null) {
-                                          setState(() {
-                                            isUploadingConsentForm = false;
-                                          });
-                                          return;
-                                        }
-
-                                        String consentFormFileName =
-                                            consentFormFile.files.single.name;
-
-                                        try {
-                                          await storage
-                                              .ref(
-                                                  'requests/$id/consent_form/$consentFormFileName')
-                                              .putData(
-                                                  consentFormFile
-                                                      .files.single.bytes!,
-                                                  SettableMetadata(
-                                                      contentType:
-                                                          'application/pdf'));
-
-                                          await storage
-                                              .ref(
-                                                  'requests/$id/consent_form/$consentFormFileName')
-                                              .getDownloadURL()
-                                              .then((consentFormUrl) {
-                                            _consentDetailsFormKey.currentState!
-                                                .fields['consent_form_ref']!
-                                                .didChange(consentFormUrl);
-                                          });
-
-                                          await storage
-                                              .ref(
-                                                  'requests/$id/consent_form/$consentFormFileName')
-                                              .getMetadata()
-                                              .then((value) {
-                                            consentFormName = value.name;
-                                          });
-
-                                          setState(() {});
-                                        } on Exception catch (e) {
-                                          buildErrorAlertDialog(e);
-                                        } finally {
-                                          setState(() {
-                                            isUploadingConsentForm = false;
-                                          });
-                                        }
-
-                                        setState(() {
-                                          isUploadingConsentForm = false;
-                                        });
-                                      }),
-                          if (consentFormName != null)
-                            ListTile(
-                              subtitle:
-                                  const Text("Form successfully uploaded"),
-                              leading: Icon(Icons.check_box,
-                                  color: Theme.of(context).colorScheme.primary),
-                              title: Text(consentFormName!),
-                              trailing: IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                ),
-                                onPressed: () async {
-                                  await storage
-                                      .ref(
-                                          'requests/$id/consent_form/$consentFormName')
-                                      .delete()
-                                      .catchError((error) {
-                                    buildErrorAlertDialog(error);
-                                  });
-                                  setState(() {
-                                    consentFormName = null;
-                                    _consentDetailsFormKey.currentState!
-                                        .fields['consent_form_ref']!
-                                        .didChange(null);
-                                  });
-                                },
-                              ),
-                            ),
-                          if (formBuilderState.errorText != null)
-                            Text(
-                              formBuilderState.errorText!,
-                              textAlign: TextAlign.start,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium!
-                                  .copyWith(
-                                      color:
-                                          Theme.of(context).colorScheme.error),
-                            ),
-                        ],
-                      ),
-                    ),
-                    FormBuilderField(
-                      name: 'has_consent_form',
-                      builder: (formBuilderState) {
-                        return ListTile(
-                            leading: Icon(
-                              noConsentForm
-                                  ? Icons.check_box
-                                  : Icons.check_box_outline_blank,
-                              color: noConsentForm
-                                  ? Theme.of(context).colorScheme.primary
-                                  : null,
-                            ),
-                            enabled: !isUploadingConsentForm &&
-                                consentFormName == null,
-                            title: const Text(
-                              'No consent required',
-                            ),
-                            subtitle: const Text(
-                              'The holder may reject this request',
-                            ),
-                            onTap: () {
-                              setState(() {
-                                noConsentForm = !noConsentForm;
-                              });
-                              if (noConsentForm) {
-                                _consentDetailsFormKey.currentState!.validate();
+                    Column(
+                      children: [
+                        FormBuilderField(
+                          name: 'consent_form_ref',
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: (value) {
+                            final formState =
+                                _requestDetailsFormKey.currentState;
+                            if (value == null) {
+                              final consentFormRefValue =
+                                  formState?.fields['consent_form_ref']?.value;
+                              if ((consentFormRefValue == null ||
+                                      consentFormRefValue.isEmpty) &&
+                                  !noConsentForm) {
+                                return 'Please upload a consent form.';
                               }
-                            });
-                      },
+                            }
+                            return null; // Return null if the validation passed
+                          },
+                          builder: (formBuilderState) => Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (consentFormName == null)
+                                Column(
+                                  children: [
+                                    ListTile(
+                                        title:
+                                            const Text("Upload Consent Form"),
+                                        leading: isUploadingConsentForm
+                                            ? const SizedBox(
+                                                width: 24,
+                                                height: 24,
+                                                child:
+                                                    CircularProgressIndicator())
+                                            : const Icon(Icons.upload_file),
+                                        subtitle: const Text(
+                                            'The patient will be asked to verify this form'),
+                                        enabled: noConsentForm ||
+                                                isUploadingConsentForm
+                                            ? false
+                                            : true,
+                                        onTap: noConsentForm
+                                            ? null
+                                            : () async {
+                                                setState(() {
+                                                  isUploadingConsentForm = true;
+                                                });
+
+                                                FilePickerResult?
+                                                    consentFormFile =
+                                                    await FilePicker.platform
+                                                        .pickFiles(
+                                                  type: FileType.custom,
+                                                  allowedExtensions: ['pdf'],
+                                                  withData: true,
+                                                );
+
+                                                if (consentFormFile == null) {
+                                                  setState(() {
+                                                    isUploadingConsentForm =
+                                                        false;
+                                                  });
+                                                  return;
+                                                }
+
+                                                String consentFormFileName =
+                                                    consentFormFile
+                                                        .files.single.name;
+
+                                                try {
+                                                  await storage
+                                                      .ref(
+                                                          'requests/$id/consent_form/$consentFormFileName')
+                                                      .putData(
+                                                          consentFormFile.files
+                                                              .single.bytes!,
+                                                          SettableMetadata(
+                                                              contentType:
+                                                                  'application/pdf'));
+
+                                                  await storage
+                                                      .ref(
+                                                          'requests/$id/consent_form/$consentFormFileName')
+                                                      .getDownloadURL()
+                                                      .then((consentFormUrl) {
+                                                    _requestDetailsFormKey
+                                                        .currentState!
+                                                        .fields[
+                                                            'consent_form_ref']!
+                                                        .didChange(
+                                                            consentFormUrl);
+                                                  });
+
+                                                  await storage
+                                                      .ref(
+                                                          'requests/$id/consent_form/$consentFormFileName')
+                                                      .getMetadata()
+                                                      .then((value) {
+                                                    consentFormName =
+                                                        value.name;
+                                                  });
+
+                                                  setState(() {});
+                                                } on Exception catch (e) {
+                                                  buildErrorAlertDialog(e);
+                                                } finally {
+                                                  setState(() {
+                                                    isUploadingConsentForm =
+                                                        false;
+                                                  });
+                                                }
+
+                                                setState(() {
+                                                  isUploadingConsentForm =
+                                                      false;
+                                                });
+                                              }),
+                                    FormBuilderField(
+                                      name: 'has_consent_form',
+                                      builder: (formBuilderState) {
+                                        return ListTile(
+                                            leading: Icon(
+                                              noConsentForm
+                                                  ? Icons.check_box
+                                                  : Icons
+                                                      .check_box_outline_blank,
+                                              color: noConsentForm
+                                                  ? Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                  : null,
+                                            ),
+                                            title: const Text(
+                                              'No consent form available',
+                                            ),
+                                            subtitle: const Text(
+                                              'The patient will still need to confirm their email address and DOB',
+                                            ),
+                                            onTap: () {
+                                              setState(() {
+                                                noConsentForm = !noConsentForm;
+                                              });
+                                            });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              if (consentFormName != null)
+                                ListTile(
+                                  subtitle:
+                                      const Text("Form successfully uploaded"),
+                                  leading: Icon(Icons.check_box,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary),
+                                  title: Text(consentFormName!),
+                                  trailing: IconButton(
+                                    icon: const Icon(
+                                      Icons.delete,
+                                    ),
+                                    onPressed: () async {
+                                      await storage
+                                          .ref(
+                                              'requests/$id/consent_form/$consentFormName')
+                                          .delete()
+                                          .catchError((error) {
+                                        buildErrorAlertDialog(error);
+                                      });
+                                      setState(() {
+                                        consentFormName = null;
+                                        _requestDetailsFormKey.currentState!
+                                            .fields['consent_form_ref']!
+                                            .didChange(null);
+                                      });
+                                    },
+                                  ),
+                                ),
+                              Text(
+                                formBuilderState.errorText ?? '',
+                                textAlign: TextAlign.start,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelMedium!
+                                    .copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .error),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -699,25 +628,13 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         },
         onStepContinue: () async {
           if (currentStep == 0) {
-            if (_subjectDetailsFormKey.currentState!.saveAndValidate()) {
+            if (_contactDetailsFormKey.currentState!.saveAndValidate()) {
               setState(() {
                 currentStep++;
               });
             }
           } else if (currentStep == 1) {
-            if (_holderDetailsFormKey.currentState!.saveAndValidate()) {
-              setState(() {
-                currentStep++;
-              });
-            }
-          } else if (currentStep == 2) {
             if (_requestDetailsFormKey.currentState!.saveAndValidate()) {
-              setState(() {
-                currentStep++;
-              });
-            }
-          } else if (currentStep == 3) {
-            if (_consentDetailsFormKey.currentState!.saveAndValidate()) {
               showDialog(
                 context: context,
                 builder: (context) => SubmitRequestDialog(
@@ -736,15 +653,15 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
     BoomarangRequest newRequest = BoomarangRequest(
       id: id,
       holderEmail:
-          _subjectDetailsFormKey.currentState!.fields['holder_email']?.value,
-      subjectFirstName: _subjectDetailsFormKey
+          _contactDetailsFormKey.currentState!.fields['holder_email']?.value,
+      subjectFirstName: _contactDetailsFormKey
           .currentState!.fields['subject_first_name']?.value,
-      subjectLastName: _subjectDetailsFormKey
+      subjectLastName: _contactDetailsFormKey
           .currentState!.fields['subject_last_name']?.value,
       subjectEmail:
-          _subjectDetailsFormKey.currentState!.fields['subject_email']?.value,
+          _contactDetailsFormKey.currentState!.fields['subject_email']?.value,
       subjectDOB: DateFormat('dd/MM/yyyy').tryParse(
-          _subjectDetailsFormKey.currentState!.fields['subject_dob']?.value ??
+          _contactDetailsFormKey.currentState!.fields['subject_dob']?.value ??
               ""),
       subjectEmailVerified: false,
       requesterUserId: auth.currentUser!.uid,
