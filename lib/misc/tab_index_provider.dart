@@ -1,3 +1,7 @@
+import 'package:boomarang/requester/screens/add_request.dart';
+import 'package:boomarang/requester/screens/datagrid.dart';
+import 'package:boomarang/shared/profile.dart';
+import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/material.dart';
 
 class TabIndexProvider extends ChangeNotifier {
@@ -5,8 +9,24 @@ class TabIndexProvider extends ChangeNotifier {
 
   int get tabIndex => _tabIndex;
 
+  Widget screen = const AddRequestScreen();
+
   void setTabIndex(int index) {
     _tabIndex = index;
+    screen = screens[_tabIndex];
     notifyListeners();
   }
+
+  //complete request screen
+  void setScreen(BoomarangRequest request) {
+    _tabIndex = 0;
+    screen = AddRequestScreen(request: request);
+    notifyListeners();
+  }
+
+  List<Widget> screens = [
+    const AddRequestScreen(),
+    const RequesterDatagridScreen(),
+    const BoomarangProfileScreen(),
+  ];
 }
