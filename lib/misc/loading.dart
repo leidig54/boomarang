@@ -13,15 +13,17 @@ class _LoadinScreenState extends State<LoadingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(),
-          const SizedBox(
-            height: 20,
-          ),
-          Text(widget.message),
-        ],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(
+              height: 20,
+            ),
+            Text(widget.message),
+          ],
+        ),
       ),
     );
   }

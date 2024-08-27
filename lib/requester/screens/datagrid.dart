@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
+import 'package:boomarang/misc/tab_index_provider.dart';
 import 'package:boomarang/requester/screens/view_response.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/response.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 class RequesterDatagridScreen extends StatefulWidget {
@@ -59,6 +61,11 @@ class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
       onCellDoubleTap: (details) async {
         final row = details.rowColumnIndex.rowIndex;
 
+        //if request status is pending_completion, navigate to the add request screen
+        if (_requests[row - 1].requestStatus == 'pending_completion') {
+          context.read<TabIndexProvider>().setScreen(_requests[row - 1]);
+          return;
+        }
         //get the response for the request
         final responseData = await firestore
             .collection('responses')
@@ -90,11 +97,11 @@ class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
               child: const Text('Date'),
             )),
         GridColumn(
-            columnName: 'subjectEmail',
+            columnName: 'subject',
             label: Container(
               padding: const EdgeInsets.all(8),
               alignment: Alignment.center,
-              child: const Text('Subject'),
+              child: const Text('Patient'),
             )),
         GridColumn(
             columnName: 'holderEmail',
@@ -129,7 +136,8 @@ class RequesterDataSource extends DataGridSource {
               DataGridCell<String>(
                   columnName: 'date', value: e.formattedCreatedDateOrTime),
               DataGridCell<String>(
-                  columnName: 'subjectEmail', value: e.subjectEmail),
+                  columnName: 'subject',
+                  value: "${e.subjectFirstName} ${e.subjectLastName}"),
               DataGridCell<String>(
                   columnName: 'holderEmail', value: e.holderEmail),
               DataGridCell<String>(
