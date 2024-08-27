@@ -36,9 +36,7 @@ class _ViewResponseScreenState extends State<ViewResponseScreen> {
           children: [
             Expanded(
               child: QuillEditor.basic(
-                configurations: QuillEditorConfigurations(
-                  controller: reportQuillController,
-                ),
+                configurations: const QuillEditorConfigurations(),
               ),
             ),
           ],

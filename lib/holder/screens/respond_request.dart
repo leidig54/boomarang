@@ -740,8 +740,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                       height: 20,
                     ),
                     QuillToolbar.simple(
-                      configurations: QuillSimpleToolbarConfigurations(
-                        controller: reportQuillController,
+                      configurations: const QuillSimpleToolbarConfigurations(
                         showInlineCode: false,
                         showColorButton: false,
                         showCodeBlock: false,
@@ -770,8 +769,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(2.0),
                         child: QuillEditor.basic(
-                          configurations: QuillEditorConfigurations(
-                            controller: reportQuillController,
+                          configurations: const QuillEditorConfigurations(
                             showCursor: true,
                           ),
                           // scrollController: requestScrollController,
