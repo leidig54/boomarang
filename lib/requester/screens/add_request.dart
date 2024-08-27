@@ -15,7 +15,12 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 class AddRequestScreen extends StatefulWidget {
-  const AddRequestScreen({super.key});
+  const AddRequestScreen({
+    super.key,
+    this.request,
+  });
+
+  final BoomarangRequest? request;
 
   @override
   State<AddRequestScreen> createState() => _AddRequestScreenState();
@@ -43,9 +48,12 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
 
   bool noConsentForm = false;
 
+  BoomarangRequest? request;
+
   @override
   void initState() {
-    id = const Uuid().v4();
+    request = widget.request;
+    id = request?.id ?? const Uuid().v4();
     super.initState();
   }
 
@@ -71,7 +79,9 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     const SizedBox(height: 16),
                     FormBuilderTextField(
                       name: 'subject_first_name',
-                      initialValue: kDebugMode ? "David" : null,
+                      enabled: request?.subjectFirstName == null,
+                      initialValue: request?.subjectFirstName ??
+                          (kDebugMode ? "Dave" : null),
                       autofocus: true,
                       validator: FormBuilderValidators.required(),
                       decoration: const InputDecoration(
@@ -82,7 +92,9 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     const SizedBox(height: 16),
                     FormBuilderTextField(
                       name: 'subject_last_name',
-                      initialValue: kDebugMode ? "Smith" : null,
+                      enabled: request?.subjectLastName == null,
+                      initialValue: request?.subjectLastName ??
+                          (kDebugMode ? "Smith" : null),
                       validator: FormBuilderValidators.required(),
                       decoration: const InputDecoration(
                         labelText: 'Last Name',
@@ -141,7 +153,9 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     const SizedBox(height: 16),
                     FormBuilderTextField(
                       name: 'holder_email',
-                      initialValue: kDebugMode ? "ed@doctors.com" : null,
+                      initialValue: request?.holderEmail ??
+                          (kDebugMode ? "ed@doctors.com" : null),
+                      enabled: request?.holderEmail == null,
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(),
                         FormBuilderValidators.email(),
