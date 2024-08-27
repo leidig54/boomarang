@@ -1,5 +1,6 @@
 import 'package:boomarang/main.dart';
 import 'package:boomarang/shared/alert_dialog.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -48,12 +49,14 @@ class _RequestBoomarangDialogState extends State<RequestBoomarangDialog> {
                   const SizedBox(height: 32),
                   FormBuilderTextField(
                     name: 'requesterEmail',
+                    initialValue: kDebugMode ? "ian@insurance.com" : null,
                     validator: FormBuilderValidators.compose([
                       FormBuilderValidators.required(),
                       FormBuilderValidators.email(),
                     ]),
                     decoration: const InputDecoration(
                       labelText: 'Requester Email',
+                      helperMaxLines: 2,
                       helperText:
                           'Enter the contact email address on the paper request form, for example the insurance company.',
                       hintText: "requests@vitality.com",
@@ -64,6 +67,7 @@ class _RequestBoomarangDialogState extends State<RequestBoomarangDialog> {
                   const SizedBox(height: 16),
                   FormBuilderTextField(
                     name: 'subjectFirstName',
+                    initialValue: kDebugMode ? "John" : null,
                     validator: FormBuilderValidators.required(),
                     decoration: const InputDecoration(
                       labelText: 'Patient First Name',
@@ -74,6 +78,7 @@ class _RequestBoomarangDialogState extends State<RequestBoomarangDialog> {
                   //last name
                   FormBuilderTextField(
                     name: 'subjectLastName',
+                    initialValue: kDebugMode ? "Doe" : null,
                     validator: FormBuilderValidators.required(),
                     decoration: const InputDecoration(
                       labelText: 'Patient Last Name',
@@ -105,7 +110,6 @@ class _RequestBoomarangDialogState extends State<RequestBoomarangDialog> {
                               Navigator.of(context).pop();
                             }).catchError((error) {
                               buildErrorAlertDialog(error);
-                            }).whenComplete(() {
                               setState(() {
                                 loading = false;
                               });
@@ -113,7 +117,10 @@ class _RequestBoomarangDialogState extends State<RequestBoomarangDialog> {
                           },
                     label: const Text('Submit'),
                     icon: loading
-                        ? const CircularProgressIndicator()
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator())
                         : const Icon(Icons.send),
                   ),
                 ],
