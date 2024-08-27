@@ -11,7 +11,9 @@ dependencies:
     path: ../boomarang_shared
   cloud_firestore: ^5.0.1
   cloud_functions: ^5.0.0
+  data_table_2: ^2.5.15
   file_picker: ^8.0.3
+  file_saver: ^0.2.13
   firebase_auth: ^5.0.0
   firebase_core: ^3.0.0
   firebase_storage: ^12.0.0
@@ -20,16 +22,24 @@ dependencies:
   flutter_localizations: # Add this line
     sdk: flutter # Add this line
   flutter_form_builder: ^9.3.0
-  flutter_quill: ^10.5.9
+  #TODO: update to latest quill
+  flutter_quill: ^10.4.8
   form_builder_validators: ^11.0.0
   intl: ^0.19.0
+  smooth_page_indicator: ^1.1.0
+  syncfusion_flutter_pdfviewer: ^26.1.35
+  url_launcher: ^6.3.0
   uuid: ^4.4.0
   firebase_ui_auth: ^1.15.0
   collection: ^1.18.0
   package_info_plus: ^8.0.0
   syncfusion_flutter_datagrid: ^26.1.39
+  pinput: ^5.0.0
   provider: ^6.1.2
+  markdown: ^7.2.2
+  flutter_markdown: ^0.7.3
   syncfusion_flutter_core: ^26.1.40
+  flutter_quill_delta_from_html: ^1.4.0
 
 dev_dependencies:
   flutter_test:
