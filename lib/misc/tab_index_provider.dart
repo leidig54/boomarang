@@ -1,6 +1,5 @@
-import 'package:boomarang/app/screens/add_request.dart';
-import 'package:boomarang/app/screens/inbox.dart';
-import 'package:boomarang/app/screens/sent.dart';
+import 'package:boomarang/requester/screens/add_request.dart';
+import 'package:boomarang/requester/screens/datagrid.dart';
 import 'package:boomarang/shared/profile.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +26,6 @@ class TabIndexProvider extends ChangeNotifier {
 
   List<Widget> screens = [
     const AddRequestScreen(),
-    const HolderDatagridScreen(),
     const RequesterDatagridScreen(),
     const BoomarangProfileScreen(),
   ];
