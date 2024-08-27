@@ -107,6 +107,7 @@ class _RequestBoomarangDialogState extends State<RequestBoomarangDialog> {
                                   .fields['subjectLastName']?.value,
                             })
                                 .then((value) {
+                              if (!context.mounted) return;
                               Navigator.of(context).pop();
                             }).catchError((error) {
                               buildErrorAlertDialog(error);
