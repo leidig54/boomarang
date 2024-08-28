@@ -32,116 +32,118 @@ class _BoomarangProfileScreenState extends State<BoomarangProfileScreen> {
         }
       },
       child: Scaffold(
-        body: CustomScrollView(
-          slivers: [
-            const SliverAppBar.large(
-              title: Text('Profile'),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.all(16),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate(
-                  [
-                    FormBuilderTextField(
-                      name: 'title',
-                      autofocus: user?.title == null,
-                      validator: FormBuilderValidators.compose([
-                        FormBuilderValidators.required(),
-                      ]),
-                      initialValue: user?.title,
-                      decoration: const InputDecoration(
-                        labelText: 'Title',
-                        hintText: 'Mr, Mrs, Dr, etc.',
-                        border: OutlineInputBorder(),
-                      ),
+        body: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Profile',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 32),
+                  FormBuilderTextField(
+                    name: 'title',
+                    autofocus: user?.title == null,
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                    ]),
+                    initialValue: user?.title,
+                    decoration: const InputDecoration(
+                      labelText: 'Title',
+                      hintText: 'Mr, Mrs, Dr, etc.',
+                      border: UnderlineInputBorder(),
                     ),
-                    const SizedBox(height: 16),
-                    FormBuilderTextField(
-                      name: 'firstName',
-                      validator: FormBuilderValidators.compose([
-                        FormBuilderValidators.required(),
-                        FormBuilderValidators.minLength(2),
-                      ]),
-                      initialValue: user?.firstName,
-                      decoration: const InputDecoration(
-                        labelText: 'First Name',
-                        border: OutlineInputBorder(),
-                      ),
+                  ),
+                  const SizedBox(height: 16),
+                  FormBuilderTextField(
+                    name: 'firstName',
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                      FormBuilderValidators.minLength(2),
+                    ]),
+                    initialValue: user?.firstName,
+                    decoration: const InputDecoration(
+                      labelText: 'First Name',
+                      border: UnderlineInputBorder(),
                     ),
-                    const SizedBox(height: 16),
-                    FormBuilderTextField(
-                      name: 'lastName',
-                      validator: FormBuilderValidators.compose([
-                        FormBuilderValidators.required(),
-                        FormBuilderValidators.minLength(2),
-                      ]),
-                      initialValue: user?.lastName,
-                      decoration: const InputDecoration(
-                        labelText: 'Last Name',
-                        border: OutlineInputBorder(),
-                      ),
+                  ),
+                  const SizedBox(height: 16),
+                  FormBuilderTextField(
+                    name: 'lastName',
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                      FormBuilderValidators.minLength(2),
+                    ]),
+                    initialValue: user?.lastName,
+                    decoration: const InputDecoration(
+                      labelText: 'Last Name',
+                      border: UnderlineInputBorder(),
                     ),
+                  ),
 
-                    const SizedBox(height: 16),
-                    //verify email
-                    FormBuilderTextField(
-                      name: 'email',
-                      readOnly: true,
-                      enableInteractiveSelection: false,
-                      enabled: false,
-                      initialValue: user?.email,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        border: OutlineInputBorder(),
-                        helperText: 'Email cannot be changed',
+                  const SizedBox(height: 16),
+                  //verify email
+                  FormBuilderTextField(
+                    name: 'email',
+                    readOnly: true,
+                    enableInteractiveSelection: false,
+                    enabled: false,
+                    initialValue: user?.email,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      border: UnderlineInputBorder(),
+                      helperText: 'Email cannot be changed',
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: !_formChanged
+                            ? null
+                            : () {
+                                _userFormKey.currentState!.reset();
+                                setState(() {
+                                  _formChanged = false;
+                                });
+                              },
+                        icon: const Icon(Icons.clear),
+                        label: const Text('Reset'),
                       ),
-                    ),
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: !_formChanged
-                              ? null
-                              : () {
-                                  _userFormKey.currentState!.reset();
-                                  setState(() {
-                                    _formChanged = false;
-                                  });
-                                },
-                          icon: const Icon(Icons.clear),
-                          label: const Text('Reset'),
-                        ),
-                        const SizedBox(width: 16),
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.save),
-                          onPressed: !_formChanged
-                              ? null
-                              : () async {
-                                  if (_userFormKey.currentState!
-                                      .saveAndValidate()) {
-                                    final data =
-                                        _userFormKey.currentState!.value;
-                                    await firestore
-                                        .collection('users')
-                                        .doc(auth.currentUser!.uid)
-                                        .set(data, SetOptions(merge: true));
-                                    if (mounted) {
-                                      setState(() {
-                                        _formChanged = false;
-                                      });
-                                    }
+                      const SizedBox(width: 16),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.save),
+                        onPressed: !_formChanged
+                            ? null
+                            : () async {
+                                if (_userFormKey.currentState!
+                                    .saveAndValidate()) {
+                                  final data = _userFormKey.currentState!.value;
+                                  await firestore
+                                      .collection('users')
+                                      .doc(auth.currentUser!.uid)
+                                      .set(data, SetOptions(merge: true));
+                                  if (mounted) {
+                                    setState(() {
+                                      _formChanged = false;
+                                    });
                                   }
-                                },
-                          label: const Text('Save'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                                }
+                              },
+                        label: const Text('Save'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
