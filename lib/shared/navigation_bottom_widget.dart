@@ -45,9 +45,7 @@ class _NavigationRailTrailingWidgetState
           Row(
             children: [
               Icon(
-                user?.userType == 'requester'
-                    ? Icons.arrow_circle_up_rounded
-                    : Icons.arrow_circle_down_rounded,
+                user?.userType == 'requester' ? Icons.send : Icons.reply,
               ),
               const SizedBox(
                 width: 5,
