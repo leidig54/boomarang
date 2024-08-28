@@ -101,14 +101,14 @@ class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
             label: Container(
               padding: const EdgeInsets.all(8),
               alignment: Alignment.center,
-              child: const Text('Patient'),
+              child: const Text('Subject'),
             )),
         GridColumn(
             columnName: 'holderEmail',
             label: Container(
               padding: const EdgeInsets.all(8),
               alignment: Alignment.center,
-              child: const Text('Healthcare Provider'),
+              child: const Text('Holder'),
             )),
         GridColumn(
           columnName: 'status',
