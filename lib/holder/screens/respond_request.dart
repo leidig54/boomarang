@@ -346,6 +346,57 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                       const SizedBox(
                         height: 4,
                       ),
+                      //fee amount and if paid
+                      // Row(
+                      //   children: [
+                      //     RichText(
+                      //       text: TextSpan(
+                      //         text: 'Fee: ',
+                      //         style: Theme.of(context).textTheme.bodyLarge,
+                      //         children: [
+                      //           TextSpan(
+                      //               text: request.fee == 0
+                      //                   ? "N/A"
+                      //                   : request.formattedFee,
+                      //               style: Theme.of(context)
+                      //                   .textTheme
+                      //                   .bodyLarge!
+                      //                   .copyWith(
+                      //                       fontWeight: FontWeight.bold,
+                      //                       color: Colors.black87))
+                      //         ],
+                      //       ),
+                      //     ),
+                      //     if (request.feePaid != null) ...[
+                      //       const SizedBox(width: 8),
+                      //       //separator
+                      //       Container(
+                      //         height: 16,
+                      //         width: 1,
+                      //         color: Colors.black26,
+                      //       ),
+                      //       const SizedBox(width: 8),
+                      //       //fee paid
+                      //       Text(request.feePaid == true ? 'Paid' : 'Not Paid',
+                      //           style: Theme.of(context)
+                      //               .textTheme
+                      //               .bodyLarge!
+                      //               .copyWith(
+                      //                 fontWeight: FontWeight.bold,
+                      //               )),
+                      //       const SizedBox(width: 8),
+                      //       Icon(
+                      //         request.feePaid == true
+                      //             ? Icons.check_circle
+                      //             : Icons.cancel,
+                      //         color: request.feePaid == true
+                      //             ? Colors.green
+                      //             : Colors.red,
+                      //         size: 16,
+                      //       )
+                      //     ]
+                      //   ],
+                      // ),
                     ],
                   )
                 ],
@@ -354,19 +405,18 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                 height: 40,
               ),
               if (request.requestFormRef != null)
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.grey,
-                      ),
-                      borderRadius: BorderRadius.circular(5),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: SfPdfViewer.network(
-                        request.requestFormRef!,
-                      ),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  height: MediaQuery.of(context).size.height * 0.45,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: SfPdfViewer.network(
+                      request.requestFormRef!,
                     ),
                   ),
                 ),
@@ -380,21 +430,19 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                 const SizedBox(
                   height: 10,
                 ),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.grey,
-                      ),
-                      borderRadius: BorderRadius.circular(5),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey,
                     ),
-                    height: MediaQuery.of(context).size.height * 0.40,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Text(
-                        request.requestDetails!,
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  height: MediaQuery.of(context).size.height * 0.40,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(
+                      request.requestDetails!,
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ),
                 ),
