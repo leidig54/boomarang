@@ -70,7 +70,7 @@ class _RequestBoomarangDialogState extends State<RequestBoomarangDialog> {
                     initialValue: kDebugMode ? "John" : null,
                     validator: FormBuilderValidators.required(),
                     decoration: const InputDecoration(
-                      labelText: 'Patient First Name',
+                      labelText: 'Subject First Name',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -81,7 +81,7 @@ class _RequestBoomarangDialogState extends State<RequestBoomarangDialog> {
                     initialValue: kDebugMode ? "Doe" : null,
                     validator: FormBuilderValidators.required(),
                     decoration: const InputDecoration(
-                      labelText: 'Patient Last Name',
+                      labelText: 'Subject Last Name',
                       border: OutlineInputBorder(),
                     ),
                   ),
