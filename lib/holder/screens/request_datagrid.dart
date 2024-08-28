@@ -121,7 +121,7 @@ class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
                 padding: const EdgeInsets.all(8),
                 alignment: Alignment.center,
                 child: Text(
-                  'Patient',
+                  'Subject',
                   style: Theme.of(context)
                       .textTheme
                       .titleMedium!

@@ -75,7 +75,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Patient Details",
+                      Text("Subject Details",
                           style: Theme.of(context).textTheme.titleLarge),
                       const SizedBox(
                         height: 10,
