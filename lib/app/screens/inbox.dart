@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:boomarang/app/screens/dialogs/request_boomarang.dart';
 import 'package:boomarang/app/screens/respond_request.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/routing_no_animation.dart';
@@ -54,6 +55,19 @@ class _ReceivedScreenState extends State<ReceivedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      //request a boomarang
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return const RequestBoomarangDialog();
+              });
+        },
+        label: const Text('Request Boomarang'),
+        icon: const Icon(Icons.add_task),
+      ),
       body: SfDataGridTheme(
         data: SfDataGridThemeData(
           filterPopupTextStyle: Theme.of(context).textTheme.bodyMedium,
