@@ -354,18 +354,19 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                 height: 40,
               ),
               if (request.requestFormRef != null)
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.grey,
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.grey,
+                      ),
+                      borderRadius: BorderRadius.circular(5),
                     ),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  height: MediaQuery.of(context).size.height * 0.45,
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: SfPdfViewer.network(
-                      request.requestFormRef!,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: SfPdfViewer.network(
+                        request.requestFormRef!,
+                      ),
                     ),
                   ),
                 ),
@@ -379,19 +380,21 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                 const SizedBox(
                   height: 10,
                 ),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.grey,
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.grey,
+                      ),
+                      borderRadius: BorderRadius.circular(5),
                     ),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  height: MediaQuery.of(context).size.height * 0.40,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Text(
-                      request.requestDetails!,
-                      style: Theme.of(context).textTheme.bodyLarge,
+                    height: MediaQuery.of(context).size.height * 0.40,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Text(
+                        request.requestDetails!,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
                     ),
                   ),
                 ),
