@@ -121,7 +121,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                       ]),
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(10),
+                        LengthLimitingTextInputFormatter(8),
                         DateFormatInputFormatter(DateFormat('dd/MM/yyyy')),
                       ],
                       valueTransformer: (value) {
@@ -130,9 +130,12 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                         }
                         // Parse the date, set to start of the day, and convert to UTC
                         DateTime localDate =
-                            DateFormat('dd/MM/yyyy').parse(value, true).toUtc();
-                        return DateTime.utc(
+                            DateFormat('dd/MM/yyyy').parse(value);
+                        DateTime localMidnight = DateTime.utc(
                             localDate.year, localDate.month, localDate.day);
+
+                        DateTime utcDate = localMidnight.toUtc();
+                        return utcDate;
                       },
                       decoration: const InputDecoration(
                         labelText: 'Date of Birth',
@@ -495,11 +498,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                       name: 'consent_form_ref',
                       autovalidateMode: AutovalidateMode.disabled,
                       validator: (value) {
-                        print('consent form ref validator');
                         final formState = _consentDetailsFormKey.currentState;
-                        print(noConsentForm);
                         if (noConsentForm) {
-                          print('no consent form');
                           return null;
                         }
                         if (value == null) {
@@ -736,7 +736,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
     BoomarangRequest newRequest = BoomarangRequest(
       id: id,
       holderEmail:
-          _subjectDetailsFormKey.currentState!.fields['holder_email']?.value,
+          _holderDetailsFormKey.currentState!.fields['holder_email']?.value,
       subjectFirstName: _subjectDetailsFormKey
           .currentState!.fields['subject_first_name']?.value,
       subjectLastName: _subjectDetailsFormKey
@@ -745,7 +745,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
           _subjectDetailsFormKey.currentState!.fields['subject_email']?.value,
       subjectDOB: DateFormat('dd/MM/yyyy').tryParse(
           _subjectDetailsFormKey.currentState!.fields['subject_dob']?.value ??
-              ""),
+              "",
+          true),
       subjectEmailVerified: false,
       requesterUserId: auth.currentUser!.uid,
       holderUserId: null,
@@ -761,7 +762,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
               .currentState!.fields['request_form_ref']?.value,
       consentFormRef: consentFormName == null
           ? null
-          : _requestDetailsFormKey
+          : _consentDetailsFormKey
               .currentState!.fields['consent_form_ref']?.value,
     );
 
