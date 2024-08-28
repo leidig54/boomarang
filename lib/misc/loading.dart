@@ -1,3 +1,5 @@
+import 'package:boomarang/main.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class LoadingScreen extends StatefulWidget {
@@ -22,6 +24,12 @@ class _LoadinScreenState extends State<LoadingScreen> {
               height: 20,
             ),
             Text(widget.message),
+            if (kDebugMode)
+              TextButton(
+                  onPressed: () {
+                    auth.signOut();
+                  },
+                  child: const Text("Sign Out"))
           ],
         ),
       ),
