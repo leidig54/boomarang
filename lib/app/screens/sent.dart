@@ -1,32 +1,34 @@
 import 'dart:async';
 
-import 'package:boomarang/app/screens/add_request.dart';
 import 'package:boomarang/app/screens/view_response.dart';
 import 'package:boomarang/main.dart';
+import 'package:boomarang/misc/tab_index_provider.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/response.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-class SentScreen extends StatefulWidget {
-  const SentScreen({super.key});
+class RequesterDatagridScreen extends StatefulWidget {
+  const RequesterDatagridScreen({super.key});
 
   @override
-  State<SentScreen> createState() => _SentScreenState();
+  State<RequesterDatagridScreen> createState() =>
+      _RequesterDatagridScreenState();
 }
 
-class _SentScreenState extends State<SentScreen> {
+class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
   List<BoomarangRequest> _requests = [];
   late StreamSubscription requestStreamSubscription;
 
-  late SenderDataSource _dataSource;
+  late RequesterDataSource _dataSource;
 
   @override
   void initState() {
-    _dataSource = SenderDataSource(requests: _requests);
+    _dataSource = RequesterDataSource(requests: _requests);
     requestStreamSubscription = firestore
         .collection('requests')
-        .where('senderUserId', isEqualTo: auth.currentUser!.uid)
+        .where('requesterUserId', isEqualTo: auth.currentUser!.uid)
         .snapshots()
         .listen((snapshot) {
       _requests =
@@ -51,93 +53,78 @@ class _SentScreenState extends State<SentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => Center(
-                child: Container(
-                  constraints: const BoxConstraints(
-                      minWidth: 800, maxWidth: 1000, maxHeight: 800),
-                  child: const Dialog(
-                    shape: RoundedRectangleBorder(),
-                    child: AddRequestScreen(),
-                  ),
-                ),
-              ),
-            );
-          },
-          icon: const Icon(Icons.send),
-          label: const Text("Create Boomarang"),
-        ),
         body: SfDataGrid(
-          source: _dataSource,
-          columnWidthMode: ColumnWidthMode.fill,
-          gridLinesVisibility: GridLinesVisibility.both,
-          headerGridLinesVisibility: GridLinesVisibility.both,
-          onCellDoubleTap: (details) async {
-            final row = details.rowColumnIndex.rowIndex;
+      source: _dataSource,
+      columnWidthMode: ColumnWidthMode.fill,
+      gridLinesVisibility: GridLinesVisibility.both,
+      headerGridLinesVisibility: GridLinesVisibility.both,
+      onCellDoubleTap: (details) async {
+        final row = details.rowColumnIndex.rowIndex;
 
-            //get the response for the request
-            final responseData = await firestore
-                .collection('responses')
-                .where('id', isEqualTo: _requests[row - 1].id)
-                .get();
+        //if request status is pending_completion, navigate to the add request screen
+        if (_requests[row - 1].requestStatus == 'pending_completion') {
+          context.read<TabIndexProvider>().setScreen(_requests[row - 1]);
+          return;
+        }
+        //get the response for the request
+        final responseData = await firestore
+            .collection('responses')
+            .where('id', isEqualTo: _requests[row - 1].id)
+            .get();
 
-            BoomarangResponse response =
-                BoomarangResponse.fromMap(responseData.docs.first.data());
+        BoomarangResponse response =
+            BoomarangResponse.fromMap(responseData.docs.first.data());
 
-            if (!context.mounted) return;
+        if (!context.mounted) return;
 
-            //navigate to the response screen
-            showDialog(
-                context: context,
-                builder: (context) {
-                  return Dialog(
-                    child: ViewResponseScreen(response: response),
-                  );
-                });
+        //navigate to the response screen
+        showDialog(
+            context: context,
+            builder: (context) {
+              return Dialog(
+                child: ViewResponseScreen(response: response),
+              );
+            });
 
-            //
-          },
-          columns: [
-            GridColumn(
-                columnName: 'date',
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: const Text('Date'),
-                )),
-            GridColumn(
-                columnName: 'subject',
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: const Text('Subject'),
-                )),
-            GridColumn(
-                columnName: 'recipientEmail',
-                label: Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  child: const Text('Recipient'),
-                )),
-            GridColumn(
-              columnName: 'status',
-              label: Container(
-                padding: const EdgeInsets.all(8),
-                alignment: Alignment.center,
-                child: const Text('Status'),
-              ),
-            ),
-          ],
-        ));
+        //
+      },
+      columns: [
+        GridColumn(
+            columnName: 'date',
+            label: Container(
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+              child: const Text('Date'),
+            )),
+        GridColumn(
+            columnName: 'subject',
+            label: Container(
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+              child: const Text('Subject'),
+            )),
+        GridColumn(
+            columnName: 'holderEmail',
+            label: Container(
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+              child: const Text('Holder'),
+            )),
+        GridColumn(
+          columnName: 'status',
+          label: Container(
+            padding: const EdgeInsets.all(8),
+            alignment: Alignment.center,
+            child: const Text('Status'),
+          ),
+        ),
+      ],
+    ));
   }
 }
 
-class SenderDataSource extends DataGridSource {
-  SenderDataSource({required List<BoomarangRequest> requests}) {
+class RequesterDataSource extends DataGridSource {
+  RequesterDataSource({required List<BoomarangRequest> requests}) {
     buildDataGridRows(requests: requests);
   }
 
@@ -152,7 +139,7 @@ class SenderDataSource extends DataGridSource {
                   columnName: 'subject',
                   value: "${e.subjectFirstName} ${e.subjectLastName}"),
               DataGridCell<String>(
-                  columnName: 'recipientEmail', value: e.recipientEmail),
+                  columnName: 'holderEmail', value: e.recipientEmail),
               DataGridCell<String>(
                   columnName: 'status', value: e.formattedRequestStatus),
             ],
