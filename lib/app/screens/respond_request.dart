@@ -1,23 +1,20 @@
-import 'package:boomarang/holder/logic/generate_report.dart';
-import 'package:boomarang/holder/screens/dialogs/llm_explainer.dart';
-import 'package:boomarang/holder/screens/dialogs/overwrite_report.dart';
-import 'package:boomarang/holder/screens/dialogs/reject_request.dart';
-import 'package:boomarang/holder/screens/dialogs/view_request_type.dart';
+import 'package:boomarang/app/logic/generate_report.dart';
+import 'package:boomarang/app/screens/dialogs/llm_explainer.dart';
+import 'package:boomarang/app/screens/dialogs/overwrite_report.dart';
+import 'package:boomarang/app/screens/dialogs/reject_request.dart';
+import 'package:boomarang/app/screens/dialogs/view_request_type.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/custom_stepper.dart';
 import 'package:boomarang/shared/alert_dialog.dart';
 import 'package:boomarang_shared/data/request_types.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/request_type.dart';
-import 'package:boomarang_shared/models/response.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Stepper, Step, StepperType;
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class RespondRequestScreen extends StatefulWidget {
   const RespondRequestScreen({
@@ -147,7 +144,6 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                           )
                         ],
                       ),
-
                       const SizedBox(height: 4),
                       Row(
                         children: [
@@ -197,74 +193,6 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                                 : Colors.red,
                             size: 16,
                           )
-                        ],
-                      ),
-                      //consent
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          RichText(
-                            text: TextSpan(
-                              text: 'Consent: ',
-                              style: Theme.of(context).textTheme.bodyLarge,
-                              children: [
-                                request.consentFormRef == null
-                                    ? const TextSpan(
-                                        text: 'None',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ))
-                                    : TextSpan(
-                                        text: 'View',
-                                        //theme color and bold
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge!
-                                            .copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                color: Theme.of(context)
-                                                    .primaryColor),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            launchUrl(Uri.parse(
-                                                request.consentFormRef!));
-                                          },
-                                      ),
-                              ],
-                            ),
-                          ),
-                          if (request.consentFormRef != null) ...[
-                            //spacer
-                            const SizedBox(width: 8),
-                            //separator
-                            Container(
-                              height: 16,
-                              width: 1,
-                              color: Colors.black26,
-                            ),
-                            const SizedBox(width: 8),
-                            //consent verified
-                            Text(
-                                request.consentVerified == true
-                                    ? 'Verified'
-                                    : 'Not Verified',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge!
-                                    .copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    )),
-                            const SizedBox(width: 8),
-                            Icon(
-                              request.consentVerified == true
-                                  ? Icons.check_circle
-                                  : Icons.cancel,
-                              color: request.consentVerified == true
-                                  ? Colors.green
-                                  : Colors.red,
-                              size: 16,
-                            )
-                          ],
                         ],
                       ),
                     ],
@@ -353,29 +281,12 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
               const SizedBox(
                 height: 40,
               ),
-              if (request.requestFormRef != null)
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.grey,
-                      ),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: SfPdfViewer.network(
-                        request.requestFormRef!,
-                      ),
-                    ),
-                  ),
-                ),
               if (request.requestDetails != null) ...[
                 const SizedBox(
                   height: 20,
                 ),
                 //request details
-                Text("Description",
+                Text("Additional Details",
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(
                   height: 10,
@@ -494,7 +405,6 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                                           await generateReport(
                                         requestData: RequestData(
                                           text: request.requestDetails,
-                                          file: request.requestFormRef,
                                           requestType: request.requestType!,
                                         ),
                                         consultationData: ConsultationData(
@@ -809,21 +719,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
   }
 
   Future<void> submitResponse() async {
-    //if include_consultation_details is true, add consultation details to response, otherwise delete consultation details
-    bool? includeConsultationDetails = _consultationsFormKey.currentState!
-            .fields['include_consultation_details']?.value as bool? ??
-        false;
-
-    BoomarangResponse response = BoomarangResponse(
-      id: id,
-      holderUserId: auth.currentUser!.uid,
-      requesterUserId: request.requesterUserId,
-      consultationFormRef:
-          includeConsultationDetails ? consultationFormRef : null,
-      report: reportQuillController.document.toDelta().toJson(),
-    );
-
-    await firestore.collection('responses').doc(id).set(response.toMap());
+    //TODO: populate response
   }
 }
 

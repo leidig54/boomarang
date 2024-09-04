@@ -17,7 +17,6 @@ Future<Document> generateReport({
     <String, dynamic>{
       'requestData': {
         'text': requestData.text,
-        'fileUrl': requestData.file,
         'requestType': requestData.requestType,
       },
       'consultationData': {
@@ -44,12 +43,10 @@ Future<Document> generateReport({
 
 class RequestData {
   String? text;
-  String? file;
   String requestType;
 
   RequestData({
     this.text,
-    this.file,
     required this.requestType,
   });
 }

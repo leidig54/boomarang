@@ -1,6 +1,6 @@
+import 'package:boomarang/app/screens/dialogs/submit_request.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/custom_stepper.dart';
-import 'package:boomarang/requester/screens/dialogs/submit_request.dart';
 import 'package:boomarang_shared/data/request_types.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/foundation.dart';
@@ -39,8 +39,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   bool isSubmitting = false;
 
   BoomarangRequest? request;
-
-  bool hasFoundHolder = false;
 
   @override
   void initState() {
@@ -177,50 +175,19 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     ),
                     const SizedBox(height: 32),
                     FormBuilderTextField(
-                      name: 'holder_email',
-                      initialValue: request?.holderEmail ??
+                      name: 'to_email',
+                      initialValue: request?.recipientEmail ??
                           (kDebugMode ? "ed@doctors.com" : null),
-                      enabled: request?.holderEmail == null,
+                      enabled: request?.recipientEmail == null,
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(),
                         FormBuilderValidators.email(),
                       ]),
-                      onChanged: (value) async {
-                        if (value == null || value.isEmpty) {
-                          setState(() {
-                            hasFoundHolder = false;
-                          });
-                          return;
-                        }
-
-                        await firestore
-                            .collection('users')
-                            .where('email', isEqualTo: value.trim())
-                            .where('userType', isEqualTo: 'holder')
-                            .get()
-                            .then((value) {
-                          if (value.docs.isNotEmpty) {
-                            setState(() {
-                              hasFoundHolder = true;
-                            });
-                          } else {
-                            setState(() {
-                              hasFoundHolder = false;
-                            });
-                          }
-                        });
-                      },
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Email',
-                        helperText: hasFoundHolder
-                            ? 'User found on Boomarang'
-                            : 'We will send the request to this email address',
-                        helperStyle: TextStyle(
-                          color: hasFoundHolder
-                              ? Theme.of(context).colorScheme.primary
-                              : null,
-                        ),
-                        border: const UnderlineInputBorder(),
+                        helperText:
+                            'We will send the request to this email address',
+                        border: UnderlineInputBorder(),
                       ),
                     ),
                   ],
@@ -353,8 +320,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   Future<void> submitRequest() async {
     BoomarangRequest newRequest = BoomarangRequest(
       id: id,
-      holderEmail:
-          _holderDetailsFormKey.currentState!.fields['holder_email']?.value,
+      recipientEmail:
+          _holderDetailsFormKey.currentState!.fields['to_email']?.value,
       subjectFirstName: _subjectDetailsFormKey
           .currentState!.fields['subject_first_name']?.value,
       subjectLastName: _subjectDetailsFormKey
@@ -366,8 +333,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
               "",
           true),
       subjectEmailVerified: false,
-      requesterUserId: auth.currentUser!.uid,
-      holderUserId: null,
+      senderUserId: auth.currentUser!.uid,
+      recipientUserID: null,
       dateCreated: DateTime.now(),
       consentVerified: false,
       requestStatus: 'awaiting_response',
