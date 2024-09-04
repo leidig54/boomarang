@@ -28,8 +28,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   final _recipientDetailsFormKey = GlobalKey<FormBuilderState>();
   final _requestDetailsFormKey = GlobalKey<FormBuilderState>();
 
-  List<Widget> children = [];
-
   int currentStep = 0;
 
   late String id;
@@ -52,13 +50,14 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         title: const Text('Subject'),
         isActive: currentStep == 0,
         content: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
               width: 600,
               child: FormBuilder(
                 key: _subjectDetailsFormKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       "Subject",
