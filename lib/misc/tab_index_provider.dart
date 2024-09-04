@@ -27,8 +27,8 @@ class TabIndexProvider extends ChangeNotifier {
 
   List<Widget> screens = [
     const AddRequestScreen(),
-    const HolderDatagridScreen(),
-    const RequesterDatagridScreen(),
+    const ReceivedScreen(),
+    const SentScreen(),
     const BoomarangProfileScreen(),
   ];
 }
