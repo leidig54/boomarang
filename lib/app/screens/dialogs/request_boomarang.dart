@@ -5,16 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
-class RequestBoomarangScreen extends StatefulWidget {
-  const RequestBoomarangScreen({
+class RequestBoomarangDialog extends StatefulWidget {
+  const RequestBoomarangDialog({
     super.key,
   });
 
   @override
-  State<RequestBoomarangScreen> createState() => _RequestBoomarangScreenState();
+  State<RequestBoomarangDialog> createState() => _RequestBoomarangDialogState();
 }
 
-class _RequestBoomarangScreenState extends State<RequestBoomarangScreen> {
+class _RequestBoomarangDialogState extends State<RequestBoomarangDialog> {
   //form key
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
 
@@ -48,14 +48,14 @@ class _RequestBoomarangScreenState extends State<RequestBoomarangScreen> {
                   ),
                   const SizedBox(height: 32),
                   FormBuilderTextField(
-                    name: 'senderEmail',
+                    name: 'requesterEmail',
                     initialValue: kDebugMode ? "ian@insurance.com" : null,
                     validator: FormBuilderValidators.compose([
                       FormBuilderValidators.required(),
                       FormBuilderValidators.email(),
                     ]),
                     decoration: const InputDecoration(
-                      labelText: 'Sender Email',
+                      labelText: 'Requester Email',
                       helperMaxLines: 2,
                       helperText:
                           'Enter the contact email address on the paper request form, for example the insurance company.',
@@ -99,8 +99,8 @@ class _RequestBoomarangScreenState extends State<RequestBoomarangScreen> {
                             //functions to create the request
                             await functions
                                 .httpsCallable('requestBoomarang')({
-                              'senderEmail': _formKey
-                                  .currentState!.fields['senderEmail']?.value,
+                              'requesterEmail': _formKey.currentState!
+                                  .fields['requesterEmail']?.value,
                               'subjectFirstName': _formKey.currentState!
                                   .fields['subjectFirstName']?.value,
                               'subjectLastName': _formKey.currentState!
