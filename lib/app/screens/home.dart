@@ -1,27 +1,18 @@
-import 'package:boomarang/holder/screens/request_datagrid.dart';
+import 'package:boomarang/misc/tab_index_provider.dart';
 import 'package:boomarang/shared/navigation_bottom_widget.dart';
-import 'package:boomarang/shared/profile.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class HolderHome extends StatefulWidget {
-  const HolderHome({
+class Home extends StatefulWidget {
+  const Home({
     super.key,
   });
 
   @override
-  State<HolderHome> createState() => _HolderHomeState();
+  State<Home> createState() => _HomeState();
 }
 
-class _HolderHomeState extends State<HolderHome> {
-  int selectedIndex = 0;
-
-  List<Widget> screens = [
-    const HolderDatagridScreen(),
-    Container(),
-    const BoomarangProfileScreen(),
-    Container(),
-  ];
-
+class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -51,18 +42,23 @@ class _HolderHomeState extends State<HolderHome> {
           ),
           destinations: [
             NavigationRailDestination(
-              icon: const Icon(Icons.mail),
+              icon: const Icon(Icons.add),
               label: Text(
-                'Requests',
+                'Add New',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
-            //payments
             NavigationRailDestination(
-              icon: const Icon(Icons.payment),
-              disabled: true,
+              icon: const Icon(Icons.inbox),
               label: Text(
-                'Payments',
+                'Received',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ),
+            NavigationRailDestination(
+              icon: const Icon(Icons.outbox),
+              label: Text(
+                'Sent',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
@@ -73,22 +69,11 @@ class _HolderHomeState extends State<HolderHome> {
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
-            //admin
-            NavigationRailDestination(
-              icon: const Icon(Icons.admin_panel_settings),
-              disabled: true,
-              label: Text(
-                'Admin',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ),
           ],
           trailing: const NavigationRailTrailingWidget(),
-          selectedIndex: selectedIndex,
+          selectedIndex: context.watch<TabIndexProvider>().tabIndex,
           onDestinationSelected: (int index) {
-            setState(() {
-              selectedIndex = index;
-            });
+            context.read<TabIndexProvider>().setTabIndex(index);
           },
           extended: true,
         ),
@@ -96,7 +81,11 @@ class _HolderHomeState extends State<HolderHome> {
           thickness: 3,
           width: 3,
         ),
-        Expanded(child: Scaffold(body: screens[selectedIndex])),
+        Expanded(
+          child: Scaffold(
+            body: context.watch<TabIndexProvider>().screen,
+          ),
+        ),
       ],
     );
   }

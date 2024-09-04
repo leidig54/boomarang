@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:boomarang/app/screens/view_response.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/tab_index_provider.dart';
-import 'package:boomarang/requester/screens/view_response.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/response.dart';
 import 'package:flutter/material.dart';
@@ -139,7 +139,7 @@ class RequesterDataSource extends DataGridSource {
                   columnName: 'subject',
                   value: "${e.subjectFirstName} ${e.subjectLastName}"),
               DataGridCell<String>(
-                  columnName: 'holderEmail', value: e.holderEmail),
+                  columnName: 'holderEmail', value: e.recipientEmail),
               DataGridCell<String>(
                   columnName: 'status', value: e.formattedRequestStatus),
             ],

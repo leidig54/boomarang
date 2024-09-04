@@ -14,8 +14,8 @@ Future<void> submitRequest({
 }) async {
   BoomarangRequest newRequest = BoomarangRequest(
     id: id,
-    holderEmail:
-        contactDetailsFormKey?.currentState!.fields['holder_email']?.value,
+    recipientEmail:
+        contactDetailsFormKey?.currentState!.fields['to_email']?.value,
     subjectFirstName: contactDetailsFormKey
         ?.currentState!.fields['subject_first_name']?.value,
     subjectLastName:
@@ -26,22 +26,14 @@ Future<void> submitRequest({
         contactDetailsFormKey?.currentState!.fields['subject_dob']?.value ??
             ""),
     subjectEmailVerified: false,
-    requesterUserId: auth.currentUser!.uid,
-    holderUserId: null,
+    senderUserId: auth.currentUser!.uid,
+    recipientUserID: null,
     dateCreated: DateTime.now(),
     consentVerified: false,
     requestStatus: 'awaiting_response',
     requestType: requestDetailsFormKey?.currentState!.fields['type']?.value,
     requestDetails:
         requestDetailsFormKey?.currentState!.fields['request_details']?.value,
-    requestFormRef: requestFormName == null
-        ? null
-        : requestDetailsFormKey
-            ?.currentState!.fields['request_form_ref']?.value,
-    consentFormRef: consentFormName == null
-        ? null
-        : consentDetailsFormKey
-            ?.currentState!.fields['consent_form_ref']?.value,
   );
 
   return await firestore.collection('requests').doc(id).set(newRequest.toMap());
