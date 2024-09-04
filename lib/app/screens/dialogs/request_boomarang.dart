@@ -48,14 +48,14 @@ class _RequestBoomarangDialogState extends State<RequestBoomarangDialog> {
                   ),
                   const SizedBox(height: 32),
                   FormBuilderTextField(
-                    name: 'senderEmail',
+                    name: 'requesterEmail',
                     initialValue: kDebugMode ? "ian@insurance.com" : null,
                     validator: FormBuilderValidators.compose([
                       FormBuilderValidators.required(),
                       FormBuilderValidators.email(),
                     ]),
                     decoration: const InputDecoration(
-                      labelText: 'Sender Email',
+                      labelText: 'Requester Email',
                       helperMaxLines: 2,
                       helperText:
                           'Enter the contact email address on the paper request form, for example the insurance company.',
@@ -99,8 +99,8 @@ class _RequestBoomarangDialogState extends State<RequestBoomarangDialog> {
                             //functions to create the request
                             await functions
                                 .httpsCallable('requestBoomarang')({
-                              'senderEmail': _formKey
-                                  .currentState!.fields['senderEmail']?.value,
+                              'requesterEmail': _formKey.currentState!
+                                  .fields['requesterEmail']?.value,
                               'subjectFirstName': _formKey.currentState!
                                   .fields['subjectFirstName']?.value,
                               'subjectLastName': _formKey.currentState!
