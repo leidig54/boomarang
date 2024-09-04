@@ -213,8 +213,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                             TextSpan(
                                 text: requestType.name,
                                 recognizer: TapGestureRecognizer()
-                                  ..onTap = requestType.holderDescription ==
-                                          null
+                                  ..onTap = requestType.description == null
                                       ? null
                                       : () {
                                           showDialog(
@@ -233,15 +232,14 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                           ],
                         ),
                       ),
-                      //requester
                       const SizedBox(height: 4),
                       RichText(
                         text: TextSpan(
-                          text: 'Requester: ',
+                          text: 'Sender: ',
                           style: Theme.of(context).textTheme.bodyLarge,
                           children: [
                             TextSpan(
-                                text: request.requesterOrgName,
+                                text: request.senderEmail,
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyLarge!
@@ -550,7 +548,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                                   width: 200,
                                   child: Tooltip(
                                     message:
-                                        'Checking this box will give the requester access to this file.',
+                                        'Checking this box will give the sender access to this file.',
                                     child: FormBuilderCheckbox(
                                         name: 'include_consultation_details',
                                         initialValue:

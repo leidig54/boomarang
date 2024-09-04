@@ -25,12 +25,10 @@ class AddRequestScreen extends StatefulWidget {
 
 class _AddRequestScreenState extends State<AddRequestScreen> {
   final _subjectDetailsFormKey = GlobalKey<FormBuilderState>();
-  final _holderDetailsFormKey = GlobalKey<FormBuilderState>();
+  final _recipientDetailsFormKey = GlobalKey<FormBuilderState>();
   final _requestDetailsFormKey = GlobalKey<FormBuilderState>();
 
   List<Widget> children = [];
-
-  String? knowsHolder;
 
   int currentStep = 0;
 
@@ -152,19 +150,19 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         ),
       ),
       Step(
-        title: const Text("Holder"),
+        title: const Text("Recipient"),
         isActive: currentStep == 1,
         content: Row(
           children: [
             SizedBox(
               width: 600,
               child: FormBuilder(
-                key: _holderDetailsFormKey,
+                key: _recipientDetailsFormKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Holder",
+                      "Recipient",
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 4),
@@ -175,7 +173,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     ),
                     const SizedBox(height: 32),
                     FormBuilderTextField(
-                      name: 'to_email',
+                      name: 'recipient_email',
                       initialValue: request?.recipientEmail ??
                           (kDebugMode ? "ed@doctors.com" : null),
                       enabled: request?.recipientEmail == null,
@@ -296,7 +294,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
               });
             }
           } else if (currentStep == 1) {
-            if (_holderDetailsFormKey.currentState!.saveAndValidate()) {
+            if (_recipientDetailsFormKey.currentState!.saveAndValidate()) {
               setState(() {
                 currentStep++;
               });
@@ -320,8 +318,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   Future<void> submitRequest() async {
     BoomarangRequest newRequest = BoomarangRequest(
       id: id,
-      recipientEmail:
-          _holderDetailsFormKey.currentState!.fields['to_email']?.value,
+      recipientEmail: _recipientDetailsFormKey
+          .currentState!.fields['recipient_email']?.value,
       subjectFirstName: _subjectDetailsFormKey
           .currentState!.fields['subject_first_name']?.value,
       subjectLastName: _subjectDetailsFormKey
