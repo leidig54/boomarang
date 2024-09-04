@@ -33,16 +33,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         //actions
         Padding(
-          padding: const EdgeInsets.only(left: 16.0, bottom: 8.0, top: 32.0),
+          padding: const EdgeInsets.only(left: 16.0, bottom: 16.0, top: 32.0),
           child: Text(
             'Actions',
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
         ListTile(
-          title: const Text('Create New'),
-          subtitle:
-              const Text('Want to request sensitive data? Send a Boomarang.'),
+          title: const Text('Create a Boomarang'),
+          subtitle: const Text(
+              'Want to request sensitive data? Create a new Boomarang.'),
           leading: const Icon(Icons.send),
           onTap: () {
             showDialog(
@@ -51,32 +51,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
             );
           },
         ),
-
-        Padding(
-          padding: const EdgeInsets.only(left: 16.0, bottom: 8.0, top: 32.0),
-          child: Text(
-            'Share',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-        ),
         ListTile(
-          title: const Text('Request Boomarang'),
+          title: const Text('Request a Boomarang'),
           subtitle: const Text(
-              "If you've received a paper request and want it submitted via Boomarang"),
+              "Useful if you've receive a paper request and want the sender to resubmit it via Boomarang."),
           leading: const Icon(Icons.add_task),
           onTap: () {
             showDialog(
-              context: context,
-              builder: (context) => const RequestBoomarangScreen(),
-            );
+                context: context,
+                builder: (context) {
+                  return const RequestBoomarangScreen();
+                });
           },
-        ),
-        ListTile(
-          title: const Text('Share Link'),
-          subtitle: const Text(
-              "Share your boomarang link with others to allow them to request data from you."),
-          leading: const Icon(Icons.share),
-          onTap: () {},
         ),
       ],
     ));
