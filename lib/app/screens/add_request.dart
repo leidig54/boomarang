@@ -10,8 +10,8 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
-class AddRequestScreen extends StatefulWidget {
-  const AddRequestScreen({
+class CreateBoomarangScreen extends StatefulWidget {
+  const CreateBoomarangScreen({
     super.key,
     this.request,
   });
@@ -19,10 +19,10 @@ class AddRequestScreen extends StatefulWidget {
   final BoomarangRequest? request;
 
   @override
-  State<AddRequestScreen> createState() => _AddRequestScreenState();
+  State<CreateBoomarangScreen> createState() => _CreateBoomarangScreenState();
 }
 
-class _AddRequestScreenState extends State<AddRequestScreen> {
+class _CreateBoomarangScreenState extends State<CreateBoomarangScreen> {
   final _subjectDetailsFormKey = GlobalKey<FormBuilderState>();
   final _recipientDetailsFormKey = GlobalKey<FormBuilderState>();
   final _requestDetailsFormKey = GlobalKey<FormBuilderState>();
@@ -54,92 +54,101 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   @override
   Widget build(BuildContext context) {
     //replace stepper with pageview
-    return Scaffold(
-      body: Column(
-        children: [
-          LinearProgressIndicator(
-            value: (currentProgress + 1) / 3,
-            minHeight: 6,
-          ),
-          Expanded(
-            child: PageView(
-              physics: const NeverScrollableScrollPhysics(),
-              controller: pageController,
+    return Center(
+      child: Container(
+        constraints:
+            const BoxConstraints(minWidth: 800, maxWidth: 1000, maxHeight: 700),
+        child: Dialog(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
               children: [
-                AddRequestSubject(
-                  subjectDetailsFormKey: _subjectDetailsFormKey,
-                  request: request,
+                LinearProgressIndicator(
+                  value: (currentProgress + 1) / 3,
+                  minHeight: 6,
                 ),
-                AddRequestRecipient(
-                  recipientDetailsFormKey: _recipientDetailsFormKey,
-                  request: request,
+                Expanded(
+                  child: PageView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    controller: pageController,
+                    children: [
+                      AddRequestSubject(
+                        subjectDetailsFormKey: _subjectDetailsFormKey,
+                        request: request,
+                      ),
+                      AddRequestRecipient(
+                        recipientDetailsFormKey: _recipientDetailsFormKey,
+                        request: request,
+                      ),
+                      AddRequestRequest(
+                        requestDetailsFormKey: _requestDetailsFormKey,
+                      ),
+                    ],
+                  ),
                 ),
-                AddRequestRequest(
-                  requestDetailsFormKey: _requestDetailsFormKey,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: currentStep == 0
+                          ? null
+                          : () {
+                              pageController.previousPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                      child: const Text("Back"),
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (currentStep == 0) {
+                          if (_subjectDetailsFormKey.currentState!
+                              .saveAndValidate()) {
+                            pageController.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        } else if (currentStep == 1) {
+                          if (_recipientDetailsFormKey.currentState!
+                              .saveAndValidate()) {
+                            pageController.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        } else if (currentStep == 2) {
+                          if (_requestDetailsFormKey.currentState!
+                              .saveAndValidate()) {
+                            showDialog(
+                              context: context,
+                              builder: (context) => SubmitRequestDialog(
+                                submitRequest: submitRequest,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      child: currentStep == 2
+                          ? const Text("Submit")
+                          : const Text("Next"),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Cancel"),
+                ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: currentStep == 0
-                    ? null
-                    : () {
-                        pageController.previousPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      },
-                child: const Text("Back"),
-              ),
-              const SizedBox(width: 16),
-              ElevatedButton(
-                onPressed: () async {
-                  if (currentStep == 0) {
-                    if (_subjectDetailsFormKey.currentState!
-                        .saveAndValidate()) {
-                      pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  } else if (currentStep == 1) {
-                    if (_recipientDetailsFormKey.currentState!
-                        .saveAndValidate()) {
-                      pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  } else if (currentStep == 2) {
-                    if (_requestDetailsFormKey.currentState!
-                        .saveAndValidate()) {
-                      showDialog(
-                        context: context,
-                        builder: (context) => SubmitRequestDialog(
-                          submitRequest: submitRequest,
-                        ),
-                      );
-                    }
-                  }
-                },
-                child: currentStep == 2
-                    ? const Text("Submit")
-                    : const Text("Next"),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("Cancel"),
-          ),
-          const SizedBox(height: 16),
-        ],
+        ),
       ),
     );
   }
