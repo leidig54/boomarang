@@ -59,6 +59,7 @@ async function createDemoEnvironment() {
   console.log("Holder document created");
 
   const createRequest = async () => {
+    console.log("Creating request");
     const id = faker.string.uuid();
 
     const requesterOrgs = {
@@ -110,6 +111,7 @@ async function createDemoEnvironment() {
     };
 
     await requestCollection.doc(request.id).set(request);
+    console.log("Request created");
   };
 
   //add 30 requests
