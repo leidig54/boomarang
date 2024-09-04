@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:boomarang/app/screens/respond_request.dart';
 import 'package:boomarang/main.dart';
+import 'package:boomarang/misc/header_text_style.dart';
 import 'package:boomarang/misc/routing_no_animation.dart';
 import 'package:boomarang_shared/data/request_types.dart';
 import 'package:boomarang_shared/models/request.dart';
@@ -12,14 +13,14 @@ import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-class ReceivedScreen extends StatefulWidget {
-  const ReceivedScreen({super.key});
+class InboxScreen extends StatefulWidget {
+  const InboxScreen({super.key});
 
   @override
-  State<ReceivedScreen> createState() => _ReceivedScreenState();
+  State<InboxScreen> createState() => _InboxScreenState();
 }
 
-class _ReceivedScreenState extends State<ReceivedScreen> {
+class _InboxScreenState extends State<InboxScreen> {
   List<BoomarangRequest> _requests = [];
   late StreamSubscription requestStreamSubscription;
 
@@ -54,126 +55,138 @@ class _ReceivedScreenState extends State<ReceivedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SfDataGridTheme(
-        data: SfDataGridThemeData(
-          filterPopupTextStyle: Theme.of(context).textTheme.bodyMedium,
-        ),
-        child: SfDataGrid(
-          source: _dataSource,
-          columnWidthMode: ColumnWidthMode.fill,
-          gridLinesVisibility: GridLinesVisibility.both,
-          headerGridLinesVisibility: GridLinesVisibility.both,
-          allowFiltering: true,
-          showColumnHeaderIconOnHover: false,
-          isScrollbarAlwaysShown: true,
-          allowSorting: true,
-          onCellDoubleTap: (details) {
-            BoomarangRequest request =
-                _requests[details.rowColumnIndex.rowIndex - 1];
-            if (request.requestStatus == 'awaiting_response') {
-              navigateWithoutTransition(
-                context,
-                RespondRequestScreen(request: request),
-              );
-            }
-          },
-          columns: [
-            GridColumn(
-              columnName: 'received',
-              allowFiltering: false,
-              allowSorting: true,
-              columnWidthMode: ColumnWidthMode.auto,
-              label: Container(
-                padding: const EdgeInsets.all(8),
-                alignment: Alignment.center,
+      body: Column(
+        children: [
+          Container(
+            height: 150,
+            width: double.infinity,
+            color: Theme.of(context).canvasColor,
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
                 child: Text(
-                  'Received',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium!
-                      .copyWith(fontWeight: FontWeight.bold),
+                  "Inbox",
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
             ),
-            GridColumn(
-              columnName: 'subjectName',
-              allowSorting: true,
-              filterPopupMenuOptions: const FilterPopupMenuOptions(
-                canShowSortingOptions: false,
-                showColumnName: false,
-                filterMode: FilterMode.checkboxFilter,
+          ),
+          Expanded(
+            child: SfDataGridTheme(
+              data: SfDataGridThemeData(
+                filterPopupTextStyle: Theme.of(context).textTheme.bodyMedium,
+                headerColor: Theme.of(context).canvasColor,
               ),
-              label: Container(
-                padding: const EdgeInsets.all(8),
-                alignment: Alignment.center,
-                child: Text(
-                  'Subject',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium!
-                      .copyWith(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            // GridColumn(
-            //   columnName: 'fee_charged',
-            //   allowSorting: false,
-            //   allowFiltering: false,
-            //   columnWidthMode: ColumnWidthMode.fitByColumnName,
-            //   label: Container(
-            //     padding: const EdgeInsets.all(8),
-            //     alignment: Alignment.center,
-            //     child: Text(
-            //       'Fee Charged',
-            //       style: Theme.of(context)
-            //           .textTheme
-            //           .titleMedium!
-            //           .copyWith(fontWeight: FontWeight.bold),
-            //     ),
-            //   ),
-            // ),
-            GridColumn(
-              columnName: 'requestType',
-              allowSorting: true,
-              filterPopupMenuOptions: const FilterPopupMenuOptions(
-                canShowSortingOptions: false,
-                showColumnName: false,
-                filterMode: FilterMode.checkboxFilter,
-              ),
-              label: Container(
-                padding: const EdgeInsets.all(8),
-                alignment: Alignment.center,
-                child: Text(
-                  'Type',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium!
-                      .copyWith(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            GridColumn(
-              columnName: 'status',
-              allowSorting: true,
-              columnWidthMode: ColumnWidthMode.fitByColumnName,
-              filterPopupMenuOptions: const FilterPopupMenuOptions(
-                canShowSortingOptions: false,
-                showColumnName: false,
-                filterMode: FilterMode.checkboxFilter,
-              ),
-              label: Container(
-                padding: const EdgeInsets.all(8),
-                alignment: Alignment.center,
-                child: Text(
-                  'Status',
-                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        fontWeight: FontWeight.bold,
+              child: SfDataGrid(
+                source: _dataSource,
+                columnWidthMode: ColumnWidthMode.fill,
+                gridLinesVisibility: GridLinesVisibility.both,
+                headerGridLinesVisibility: GridLinesVisibility.both,
+                allowFiltering: true,
+                showColumnHeaderIconOnHover: false,
+                isScrollbarAlwaysShown: true,
+                allowSorting: true,
+                onCellDoubleTap: (details) {
+                  BoomarangRequest request =
+                      _requests[details.rowColumnIndex.rowIndex - 1];
+                  if (request.requestStatus == 'awaiting_response') {
+                    navigateWithoutTransition(
+                      context,
+                      RespondRequestScreen(request: request),
+                    );
+                  }
+                },
+                columns: [
+                  GridColumn(
+                    columnName: 'date',
+                    allowFiltering: false,
+                    allowSorting: true,
+                    label: Container(
+                      padding: const EdgeInsets.all(8),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Date',
+                        style: headerTextStyle,
                       ),
-                ),
+                    ),
+                  ),
+                  GridColumn(
+                    columnName: 'subjectName',
+                    allowFiltering: true,
+                    filterPopupMenuOptions: const FilterPopupMenuOptions(
+                      canShowSortingOptions: false,
+                      showColumnName: false,
+                      filterMode: FilterMode.checkboxFilter,
+                    ),
+                    allowSorting: false,
+                    label: Container(
+                      padding: const EdgeInsets.all(8),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Subject',
+                        style: headerTextStyle,
+                      ),
+                    ),
+                  ),
+                  GridColumn(
+                    columnName: 'sender',
+                    allowFiltering: true,
+                    filterPopupMenuOptions: const FilterPopupMenuOptions(
+                      canShowSortingOptions: false,
+                      showColumnName: false,
+                      filterMode: FilterMode.checkboxFilter,
+                    ),
+                    allowSorting: false,
+                    label: Container(
+                      padding: const EdgeInsets.all(8),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Sender',
+                        style: headerTextStyle,
+                      ),
+                    ),
+                  ),
+                  GridColumn(
+                    columnName: 'requestType',
+                    allowSorting: false,
+                    filterPopupMenuOptions: const FilterPopupMenuOptions(
+                      canShowSortingOptions: false,
+                      showColumnName: false,
+                      filterMode: FilterMode.checkboxFilter,
+                    ),
+                    label: Container(
+                      padding: const EdgeInsets.all(8),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Type',
+                        style: headerTextStyle,
+                      ),
+                    ),
+                  ),
+                  GridColumn(
+                    columnName: 'status',
+                    allowSorting: false,
+                    // columnWidthMode: ColumnWidthMode.fitByColumnName,
+                    filterPopupMenuOptions: const FilterPopupMenuOptions(
+                      canShowSortingOptions: false,
+                      showColumnName: false,
+                      filterMode: FilterMode.checkboxFilter,
+                    ),
+                    label: Container(
+                      padding: const EdgeInsets.all(8),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Status',
+                        style: headerTextStyle,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -189,14 +202,14 @@ class RecipientDataSource extends DataGridSource {
       (e) {
         RequestType? requestType = requestTypes
             .firstWhereOrNull((element) => element.id == e.requestType);
+
         return DataGridRow(
           cells: [
             DataGridCell(columnName: 'received', value: e.dateCreated),
             DataGridCell<String>(
                 columnName: 'subjectName',
                 value: "${e.subjectFirstName} ${e.subjectLastName}"),
-            // DataGridCell<String>(columnName: 'fee', value: e.formattedFee),
-            // DataGridCell<bool>(columnName: 'fee_paid', value: e.feePaid),
+            DataGridCell(columnName: 'senderEmail', value: e.senderEmail),
             DataGridCell<String>(
                 columnName: 'requestType', value: requestType?.name ?? '-'),
             DataGridCell<String>(
@@ -265,7 +278,7 @@ class RecipientDataSource extends DataGridSource {
 
           return Container(
             padding: const EdgeInsets.all(8),
-            alignment: Alignment.centerRight,
+            alignment: Alignment.center,
             child: Text(
               formattedDateTime,
               style:
@@ -274,96 +287,12 @@ class RecipientDataSource extends DataGridSource {
           );
         }
 
-        //if column is "Complete", show a checkbox icon
-        if (e.columnName == 'status') {
-          return Container(
-            padding: const EdgeInsets.all(8),
-            alignment: Alignment.center,
-            child: Builder(builder: (context) {
-              if (e.value == 'Awaiting Response') {
-                return const Tooltip(
-                  message: 'Awaiting Response',
-                  child: Icon(
-                    Icons.check_box_outline_blank,
-                    color: Colors.grey,
-                  ),
-                );
-              } else if (e.value == 'Rejected') {
-                return const Tooltip(
-                  message: 'Rejected',
-                  child: Icon(
-                    Icons.close,
-                    color: Colors.red,
-                  ),
-                );
-              } else if (e.value == 'Pending Completion') {
-                return const Tooltip(
-                  message:
-                      'The sender has been messaged to complete the request',
-                  child: Text("-"),
-                );
-              } else {
-                return Tooltip(
-                  message: 'Complete',
-                  child: Icon(
-                    Icons.check_box,
-                    color: Theme.of(navigatorKey.currentContext!).primaryColor,
-                  ),
-                );
-              }
-            }),
-          );
-        }
-
-        //if column is "fee_paid", show a checkbox icon
-        if (e.columnName == 'fee_paid') {
-          return Container(
-              padding: const EdgeInsets.all(8),
-              alignment: Alignment.center,
-              child: Builder(
-                builder: (context) {
-                  //if null, show a dash
-                  if (e.value == null) {
-                    return const Text('-');
-                  } else {
-                    return e.value
-                        ? Icon(
-                            Icons.check_box,
-                            color: Theme.of(navigatorKey.currentContext!)
-                                .primaryColor,
-                          )
-                        : const Icon(
-                            Icons.check_box_outline_blank,
-                            color: Colors.grey,
-                          );
-                  }
-                },
-              ));
-        }
-
-        //in fee column, if fee = £0.00, show a dash
-        if (e.columnName == 'fee') {
-          if (e.value == '£0.00') {
-            return Container(
-              padding: const EdgeInsets.all(8),
-              alignment: Alignment.centerRight,
-              child: const Text(
-                '-',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
-              ),
-            );
-          }
-        }
-
         return Container(
           padding: const EdgeInsets.all(8),
-          alignment: Alignment.centerRight,
+          alignment: Alignment.center,
           child: Text(
             e.value.toString(),
-            style: Theme.of(navigatorKey.currentContext!).textTheme.bodyLarge!,
+            style: Theme.of(navigatorKey.currentContext!).textTheme.bodyMedium!,
           ),
         );
       }).toList(),

@@ -1,3 +1,4 @@
+import 'package:boomarang/app/screens/add_request.dart';
 import 'package:boomarang/data/auth_provider.dart';
 import 'package:boomarang/data/user_provider.dart';
 import 'package:boomarang/firebase_options.dart';
@@ -65,6 +66,7 @@ class _MainAppState extends State<MainApp> {
               ],
               routes: {
                 '/': (context) => const AuthGate(),
+                '/add-request': (context) => const CreateBoomarangScreen(),
               },
               initialRoute: '/',
               //add google font
