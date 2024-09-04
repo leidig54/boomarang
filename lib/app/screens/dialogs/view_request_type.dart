@@ -20,7 +20,7 @@ class ViwewRequestType extends StatelessWidget {
           width: 600,
           height: 600,
           child: Markdown(
-            data: requestType.senderDescription!,
+            data: requestType.holderDescription!,
             shrinkWrap: true,
             padding: const EdgeInsets.all(20),
           ),
