@@ -51,7 +51,7 @@ class _HomeState extends State<Home> {
             NavigationRailDestination(
               icon: const Icon(Icons.inbox),
               label: Text(
-                'Received',
+                'Inbox',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),

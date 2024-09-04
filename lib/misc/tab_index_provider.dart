@@ -29,7 +29,7 @@ class TabIndexProvider extends ChangeNotifier {
 
   List<Widget> screens = [
     const DashboardScreen(),
-    const ReceivedScreen(),
+    const InboxScreen(),
     const SentScreen(),
     const BoomarangProfileScreen(),
   ];
