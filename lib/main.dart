@@ -13,12 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
-//TODO: Remove all AI features
-//TODO: Refactor, remove all unused code
-//TODO: View and respond to received requests
-//TODO: View and cancel sent requests
-//TODO: Establish request types
-
 bool useEmulators = true;
 
 FirebaseAuth auth = FirebaseAuth.instance;

@@ -1,10 +1,8 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
-import 'package:boomarang/misc/header_text_style.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 class SentScreen extends StatefulWidget {
@@ -50,105 +48,40 @@ class _SentScreenState extends State<SentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Column(
-      children: [
-        Container(
-          height: 150,
-          width: double.infinity,
-          color: Theme.of(context).canvasColor,
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Text(
-                "Sent",
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          child: SfDataGridTheme(
-            data: SfDataGridThemeData(
-              filterPopupTextStyle: Theme.of(context).textTheme.bodyMedium,
-              headerColor: Theme.of(context).canvasColor,
-            ),
-            child: SfDataGrid(
-              source: _dataSource,
-              columnWidthMode: ColumnWidthMode.fill,
-              gridLinesVisibility: GridLinesVisibility.both,
-              headerGridLinesVisibility: GridLinesVisibility.both,
-              allowFiltering: true,
-              showColumnHeaderIconOnHover: false,
-              isScrollbarAlwaysShown: true,
-              allowSorting: true,
-              onCellDoubleTap: (details) async {},
-              columns: [
-                GridColumn(
-                    columnName: 'date',
-                    allowFiltering: false,
-                    allowSorting: true,
-                    label: Container(
-                      padding: const EdgeInsets.all(8),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Date',
-                        style: headerTextStyle,
-                      ),
-                    )),
-                GridColumn(
-                    columnName: 'subject',
-                    allowSorting: false,
-                    filterPopupMenuOptions: const FilterPopupMenuOptions(
-                      canShowSortingOptions: false,
-                      showColumnName: false,
-                      filterMode: FilterMode.checkboxFilter,
-                    ),
-                    allowFiltering: true,
-                    label: Container(
-                      padding: const EdgeInsets.all(8),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Subject',
-                        style: headerTextStyle,
-                      ),
-                    )),
-                GridColumn(
-                    columnName: 'recipientEmail',
-                    allowFiltering: true,
-                    filterPopupMenuOptions: const FilterPopupMenuOptions(
-                      canShowSortingOptions: false,
-                      showColumnName: false,
-                      filterMode: FilterMode.checkboxFilter,
-                    ),
-                    allowSorting: false,
-                    label: Container(
-                      padding: const EdgeInsets.all(8),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Recipient',
-                        style: headerTextStyle,
-                      ),
-                    )),
-                GridColumn(
-                  columnName: 'status',
-                  allowSorting: false,
-                  filterPopupMenuOptions: const FilterPopupMenuOptions(
-                    canShowSortingOptions: false,
-                    showColumnName: false,
-                    filterMode: FilterMode.checkboxFilter,
-                  ),
-                  label: Container(
-                    padding: const EdgeInsets.all(8),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Status',
-                      style: headerTextStyle,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+        body: SfDataGrid(
+      source: _dataSource,
+      columnWidthMode: ColumnWidthMode.fill,
+      gridLinesVisibility: GridLinesVisibility.both,
+      headerGridLinesVisibility: GridLinesVisibility.both,
+      onCellDoubleTap: (details) async {},
+      columns: [
+        GridColumn(
+            columnName: 'date',
+            label: Container(
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+              child: const Text('Date'),
+            )),
+        GridColumn(
+            columnName: 'subject',
+            label: Container(
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+              child: const Text('Subject'),
+            )),
+        GridColumn(
+            columnName: 'recipientEmail',
+            label: Container(
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+              child: const Text('Recipient'),
+            )),
+        GridColumn(
+          columnName: 'status',
+          label: Container(
+            padding: const EdgeInsets.all(8),
+            alignment: Alignment.center,
+            child: const Text('Status'),
           ),
         ),
       ],
@@ -162,23 +95,23 @@ class SenderDataSource extends DataGridSource {
   }
 
   void buildDataGridRows({required List<BoomarangRequest> requests}) {
-    dataGridRows = requests.map(
-      (e) {
-        return DataGridRow(
-          cells: [
-            DataGridCell<String>(
-                columnName: 'date', value: e.formattedCreatedDateOrTime),
-            DataGridCell<String>(
-                columnName: 'subject',
-                value: "${e.subjectFirstName} ${e.subjectLastName}"),
-            DataGridCell<String>(
-                columnName: 'recipientEmail', value: e.recipientEmail),
-            DataGridCell<String>(
-                columnName: 'status', value: e.formattedRequestStatus),
-          ],
-        );
-      },
-    ).toList();
+    dataGridRows = requests
+        .map(
+          (e) => DataGridRow(
+            cells: [
+              DataGridCell<String>(
+                  columnName: 'date', value: e.formattedCreatedDateOrTime),
+              DataGridCell<String>(
+                  columnName: 'subject',
+                  value: "${e.subjectFirstName} ${e.subjectLastName}"),
+              DataGridCell<String>(
+                  columnName: 'recipientEmail', value: e.recipientEmail),
+              DataGridCell<String>(
+                  columnName: 'status', value: e.formattedRequestStatus),
+            ],
+          ),
+        )
+        .toList();
   }
 
   List<DataGridRow> dataGridRows = [];
@@ -193,10 +126,7 @@ class SenderDataSource extends DataGridSource {
         return Container(
           padding: const EdgeInsets.all(8),
           alignment: Alignment.center,
-          child: Text(
-            e.value.toString(),
-            style: Theme.of(navigatorKey.currentContext!).textTheme.bodyMedium!,
-          ),
+          child: Text(e.value.toString()),
         );
       }).toList(),
     );
