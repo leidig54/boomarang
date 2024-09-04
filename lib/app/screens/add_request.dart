@@ -25,8 +25,12 @@ class AddRequestScreen extends StatefulWidget {
 
 class _AddRequestScreenState extends State<AddRequestScreen> {
   final _subjectDetailsFormKey = GlobalKey<FormBuilderState>();
-  final _recipientDetailsFormKey = GlobalKey<FormBuilderState>();
+  final _holderDetailsFormKey = GlobalKey<FormBuilderState>();
   final _requestDetailsFormKey = GlobalKey<FormBuilderState>();
+
+  List<Widget> children = [];
+
+  String? knowsHolder;
 
   int currentStep = 0;
 
@@ -50,14 +54,13 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         title: const Text('Subject'),
         isActive: currentStep == 0,
         content: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
               width: 600,
               child: FormBuilder(
                 key: _subjectDetailsFormKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       "Subject",
@@ -149,19 +152,19 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         ),
       ),
       Step(
-        title: const Text("Recipient"),
+        title: const Text("Holder"),
         isActive: currentStep == 1,
         content: Row(
           children: [
             SizedBox(
               width: 600,
               child: FormBuilder(
-                key: _recipientDetailsFormKey,
+                key: _holderDetailsFormKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Recipient",
+                      "Holder",
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 4),
@@ -172,7 +175,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
                     ),
                     const SizedBox(height: 32),
                     FormBuilderTextField(
-                      name: 'recipient_email',
+                      name: 'to_email',
                       initialValue: request?.recipientEmail ??
                           (kDebugMode ? "ed@doctors.com" : null),
                       enabled: request?.recipientEmail == null,
@@ -293,7 +296,7 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
               });
             }
           } else if (currentStep == 1) {
-            if (_recipientDetailsFormKey.currentState!.saveAndValidate()) {
+            if (_holderDetailsFormKey.currentState!.saveAndValidate()) {
               setState(() {
                 currentStep++;
               });
@@ -317,8 +320,8 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   Future<void> submitRequest() async {
     BoomarangRequest newRequest = BoomarangRequest(
       id: id,
-      recipientEmail: _recipientDetailsFormKey
-          .currentState!.fields['recipient_email']?.value,
+      recipientEmail:
+          _holderDetailsFormKey.currentState!.fields['to_email']?.value,
       subjectFirstName: _subjectDetailsFormKey
           .currentState!.fields['subject_first_name']?.value,
       subjectLastName: _subjectDetailsFormKey
