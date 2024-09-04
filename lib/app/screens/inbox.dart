@@ -65,8 +65,8 @@ class _ReceivedScreenState extends State<ReceivedScreen> {
                 return const RequestBoomarangDialog();
               });
         },
-        label: const Text('Request a Boomarang'),
-        icon: const Icon(Icons.add),
+        label: const Text('Request Boomarang'),
+        icon: const Icon(Icons.add_task),
       ),
       body: SfDataGridTheme(
         data: SfDataGridThemeData(
