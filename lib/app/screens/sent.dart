@@ -59,7 +59,7 @@ class _SentScreenState extends State<SentScreen> {
               builder: (context) => Center(
                 child: Container(
                   constraints: const BoxConstraints(
-                      minWidth: 800, maxWidth: 1000, maxHeight: 800),
+                      minWidth: 800, maxWidth: 1000, maxHeight: 700),
                   child: const Dialog(
                     shape: RoundedRectangleBorder(),
                     child: AddRequestScreen(),
