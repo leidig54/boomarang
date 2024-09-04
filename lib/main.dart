@@ -1,8 +1,8 @@
+import 'package:boomarang/data/auth_provider.dart';
+import 'package:boomarang/data/user_provider.dart';
 import 'package:boomarang/firebase_options.dart';
-import 'package:boomarang/providers/auth_provider.dart';
-import 'package:boomarang/providers/tab_index_provider.dart';
-import 'package:boomarang/providers/user_provider.dart';
-import 'package:boomarang/screens/nav/auth_gate.dart';
+import 'package:boomarang/misc/tab_index_provider.dart';
+import 'package:boomarang/shared/auth_gate.dart';
 import 'package:boomarang_shared/theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -12,12 +12,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-
-//TODO: Remove all AI features
-//TODO: Refactor, remove all unused code
-//TODO: View and respond to received requests
-//TODO: View and cancel sent requests
-//TODO: Establish request types
 
 bool useEmulators = true;
 
