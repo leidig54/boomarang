@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:boomarang/app/screens/respond_request.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/header_text_style.dart';
+import 'package:boomarang/misc/routing_no_animation.dart';
+import 'package:boomarang_shared/data/request_types.dart';
 import 'package:boomarang_shared/models/request.dart';
+import 'package:boomarang_shared/models/request_type.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -87,11 +90,12 @@ class _InboxScreenState extends State<InboxScreen> {
                 onCellDoubleTap: (details) {
                   BoomarangRequest request =
                       _requests[details.rowColumnIndex.rowIndex - 1];
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return RespondRequestScreen(request: request);
-                      });
+                  if (request.requestStatus == 'awaiting_response') {
+                    navigateWithoutTransition(
+                      context,
+                      RespondRequestScreen(request: request),
+                    );
+                  }
                 },
                 columns: [
                   GridColumn(
@@ -144,6 +148,23 @@ class _InboxScreenState extends State<InboxScreen> {
                     ),
                   ),
                   GridColumn(
+                    columnName: 'requestType',
+                    allowSorting: false,
+                    filterPopupMenuOptions: const FilterPopupMenuOptions(
+                      canShowSortingOptions: false,
+                      showColumnName: false,
+                      filterMode: FilterMode.checkboxFilter,
+                    ),
+                    label: Container(
+                      padding: const EdgeInsets.all(8),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Type',
+                        style: headerTextStyle,
+                      ),
+                    ),
+                  ),
+                  GridColumn(
                     columnName: 'status',
                     allowSorting: false,
                     // columnWidthMode: ColumnWidthMode.fitByColumnName,
@@ -179,6 +200,9 @@ class RecipientDataSource extends DataGridSource {
   void buildDataGridRows({required List<BoomarangRequest> requests}) {
     dataGridRows = requests.map(
       (e) {
+        RequestType? requestType = requestTypes
+            .firstWhereOrNull((element) => element.id == e.requestType);
+
         return DataGridRow(
           cells: [
             DataGridCell(columnName: 'received', value: e.dateCreated),
@@ -186,6 +210,8 @@ class RecipientDataSource extends DataGridSource {
                 columnName: 'subjectName',
                 value: "${e.subjectFirstName} ${e.subjectLastName}"),
             DataGridCell(columnName: 'senderEmail', value: e.senderEmail),
+            DataGridCell<String>(
+                columnName: 'requestType', value: requestType?.name ?? '-'),
             DataGridCell<String>(
                 columnName: 'status', value: e.formattedRequestStatus),
           ],
