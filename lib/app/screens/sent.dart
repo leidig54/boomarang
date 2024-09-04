@@ -9,26 +9,25 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-class RequesterDatagridScreen extends StatefulWidget {
-  const RequesterDatagridScreen({super.key});
+class SentScreen extends StatefulWidget {
+  const SentScreen({super.key});
 
   @override
-  State<RequesterDatagridScreen> createState() =>
-      _RequesterDatagridScreenState();
+  State<SentScreen> createState() => _SentScreenState();
 }
 
-class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
+class _SentScreenState extends State<SentScreen> {
   List<BoomarangRequest> _requests = [];
   late StreamSubscription requestStreamSubscription;
 
-  late RequesterDataSource _dataSource;
+  late SenderDataSource _dataSource;
 
   @override
   void initState() {
-    _dataSource = RequesterDataSource(requests: _requests);
+    _dataSource = SenderDataSource(requests: _requests);
     requestStreamSubscription = firestore
         .collection('requests')
-        .where('requesterUserId', isEqualTo: auth.currentUser!.uid)
+        .where('senderUserId', isEqualTo: auth.currentUser!.uid)
         .snapshots()
         .listen((snapshot) {
       _requests =
@@ -104,11 +103,11 @@ class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
               child: const Text('Subject'),
             )),
         GridColumn(
-            columnName: 'holderEmail',
+            columnName: 'recipientEmail',
             label: Container(
               padding: const EdgeInsets.all(8),
               alignment: Alignment.center,
-              child: const Text('Holder'),
+              child: const Text('Recipient'),
             )),
         GridColumn(
           columnName: 'status',
@@ -123,8 +122,8 @@ class _RequesterDatagridScreenState extends State<RequesterDatagridScreen> {
   }
 }
 
-class RequesterDataSource extends DataGridSource {
-  RequesterDataSource({required List<BoomarangRequest> requests}) {
+class SenderDataSource extends DataGridSource {
+  SenderDataSource({required List<BoomarangRequest> requests}) {
     buildDataGridRows(requests: requests);
   }
 
@@ -139,7 +138,7 @@ class RequesterDataSource extends DataGridSource {
                   columnName: 'subject',
                   value: "${e.subjectFirstName} ${e.subjectLastName}"),
               DataGridCell<String>(
-                  columnName: 'holderEmail', value: e.recipientEmail),
+                  columnName: 'recipientEmail', value: e.recipientEmail),
               DataGridCell<String>(
                   columnName: 'status', value: e.formattedRequestStatus),
             ],
