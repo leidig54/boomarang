@@ -66,7 +66,7 @@ class _MainAppState extends State<MainApp> {
               ],
               routes: {
                 '/': (context) => const AuthGate(),
-                '/add-request': (context) => const CreateBoomarangScreen(),
+                '/add-request': (context) => const AddRequestScreen(),
               },
               initialRoute: '/',
               //add google font
