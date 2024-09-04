@@ -5,16 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
-class RequestBoomarangScreen extends StatefulWidget {
-  const RequestBoomarangScreen({
+class RequestBoomarangDialog extends StatefulWidget {
+  const RequestBoomarangDialog({
     super.key,
   });
 
   @override
-  State<RequestBoomarangScreen> createState() => _RequestBoomarangScreenState();
+  State<RequestBoomarangDialog> createState() => _RequestBoomarangDialogState();
 }
 
-class _RequestBoomarangScreenState extends State<RequestBoomarangScreen> {
+class _RequestBoomarangDialogState extends State<RequestBoomarangDialog> {
   //form key
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
 

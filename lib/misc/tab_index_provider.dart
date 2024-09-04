@@ -1,4 +1,3 @@
-import 'package:boomarang/app/screens/dashboard.dart';
 import 'package:boomarang/app/screens/inbox.dart';
 import 'package:boomarang/app/screens/sent.dart';
 import 'package:boomarang/shared/profile.dart';
@@ -28,7 +27,6 @@ class TabIndexProvider extends ChangeNotifier {
   }
 
   List<Widget> screens = [
-    const DashboardScreen(),
     const ReceivedScreen(),
     const SentScreen(),
     const BoomarangProfileScreen(),
