@@ -1,9 +1,6 @@
-import 'package:boomarang/data/user_provider.dart';
 import 'package:boomarang/main.dart';
-import 'package:boomarang_shared/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:provider/provider.dart';
 
 class NavigationRailTrailingWidget extends StatefulWidget {
   const NavigationRailTrailingWidget({
@@ -31,30 +28,12 @@ class _NavigationRailTrailingWidgetState
 
   @override
   Widget build(BuildContext context) {
-    BoomarangUser? user = context.watch<UserProvider>().user;
     return Expanded(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text(
             auth.currentUser!.email!,
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          Row(
-            children: [
-              Icon(
-                user?.userType == 'requester' ? Icons.send : Icons.reply,
-              ),
-              const SizedBox(
-                width: 5,
-              ),
-              Text(
-                user?.userType == 'holder' ? 'Holder' : 'Requester',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
           ),
           const SizedBox(
             height: 20,
