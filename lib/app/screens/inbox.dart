@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:boomarang/holder/screens/dialogs/request_boomarang.dart';
-import 'package:boomarang/holder/screens/respond_request.dart';
+import 'package:boomarang/app/screens/dialogs/request_boomarang.dart';
+import 'package:boomarang/app/screens/respond_request.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/routing_no_animation.dart';
 import 'package:boomarang_shared/data/request_types.dart';
