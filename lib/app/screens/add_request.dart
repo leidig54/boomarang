@@ -85,7 +85,7 @@ class _CreateBoomarangScreenState extends State<CreateBoomarangScreen> {
                                 validator: FormBuilderValidators.required(),
                                 decoration: const InputDecoration(
                                   labelText: 'First Name',
-                                  border: UnderlineInputBorder(),
+                                  border: OutlineInputBorder(),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -97,7 +97,7 @@ class _CreateBoomarangScreenState extends State<CreateBoomarangScreen> {
                                 validator: FormBuilderValidators.required(),
                                 decoration: const InputDecoration(
                                   labelText: 'Last Name',
-                                  border: UnderlineInputBorder(),
+                                  border: OutlineInputBorder(),
                                 ),
                               ),
                               //subject dob
@@ -132,7 +132,7 @@ class _CreateBoomarangScreenState extends State<CreateBoomarangScreen> {
                                 decoration: const InputDecoration(
                                   labelText: 'Date of Birth',
                                   hintText: 'dd/mm/yyyy',
-                                  border: UnderlineInputBorder(),
+                                  border: OutlineInputBorder(),
                                 ),
                               ),
                               //subject email
@@ -148,7 +148,7 @@ class _CreateBoomarangScreenState extends State<CreateBoomarangScreen> {
                                 ]),
                                 decoration: const InputDecoration(
                                   labelText: 'Email',
-                                  border: UnderlineInputBorder(),
+                                  border: OutlineInputBorder(),
                                 ),
                               ),
                               const SizedBox(height: 32),
@@ -177,7 +177,7 @@ class _CreateBoomarangScreenState extends State<CreateBoomarangScreen> {
                                   labelText: 'Email',
                                   helperText:
                                       'We will send the request to this email address',
-                                  border: UnderlineInputBorder(),
+                                  border: OutlineInputBorder(),
                                 ),
                               ),
                               const SizedBox(height: 32),
