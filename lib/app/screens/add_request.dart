@@ -1,5 +1,6 @@
 import 'package:boomarang/app/screens/dialogs/submit_request.dart';
 import 'package:boomarang/main.dart';
+import 'package:boomarang/misc/custom_stepper.dart';
 import 'package:boomarang_shared/data/request_types.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/foundation.dart';
@@ -27,8 +28,9 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
   final _recipientDetailsFormKey = GlobalKey<FormBuilderState>();
   final _requestDetailsFormKey = GlobalKey<FormBuilderState>();
 
+  List<Widget> children = [];
+
   int currentStep = 0;
-  double currentProgress = 0.0;
 
   late String id;
 
@@ -36,110 +38,279 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
 
   BoomarangRequest? request;
 
-  PageController pageController = PageController();
-
   @override
   void initState() {
     request = widget.request;
     id = request?.id ?? const Uuid().v4();
-    pageController.addListener(() {
-      setState(() {
-        currentStep = pageController.page!.round();
-        currentProgress = pageController.page!;
-      });
-    });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    //replace stepper with pageview
-    return Scaffold(
-      body: Column(
-        children: [
-          LinearProgressIndicator(
-            value: (currentProgress + 1) / 3,
-            minHeight: 6,
-          ),
-          Expanded(
-            child: PageView(
-              physics: const NeverScrollableScrollPhysics(),
-              controller: pageController,
-              children: [
-                AddRequestSubject(
-                  subjectDetailsFormKey: _subjectDetailsFormKey,
-                  request: request,
-                ),
-                AddRequestRecipient(
-                  recipientDetailsFormKey: _recipientDetailsFormKey,
-                  request: request,
-                ),
-                AddRequestRequest(
-                  requestDetailsFormKey: _requestDetailsFormKey,
-                ),
-              ],
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: currentStep == 0
-                    ? null
-                    : () {
-                        pageController.previousPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
+    List<Step> steps = [
+      Step(
+        title: const Text('Subject'),
+        isActive: currentStep == 0,
+        content: Row(
+          children: [
+            SizedBox(
+              width: 600,
+              child: FormBuilder(
+                key: _subjectDetailsFormKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Subject",
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 4),
+                    //who the request is about. this can be you or someone else
+                    Text(
+                      "Who is the request about? This can be you or someone else.",
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    const SizedBox(height: 32),
+                    FormBuilderTextField(
+                      name: 'subject_first_name',
+                      enabled: request?.subjectFirstName == null,
+                      initialValue: request?.subjectFirstName ??
+                          (kDebugMode ? "Dave" : null),
+                      autofocus: true,
+                      validator: FormBuilderValidators.required(),
+                      decoration: const InputDecoration(
+                        labelText: 'First Name',
+                        border: UnderlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    FormBuilderTextField(
+                      name: 'subject_last_name',
+                      enabled: request?.subjectLastName == null,
+                      initialValue: request?.subjectLastName ??
+                          (kDebugMode ? "Smith" : null),
+                      validator: FormBuilderValidators.required(),
+                      decoration: const InputDecoration(
+                        labelText: 'Last Name',
+                        border: UnderlineInputBorder(),
+                      ),
+                    ),
+                    //subject dob
+                    const SizedBox(height: 16),
+                    FormBuilderTextField(
+                      name: 'subject_dob',
+                      initialValue: kDebugMode ? "01/01/2000" : null,
+                      validator: FormBuilderValidators.compose([
+                        FormBuilderValidators.required(),
+                      ]),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(8),
+                        DateFormatInputFormatter(DateFormat('dd/MM/yyyy')),
+                      ],
+                      valueTransformer: (value) {
+                        if (value == null) {
+                          return null;
+                        }
+                        // Parse the date, set to start of the day, and convert to UTC
+                        DateTime localDate =
+                            DateFormat('dd/MM/yyyy').parse(value);
+                        DateTime localMidnight = DateTime.utc(
+                            localDate.year, localDate.month, localDate.day);
+
+                        DateTime utcDate = localMidnight.toUtc();
+                        return utcDate;
                       },
-                child: const Text("Back"),
+                      decoration: const InputDecoration(
+                        labelText: 'Date of Birth',
+                        hintText: 'dd/mm/yyyy',
+                        border: UnderlineInputBorder(),
+                      ),
+                    ),
+                    //subject email
+                    const SizedBox(height: 16),
+                    FormBuilderTextField(
+                      name: 'subject_email',
+                      initialValue:
+                          kDebugMode ? "georgeleidig@icloud.com" : null,
+                      validator: FormBuilderValidators.compose([
+                        FormBuilderValidators.required(),
+                        FormBuilderValidators.email(),
+                      ]),
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        border: UnderlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(width: 16),
-              ElevatedButton(
-                onPressed: () async {
-                  if (currentStep == 0) {
-                    if (_subjectDetailsFormKey.currentState!
-                        .saveAndValidate()) {
-                      pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  } else if (currentStep == 1) {
-                    if (_recipientDetailsFormKey.currentState!
-                        .saveAndValidate()) {
-                      pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  } else if (currentStep == 2) {
-                    if (_requestDetailsFormKey.currentState!
-                        .saveAndValidate()) {
-                      showDialog(
-                        context: context,
-                        builder: (context) => SubmitRequestDialog(
-                          submitRequest: submitRequest,
+            ),
+          ],
+        ),
+      ),
+      Step(
+        title: const Text("Recipient"),
+        isActive: currentStep == 1,
+        content: Row(
+          children: [
+            SizedBox(
+              width: 600,
+              child: FormBuilder(
+                key: _recipientDetailsFormKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Recipient",
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 4),
+                    //who are you sending the request to?
+                    Text(
+                      "Who are you sending the request to? e.g. a doctor, a hospital, etc.",
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    const SizedBox(height: 32),
+                    FormBuilderTextField(
+                      name: 'recipient_email',
+                      initialValue: request?.recipientEmail ??
+                          (kDebugMode ? "ed@doctors.com" : null),
+                      enabled: request?.recipientEmail == null,
+                      validator: FormBuilderValidators.compose([
+                        FormBuilderValidators.required(),
+                        FormBuilderValidators.email(),
+                      ]),
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        helperText:
+                            'We will send the request to this email address',
+                        border: UnderlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      Step(
+        title: const Text('Request'),
+        isActive: currentStep == 2,
+        content: FormBuilder(
+          key: _requestDetailsFormKey,
+          child: Row(
+            children: [
+              SizedBox(
+                width: 600,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Request",
+                        style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: 4),
+                    //what type of request are you making?
+                    Text(
+                      "What type of request are you making?",
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    const SizedBox(
+                      height: 32,
+                    ),
+                    Column(
+                      children: [
+                        FormBuilderDropdown(
+                          name: 'type',
+                          autofocus: false,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: FormBuilderValidators.required(
+                            errorText: 'Please select a request type',
+                          ),
+                          onChanged: (value) {
+                            FocusScope.of(context).nextFocus();
+                          },
+                          decoration: const InputDecoration(
+                            labelText: 'Type',
+                            helperText: "Select the type of request",
+                            border: OutlineInputBorder(),
+                          ),
+                          items: requestTypes
+                              .map((e) => DropdownMenuItem(
+                                    value: e.id,
+                                    child: Text(e.name),
+                                  ))
+                              .toList(),
                         ),
-                      );
-                    }
-                  }
-                },
-                child: currentStep == 2
-                    ? const Text("Submit")
-                    : const Text("Next"),
+                        const SizedBox(height: 32),
+                        FormBuilderTextField(
+                          name: 'additional_details',
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          maxLines: 5,
+                          decoration: const InputDecoration(
+                            labelText: 'Additional details',
+                            hintText:
+                                'Please provide any additional details that may be relevant to your request',
+                            helperText: '',
+                            border: OutlineInputBorder(),
+                            alignLabelWithHint: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("Cancel"),
-          ),
-          const SizedBox(height: 16),
-        ],
+        ),
+      ),
+    ];
+
+    return Scaffold(
+      body: Stepper(
+        physics: const NeverScrollableScrollPhysics(),
+        currentStep: currentStep,
+        type: StepperType.horizontal,
+        onStepTapped: !kDebugMode
+            ? null
+            : (step) {
+                setState(() {
+                  currentStep = step;
+                });
+              },
+        onStepCancel: () {
+          if (currentStep > 0) {
+            setState(() {
+              currentStep--;
+            });
+          }
+        },
+        onStepContinue: () async {
+          if (currentStep == 0) {
+            if (_subjectDetailsFormKey.currentState!.saveAndValidate()) {
+              setState(() {
+                currentStep++;
+              });
+            }
+          } else if (currentStep == 1) {
+            if (_recipientDetailsFormKey.currentState!.saveAndValidate()) {
+              setState(() {
+                currentStep++;
+              });
+            }
+          } else if (currentStep == 2) {
+            if (_requestDetailsFormKey.currentState!.saveAndValidate()) {
+              showDialog(
+                context: context,
+                builder: (context) => SubmitRequestDialog(
+                  submitRequest: submitRequest,
+                ),
+              );
+            }
+          }
+        },
+        steps: steps,
       ),
     );
   }
@@ -174,256 +345,6 @@ class _AddRequestScreenState extends State<AddRequestScreen> {
         .collection('requests')
         .doc(id)
         .set(newRequest.toMap());
-  }
-}
-
-class AddRequestRequest extends StatelessWidget {
-  const AddRequestRequest({
-    super.key,
-    required GlobalKey<FormBuilderState> requestDetailsFormKey,
-  }) : _requestDetailsFormKey = requestDetailsFormKey;
-
-  final GlobalKey<FormBuilderState> _requestDetailsFormKey;
-
-  @override
-  Widget build(BuildContext context) {
-    return FormBuilder(
-      key: _requestDetailsFormKey,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 600,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Request", style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 4),
-                //what type of request are you making?
-                Text(
-                  "What type of request are you making?",
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                const SizedBox(
-                  height: 32,
-                ),
-                Column(
-                  children: [
-                    FormBuilderDropdown(
-                      name: 'type',
-                      autofocus: false,
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      validator: FormBuilderValidators.required(
-                        errorText: 'Please select a request type',
-                      ),
-                      onChanged: (value) {
-                        FocusScope.of(context).nextFocus();
-                      },
-                      decoration: const InputDecoration(
-                        labelText: 'Type',
-                        helperText: "Select the type of request",
-                        border: OutlineInputBorder(),
-                      ),
-                      items: requestTypes
-                          .map((e) => DropdownMenuItem(
-                                value: e.id,
-                                child: Text(e.name),
-                              ))
-                          .toList(),
-                    ),
-                    const SizedBox(height: 32),
-                    FormBuilderTextField(
-                      name: 'additional_details',
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      maxLines: 5,
-                      decoration: const InputDecoration(
-                        labelText: 'Additional details',
-                        hintText:
-                            'Please provide any additional details that may be relevant to your request',
-                        helperText: '',
-                        border: OutlineInputBorder(),
-                        alignLabelWithHint: true,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class AddRequestRecipient extends StatelessWidget {
-  const AddRequestRecipient({
-    super.key,
-    required GlobalKey<FormBuilderState> recipientDetailsFormKey,
-    required this.request,
-  }) : _recipientDetailsFormKey = recipientDetailsFormKey;
-
-  final GlobalKey<FormBuilderState> _recipientDetailsFormKey;
-  final BoomarangRequest? request;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 600,
-          child: FormBuilder(
-            key: _recipientDetailsFormKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Recipient",
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 4),
-                //who are you sending the request to?
-                Text(
-                  "Who are you sending the request to? e.g. a doctor, a hospital, etc.",
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                const SizedBox(height: 32),
-                FormBuilderTextField(
-                  name: 'recipient_email',
-                  initialValue: request?.recipientEmail ??
-                      (kDebugMode ? "ed@doctors.com" : null),
-                  enabled: request?.recipientEmail == null,
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(),
-                    FormBuilderValidators.email(),
-                  ]),
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    helperText:
-                        'We will send the request to this email address',
-                    border: UnderlineInputBorder(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class AddRequestSubject extends StatelessWidget {
-  const AddRequestSubject({
-    super.key,
-    required GlobalKey<FormBuilderState> subjectDetailsFormKey,
-    required this.request,
-  }) : _subjectDetailsFormKey = subjectDetailsFormKey;
-
-  final GlobalKey<FormBuilderState> _subjectDetailsFormKey;
-  final BoomarangRequest? request;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 600,
-          child: FormBuilder(
-            key: _subjectDetailsFormKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Subject",
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 4),
-                //who the request is about. this can be you or someone else
-                Text(
-                  "Who is the request about? This can be you or someone else.",
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                const SizedBox(height: 32),
-                FormBuilderTextField(
-                  name: 'subject_first_name',
-                  enabled: request?.subjectFirstName == null,
-                  initialValue:
-                      request?.subjectFirstName ?? (kDebugMode ? "Dave" : null),
-                  autofocus: true,
-                  validator: FormBuilderValidators.required(),
-                  decoration: const InputDecoration(
-                    labelText: 'First Name',
-                    border: UnderlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                FormBuilderTextField(
-                  name: 'subject_last_name',
-                  enabled: request?.subjectLastName == null,
-                  initialValue:
-                      request?.subjectLastName ?? (kDebugMode ? "Smith" : null),
-                  validator: FormBuilderValidators.required(),
-                  decoration: const InputDecoration(
-                    labelText: 'Last Name',
-                    border: UnderlineInputBorder(),
-                  ),
-                ),
-                //subject dob
-                const SizedBox(height: 16),
-                FormBuilderTextField(
-                  name: 'subject_dob',
-                  initialValue: kDebugMode ? "01/01/2000" : null,
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(),
-                  ]),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(8),
-                    DateFormatInputFormatter(DateFormat('dd/MM/yyyy')),
-                  ],
-                  valueTransformer: (value) {
-                    if (value == null) {
-                      return null;
-                    }
-                    // Parse the date, set to start of the day, and convert to UTC
-                    DateTime localDate = DateFormat('dd/MM/yyyy').parse(value);
-                    DateTime localMidnight = DateTime.utc(
-                        localDate.year, localDate.month, localDate.day);
-
-                    DateTime utcDate = localMidnight.toUtc();
-                    return utcDate;
-                  },
-                  decoration: const InputDecoration(
-                    labelText: 'Date of Birth',
-                    hintText: 'dd/mm/yyyy',
-                    border: UnderlineInputBorder(),
-                  ),
-                ),
-                //subject email
-                const SizedBox(height: 16),
-                FormBuilderTextField(
-                  name: 'subject_email',
-                  initialValue: kDebugMode ? "georgeleidig@icloud.com" : null,
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(),
-                    FormBuilderValidators.email(),
-                  ]),
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: UnderlineInputBorder(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
   }
 }
 

@@ -213,8 +213,7 @@ class _RespondRequestScreenState extends State<RespondRequestScreen> {
                             TextSpan(
                                 text: requestType.name,
                                 recognizer: TapGestureRecognizer()
-                                  ..onTap = requestType.recipientDescription ==
-                                          null
+                                  ..onTap = requestType.description == null
                                       ? null
                                       : () {
                                           showDialog(
