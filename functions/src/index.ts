@@ -17,7 +17,6 @@ import admin = require("firebase-admin");
 
 // TODO: improve templating
 // TODO: add feedback space
-// TODO: payments - should we set the prices?
 
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
 
@@ -249,34 +248,34 @@ export const createUserDocument = functions
     return null;
   });
 
-// when a request is updated and the holderEmail field is no longer null or has changed, check to see if the user with that holderEmail already exists. if it does, assign the userId to the holderUserId field in the request
-export const assignHolderToRequestOnRequestCreate = functions
+// when a request is updated and the recipientEmail field is no longer null or has changed, check to see if the user with that recipientEmail already exists. if it does, assign the userId to the recipientUserId field in the request
+export const assignRecipientToRequestOnRequestCreate = functions
   .region("europe-west2")
   .firestore.document("requests/{requestId}")
   .onWrite(async (change) => {
     const before = change.before.data();
     const after = change.after.data();
 
-    if (before?.holderEmail !== after?.holderEmail) {
-      console.log("Holder email has changed. Checking if user exists...");
-      const holderEmail = after?.holderEmail;
-      if (!holderEmail) {
-        console.log("Holder email is null. Exiting...");
+    if (before?.recipientEmail !== after?.recipientEmail) {
+      console.log("Recipient email has changed. Checking if user exists...");
+      const recipientEmail = after?.recipientEmail;
+      if (!recipientEmail) {
+        console.log("Recipient email is null. Exiting...");
         return null;
       }
       try {
-        const user = await admin.auth().getUserByEmail(holderEmail);
-        console.log("User exists. Assigning holderUserId to request...");
+        const user = await admin.auth().getUserByEmail(recipientEmail);
+        console.log("User exists. Assigning recipientUserId to request...");
         await change.after.ref.update({
-          holderUserId: user.uid,
+          recipientUserId: user.uid,
         });
       } catch (error) {
         // Assert 'error' as an object with a 'code' property
         const errorCode = (error as { code?: string }).code;
-        // If the user is not found, send an email to the holder to create an account
+        // If the user is not found, send an email to the recipient to create an account
         if (errorCode === "auth/user-not-found") {
           console.log(
-            "User does not exist. Sending email to holder to create an account..."
+            "User does not exist. Sending email to recipient to create an account..."
           );
           // Configure the email transport using the provided SMTP server.
           const email = "george@joinoto.com";
@@ -290,16 +289,16 @@ export const assignHolderToRequestOnRequestCreate = functions
             },
           });
 
-          // Email the holder to create an account
+          // Email the recipient to create an account
           // TODO: attach the email to the link to create an account
-          const emailMessageHtml = `<p>Dear Holder,</p>
+          const emailMessageHtml = `<p>Dear Recipient,</p>
           <p>A new request has been created for you. Please create an account with this email to view and manage the request.</p>
           <p>Click <a href="https://boomarang.web.app">here</a> to create an account.</p>
           <p>Thank you.</p>`;
 
           const mailOptions = {
             from: '"George" <george@boomarang.com>',
-            to: holderEmail,
+            to: recipientEmail,
             subject: "Create an account to view your request",
             html: emailMessageHtml,
           };
@@ -319,42 +318,42 @@ export const assignHolderToRequestOnRequestCreate = functions
         }
       }
     } else {
-      console.log("Holder email has not changed. Exiting...");
+      console.log("Recipient email has not changed. Exiting...");
     }
     return null;
   });
 
-// when a request is added by a holder and the requester already exists, assign the requesterUserId to the request. otherwise email them to create an account
-export const assignRequesterToRequestOnRequestCreate = functions
+// when a request is added by a recipient and the sender already exists, assign the senderUserId to the request. otherwise email them to create an account
+export const assignSenderToRequestOnRequestCreate = functions
   .region("europe-west2")
   .firestore.document("requests/{requestId}")
   .onWrite(async (change) => {
     const before = change.before.data();
     const after = change.after.data();
 
-    if (before?.requesterEmail !== after?.requesterEmail) {
-      console.log("Requester email has changed. Checking if user exists...");
-      const requesterEmail = after?.requesterEmail;
-      if (!requesterEmail) {
-        console.log("Requester email is null. Exiting...");
+    if (before?.senderEmail !== after?.senderEmail) {
+      console.log("Sender email has changed. Checking if user exists...");
+      const senderEmail = after?.senderEmail;
+      if (!senderEmail) {
+        console.log("Sender email is null. Exiting...");
         return null;
       }
       try {
-        const user = await admin.auth().getUserByEmail(requesterEmail);
-        console.log("User exists. Assigning requesterUserId to request...");
+        const user = await admin.auth().getUserByEmail(senderEmail);
+        console.log("User exists. Assigning senderUserId to request...");
         await change.after.ref.update({
-          requesterUserId: user.uid,
+          senderUserId: user.uid,
         });
       } catch (error) {
         // Assert 'error' as an object with a 'code' property
         const errorCode = (error as { code?: string }).code;
-        // If the user is not found, send an email to the requester to create an account
+        // If the user is not found, send an email to the sender to create an account
         if (errorCode === "auth/user-not-found") {
           console.log(
-            "User does not exist. Sending email to requester to create an account..."
+            "User does not exist. Sending email to sender to create an account..."
           );
           // Configure the email transport using the provided SMTP server.
-          // email the requester with a link to sign up
+          // email the sender with a link to sign up
           // Configure the email transport using the provided SMTP server.
           const email = "george@joinoto.com";
           const password = "GHD9XULrYSFwdOKM"; // Ensure you're securely handling passwords and sensitive information
@@ -367,24 +366,24 @@ export const assignRequesterToRequestOnRequestCreate = functions
             },
           });
 
-          // get the holder email from the request
-          const holderEmail = after?.holderEmail;
+          // get the recipient email from the request
+          const recipientEmail = after?.recipientEmail;
           // get the subject first and last name from the request
           const subjectFirstName = after?.subjectFirstName;
           const subjectLastName = after?.subjectLastName;
 
-          // Email the requester to create an account
+          // Email the sender to create an account
           // TODO: replace the email with the org name once we have it
-          const emailMessageHtml = `<p>Dear Requester,</p>
-  <p>Thank you for submitting a request to ${holderEmail} on behalf of ${subjectFirstName} ${subjectLastName}. A new request has been created for you. Please create an account with this email to finish submitting your request.</p>
+          const emailMessageHtml = `<p>Dear Sender,</p>
+  <p>Thank you for submitting a request to ${recipientEmail} on behalf of ${subjectFirstName} ${subjectLastName}. A new request has been created for you. Please create an account with this email to finish submitting your request.</p>
   <p>Click <a href="https://boomarang.web.app">here</a> to create an account.</p>
   <p>Thank you.</p>`;
 
-          console.log("Email message: ", requesterEmail);
+          console.log("Email message: ", senderEmail);
 
           const mailOptions = {
             from: '"Boomarang Request" <verificaton@boomarang.com>',
-            to: requesterEmail,
+            to: senderEmail,
             subject: "Create an account to submit your request",
             html: emailMessageHtml,
           };
@@ -407,7 +406,7 @@ export const assignRequesterToRequestOnRequestCreate = functions
     return null;
   });
 
-// when a user is verified, check if the user has a request with a holderEmail that matches the user's email. if it does, assign the userId to the holderUserId field in the request
+// when a user is verified, check if the user has a request with a recipientEmail that matches the user's email. if it does, assign the userId to the recipientUserId field in the request
 export const assignRequestToUserOnUserVerification = functions
   .region("europe-west2")
   .firestore.document("users/{userId}")
@@ -424,27 +423,27 @@ export const assignRequestToUserOnUserVerification = functions
         return null;
       }
       try {
-        const holderRequests = await admin
+        const recipientRequests = await admin
           .firestore()
           .collection("requests")
-          .where("holderEmail", "==", userEmail)
+          .where("recipientEmail", "==", userEmail)
           .get();
-        holderRequests.forEach(async (request) => {
-          console.log("Request found. Assigning holderUserId to request...");
+        recipientRequests.forEach(async (request) => {
+          console.log("Request found. Assigning recipientUserId to request...");
           await request.ref.update({
-            holderUserId: change.after.id,
+            recipientUserId: change.after.id,
           });
         });
 
-        const requesterRequests = await admin
+        const senderRequests = await admin
           .firestore()
           .collection("requests")
-          .where("requesterEmail", "==", userEmail)
+          .where("senderEmail", "==", userEmail)
           .get();
-        requesterRequests.forEach(async (request) => {
-          console.log("Request found. Assigning requesterUserId to request...");
+        senderRequests.forEach(async (request) => {
+          console.log("Request found. Assigning senderUserId to request...");
           await request.ref.update({
-            requesterUserId: change.after.id,
+            senderUserId: change.after.id,
           });
         });
       } catch (error) {
@@ -794,13 +793,13 @@ export const rejectRequest = functions
     const requestId = data.requestId;
     const requestDoc = admin.firestore().collection("requests").doc(requestId);
 
-    // check if the user uid is the same as the holderUserId in the request document
+    // check if the user uid is the same as the recipientUserId in the request document
     const request = await requestDoc.get();
     if (!request.exists) {
       throw new functions.https.HttpsError("not-found", "Request not found");
     }
 
-    if (request.data()?.holderUserId !== context.auth?.uid) {
+    if (request.data()?.recipientUserId !== context.auth?.uid) {
       throw new functions.https.HttpsError(
         "permission-denied",
         "User does not have permission to reject request"
@@ -818,11 +817,11 @@ export const rejectRequest = functions
 export const requestBoomarang = functions
   .region("europe-west2")
   .https.onCall(async (data, context) => {
-    // get the holder id from the context
+    // get the recipient id from the context
     const userId = context.auth?.uid;
 
-    // get the requester email from the data
-    const requesterEmail = data.requesterEmail;
+    // get the sender email from the data
+    const senderEmail = data.senderEmail;
 
     // create a new request document
     const requestDoc = admin.firestore().collection("requests").doc();
@@ -830,11 +829,11 @@ export const requestBoomarang = functions
     // create a new request
     const request = {
       id: requestDoc.id,
-      holderUserId: userId,
-      holderEmail: context.auth?.token.email,
+      recipientUserId: userId,
+      recipientEmail: context.auth?.token.email,
       subjectFirstName: data.subjectFirstName,
       subjectLastName: data.subjectLastName,
-      requesterEmail: requesterEmail,
+      senderEmail: senderEmail,
       dateCreated: FieldValue.serverTimestamp(),
       requestStatus: "pending_completion",
     };
