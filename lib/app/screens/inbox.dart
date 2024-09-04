@@ -13,25 +13,25 @@ import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-class HolderDatagridScreen extends StatefulWidget {
-  const HolderDatagridScreen({super.key});
+class ReceivedScreen extends StatefulWidget {
+  const ReceivedScreen({super.key});
 
   @override
-  State<HolderDatagridScreen> createState() => _HolderDatagridScreenState();
+  State<ReceivedScreen> createState() => _ReceivedScreenState();
 }
 
-class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
+class _ReceivedScreenState extends State<ReceivedScreen> {
   List<BoomarangRequest> _requests = [];
   late StreamSubscription requestStreamSubscription;
 
-  late HolderDataSource _dataSource;
+  late RecipientDataSource _dataSource;
 
   @override
   void initState() {
-    _dataSource = HolderDataSource(requests: _requests);
+    _dataSource = RecipientDataSource(requests: _requests);
     requestStreamSubscription = firestore
         .collection('requests')
-        .where('holderUserId', isEqualTo: auth.currentUser!.uid)
+        .where('recipientUserId', isEqualTo: auth.currentUser!.uid)
         .snapshots()
         .listen((snapshot) {
       _requests =
@@ -193,8 +193,8 @@ class _HolderDatagridScreenState extends State<HolderDatagridScreen> {
   }
 }
 
-class HolderDataSource extends DataGridSource {
-  HolderDataSource({required List<BoomarangRequest> requests}) {
+class RecipientDataSource extends DataGridSource {
+  RecipientDataSource({required List<BoomarangRequest> requests}) {
     buildDataGridRows(requests: requests);
   }
 
@@ -313,7 +313,7 @@ class HolderDataSource extends DataGridSource {
               } else if (e.value == 'Pending Completion') {
                 return const Tooltip(
                   message:
-                      'The requester has been messaged to complete the request',
+                      'The sender has been messaged to complete the request',
                   child: Text("-"),
                 );
               } else {
