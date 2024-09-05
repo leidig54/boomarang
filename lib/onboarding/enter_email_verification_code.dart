@@ -1,5 +1,5 @@
 import 'package:boomarang/main.dart';
-import 'package:boomarang/shared/alert_dialog.dart';
+import 'package:boomarang/misc/alert_dialog.dart';
 import 'package:flutter/material.dart';
 
 class EnterEmailVerificationCodeScreen extends StatefulWidget {

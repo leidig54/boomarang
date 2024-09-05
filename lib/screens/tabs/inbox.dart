@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:boomarang/app/screens/respond_request.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/header_text_style.dart';
 import 'package:boomarang_shared/models/request.dart';
@@ -84,15 +83,7 @@ class _InboxScreenState extends State<InboxScreen> {
                 showColumnHeaderIconOnHover: false,
                 isScrollbarAlwaysShown: true,
                 allowSorting: true,
-                onCellDoubleTap: (details) {
-                  BoomarangRequest request =
-                      _requests[details.rowColumnIndex.rowIndex - 1];
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return RespondRequestScreen(request: request);
-                      });
-                },
+                onCellDoubleTap: (details) {},
                 columns: [
                   GridColumn(
                     columnName: 'date',
