@@ -1,7 +1,7 @@
-import 'package:boomarang/dialogs/add_request.dart';
-import 'package:boomarang/dialogs/request_boomarang.dart';
-import 'package:boomarang/providers/tab_index_provider.dart';
-import 'package:boomarang/providers/user_provider.dart';
+import 'package:boomarang/app/screens/add_request.dart';
+import 'package:boomarang/app/screens/dialogs/request_boomarang.dart';
+import 'package:boomarang/data/user_provider.dart';
+import 'package:boomarang/misc/tab_index_provider.dart';
 import 'package:boomarang_shared/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

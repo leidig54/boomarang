@@ -248,9 +248,11 @@ class _CreateBoomarangScreenState extends State<CreateBoomarangScreen> {
                                 dateCreated: DateTime.now(),
                                 consentVerified: false,
                                 requestStatus: 'awaiting_response',
-                                requestDescription: _requestDetailsFormKey
+                                requestType: _requestDetailsFormKey
+                                    .currentState!.fields['type']?.value,
+                                requestDetails: _requestDetailsFormKey
                                     .currentState!
-                                    .fields['requestDescription']
+                                    .fields['request_details']
                                     ?.value,
                               );
 
