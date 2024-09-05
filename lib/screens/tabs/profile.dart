@@ -1,5 +1,5 @@
-import 'package:boomarang/data/user_provider.dart';
 import 'package:boomarang/main.dart';
+import 'package:boomarang/providers/user_provider.dart';
 import 'package:boomarang_shared/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
