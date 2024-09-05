@@ -1,7 +1,7 @@
-import 'package:boomarang/providers/tab_index_provider.dart';
-import 'package:boomarang/providers/user_provider.dart';
-import 'package:boomarang/screens/dialogs/add_request.dart';
-import 'package:boomarang/screens/dialogs/request_boomarang.dart';
+import 'package:boomarang/app/screens/add_request.dart';
+import 'package:boomarang/app/screens/dialogs/request_boomarang.dart';
+import 'package:boomarang/data/user_provider.dart';
+import 'package:boomarang/misc/tab_index_provider.dart';
 import 'package:boomarang_shared/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -60,8 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         ListTile(
           title: const Text('Read The Guide'),
-          //TODO: Add Guide
-          enabled: false,
+          enabled: !hasReadGuide,
           subtitle: const Text(
               'Learn how to use Boomarang to request and share data.'),
           leading: hasReadGuide
@@ -111,8 +110,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         ListTile(
           title: const Text('Website'),
-          enabled: false,
-          //TODO: Create website link
           subtitle: const Text(
               "Receive Boomarangs on your website - get a link to your portal here."),
           leading: const Icon(Icons.web),
@@ -121,12 +118,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         //copy email forwarding link
         ListTile(
           title: const Text('Email'),
-          enabled: false,
-          //TODO: Create email forwarding
           subtitle: const Text(
               "Forward email requests to a dedicated inbox and we'll take care of the rest."),
           leading: const Icon(Icons.alternate_email),
-          onTap: () {},
+          onTap: () {
+            //copy email to clipboard
+            //TODO: Create a function to copy text to clipboard
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Email copied to clipboard'),
+              ),
+            );
+          },
         ),
       ],
     ));

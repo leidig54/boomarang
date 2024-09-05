@@ -694,6 +694,7 @@ export const rejectRequest = functions
 
     await requestDoc.update({
       requestStatus: "rejected",
+      rejectionReason: data.reason,
     });
 
     return "Request rejected";
