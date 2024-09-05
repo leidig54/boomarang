@@ -1,5 +1,5 @@
 import 'package:boomarang/main.dart';
-import 'package:boomarang/shared/alert_dialog.dart';
+import 'package:boomarang/misc/alert_dialog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';

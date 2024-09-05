@@ -1,5 +1,5 @@
-import 'package:boomarang/misc/tab_index_provider.dart';
-import 'package:boomarang/shared/navigation_bottom_widget.dart';
+import 'package:boomarang/misc/navigation_bottom_widget.dart';
+import 'package:boomarang/providers/tab_index_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
