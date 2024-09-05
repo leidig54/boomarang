@@ -1,17 +1,10 @@
 /* eslint-disable operator-linebreak */
 /* eslint-disable quotes */
-import { generate } from "@genkit-ai/ai";
-import { configureGenkit } from "@genkit-ai/core";
-import { firebase } from "@genkit-ai/firebase";
-import { firebaseAuth } from "@genkit-ai/firebase/auth";
-import { onFlow } from "@genkit-ai/firebase/functions";
-import { gemini15ProPreview, vertexAI } from "@genkit-ai/vertexai";
 import * as crypto from "crypto";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import * as functions from "firebase-functions";
 import { setGlobalOptions } from "firebase-functions/v2/options";
 import nodemailer from "nodemailer";
-import * as z from "zod";
 import serviceAccount from "./serviceKey.json";
 import admin = require("firebase-admin");
 
@@ -30,113 +23,6 @@ if (isEmulator) {
 } else {
   admin.initializeApp();
 }
-
-configureGenkit({
-  plugins: [firebase(), vertexAI({ location: "europe-west2" })],
-  logLevel: "error",
-  enableTracingAndMetrics: true,
-});
-
-export const generateReport = onFlow(
-  {
-    name: "generateReport",
-    httpsOptions: {
-      cors: true,
-    },
-    inputSchema: z.object({
-      requestData: z.object({
-        requestType: z.string(),
-        text: z.string().nullable(),
-        fileUrl: z.string().nullable(),
-      }),
-      consultationData: z.object({
-        text: z.string().nullable(),
-        fileUrl: z.string().nullable(),
-      }),
-      id: z.string(),
-    }),
-    outputSchema: z.string(),
-    authPolicy: firebaseAuth((user) => {
-      if (user.uid === null) {
-        throw new Error("Verified email required to run flow");
-      }
-    }),
-  },
-  async (subject) => {
-    console.log("Generating report...");
-    // get the user id
-    const userId = subject.id;
-
-    // get the user document
-    const userDoc = admin.firestore().collection("users").doc(userId);
-
-    // get the title, firstName and lastName from the user document
-    const user = await userDoc.get();
-    if (!user.exists) {
-      throw new Error("User not found");
-    }
-    const title = user.data()?.title;
-    const firstName = user.data()?.firstName;
-    const lastName = user.data()?.lastName;
-
-    // create the prompt for the model, given the text or the urls can be null
-    const prompt = [];
-    prompt.push({
-      text: "You are a report writing assistant. You have to write a report based on the following request details:",
-    });
-    if (subject.requestData.text) {
-      prompt.push({ text: subject.requestData.text });
-    }
-    // the report type is
-    prompt.push({
-      text: `The report type is ${subject.requestData.requestType}`,
-    });
-    if (subject.requestData.fileUrl) {
-      prompt.push({
-        media: {
-          url: subject.requestData.fileUrl,
-          contentType: "application/pdf",
-        },
-      });
-    }
-
-    prompt.push({
-      text: "You have to include the following consultation details in the report:",
-    });
-    if (subject.consultationData.text) {
-      prompt.push({ text: subject.consultationData.text });
-    }
-    if (subject.consultationData.fileUrl) {
-      prompt.push({
-        media: {
-          url: subject.consultationData.fileUrl,
-          contentType: "application/pdf",
-        },
-      });
-    }
-    prompt.push({
-      text: "Respond in raw html. Do not use ** etc. Do not include any information pertaining to any other individuals that may be within the consultation details. Sign with the following details: ",
-    });
-    prompt.push({ text: `${title} ` });
-    prompt.push({ text: `${firstName} ` });
-    prompt.push({ text: `${lastName}` });
-
-    let result;
-    try {
-      result = await generate({
-        model: gemini15ProPreview,
-        prompt: prompt,
-      });
-    } catch (error) {
-      console.error("Error generating report:", error);
-      // Handle the error here
-      // For example, you can throw a custom error or return an error message
-      throw new Error("Failed to generate report");
-    }
-
-    return result.text();
-  }
-);
 
 export const sendConsentAppWhenRequestSubmitted = functions
   .region("europe-west2")

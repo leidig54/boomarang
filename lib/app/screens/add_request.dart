@@ -1,5 +1,4 @@
 import 'package:boomarang/main.dart';
-import 'package:boomarang_shared/data/request_types.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Stepper, Step, StepperType;
@@ -160,7 +159,7 @@ class _CreateBoomarangScreenState extends State<CreateBoomarangScreen> {
                               const SizedBox(height: 4),
                               //who are you sending the request to?
                               Text(
-                                "Who are you sending the request to? e.g. a doctor, a hospital, etc.",
+                                "Who are you sending the request to?",
                                 style: Theme.of(context).textTheme.labelMedium,
                               ),
                               const SizedBox(height: 16),
@@ -182,59 +181,30 @@ class _CreateBoomarangScreenState extends State<CreateBoomarangScreen> {
                               ),
                               const SizedBox(height: 32),
                               Text(
-                                "Request",
+                                "Request Details",
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
                               const SizedBox(height: 4),
                               //what type of request are you making?
                               Text(
-                                "What type of request are you making?",
+                                "What are you asking for?",
                                 style: Theme.of(context).textTheme.labelMedium,
                               ),
                               const SizedBox(
                                 height: 16,
                               ),
-                              Column(
-                                children: [
-                                  FormBuilderDropdown(
-                                    name: 'type',
-                                    autofocus: false,
-                                    autovalidateMode:
-                                        AutovalidateMode.onUserInteraction,
-                                    validator: FormBuilderValidators.required(
-                                      errorText: 'Please select a request type',
-                                    ),
-                                    onChanged: (value) {
-                                      FocusScope.of(context).nextFocus();
-                                    },
-                                    decoration: const InputDecoration(
-                                      labelText: 'Type',
-                                      helperText: "Select the type of request",
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    items: requestTypes
-                                        .map((e) => DropdownMenuItem(
-                                              value: e.id,
-                                              child: Text(e.name),
-                                            ))
-                                        .toList(),
-                                  ),
-                                  const SizedBox(height: 32),
-                                  FormBuilderTextField(
-                                    name: 'additional_details',
-                                    autovalidateMode:
-                                        AutovalidateMode.onUserInteraction,
-                                    maxLines: 5,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Additional details',
-                                      hintText:
-                                          'Please provide any additional details that may be relevant to your request',
-                                      helperText: '',
-                                      border: OutlineInputBorder(),
-                                      alignLabelWithHint: true,
-                                    ),
-                                  ),
-                                ],
+                              FormBuilderTextField(
+                                name: 'request_details',
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                maxLines: 5,
+                                decoration: const InputDecoration(
+                                  hintText:
+                                      'Please provide any additional details that may be relevant to your request',
+                                  helperText: '',
+                                  border: OutlineInputBorder(),
+                                  alignLabelWithHint: true,
+                                ),
                               ),
                             ],
                           ),
