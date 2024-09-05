@@ -9,8 +9,6 @@ class UserProvider extends ChangeNotifier {
 
   StreamSubscription? userSubscription;
 
-  bool hasLoaded = false;
-
   UserProvider() {
     userSubscription = firestore
         .collection('users')
@@ -22,7 +20,6 @@ class UserProvider extends ChangeNotifier {
       } else {
         user = BoomarangUser.fromMap(event.data()!);
       }
-      hasLoaded = true;
       notifyListeners();
     });
   }
