@@ -1,7 +1,7 @@
-import 'package:boomarang/dialogs/add_request.dart';
-import 'package:boomarang/dialogs/request_boomarang.dart';
 import 'package:boomarang/providers/tab_index_provider.dart';
 import 'package:boomarang/providers/user_provider.dart';
+import 'package:boomarang/screens/dialogs/add_request.dart';
+import 'package:boomarang/screens/dialogs/request_boomarang.dart';
 import 'package:boomarang_shared/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -60,6 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         ListTile(
           title: const Text('Read The Guide'),
+          //TODO: Add Guide
           enabled: !hasReadGuide,
           subtitle: const Text(
               'Learn how to use Boomarang to request and share data.'),
