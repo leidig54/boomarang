@@ -1,6 +1,10 @@
 import 'package:boomarang/app/screens/add_request.dart';
 import 'package:boomarang/app/screens/dialogs/request_boomarang.dart';
+import 'package:boomarang/data/user_provider.dart';
+import 'package:boomarang/misc/tab_index_provider.dart';
+import 'package:boomarang_shared/models/user.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -12,6 +16,10 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
+    BoomarangUser? user = context.watch<UserProvider>().user;
+    bool profileIsComplete = user?.profileIsComplete ?? false;
+    bool hasReadGuide = user?.flags?['readGuide'] ?? false;
+
     return Scaffold(
         body: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,11 +39,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, bottom: 8.0, top: 32.0),
+          child: Text(
+            'Get Started',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+        ListTile(
+          title: const Text('Complete Profile'),
+          enabled: !profileIsComplete,
+          subtitle: const Text(
+              'Complete your profile to share with others when requesting data.'),
+          leading: profileIsComplete
+              ? const Icon(Icons.check_box)
+              : const Icon(Icons.check_box_outline_blank),
+          onTap: () {
+            context.read<TabIndexProvider>().setTabIndex(3);
+          },
+        ),
+        ListTile(
+          title: const Text('Read The Guide'),
+          enabled: !hasReadGuide,
+          subtitle: const Text(
+              'Learn how to use Boomarang to request and share data.'),
+          leading: hasReadGuide
+              ? const Icon(Icons.check_box)
+              : const Icon(Icons.check_box_outline_blank),
+          onTap: () {},
+        ),
         //actions
         Padding(
           padding: const EdgeInsets.only(left: 16.0, bottom: 8.0, top: 32.0),
           child: Text(
-            'Actions',
+            'Send',
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
@@ -55,15 +92,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Padding(
           padding: const EdgeInsets.only(left: 16.0, bottom: 8.0, top: 32.0),
           child: Text(
-            'Share',
+            'Receive',
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
         ListTile(
-          title: const Text('Request Boomarang'),
+          title: const Text('Letter'),
           subtitle: const Text(
-              "If you've received a paper request and want it submitted via Boomarang"),
-          leading: const Icon(Icons.add_task),
+              "Received a paper request? We'll help you request it via Boomarang instead."),
+          leading: const Icon(Icons.mail),
           onTap: () {
             showDialog(
               context: context,
@@ -72,11 +109,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
         ),
         ListTile(
-          title: const Text('Share Link'),
+          title: const Text('Website'),
           subtitle: const Text(
-              "Share your boomarang link with others to allow them to request data from you."),
-          leading: const Icon(Icons.share),
+              "Receive Boomarangs on your website - get a link to your portal here."),
+          leading: const Icon(Icons.web),
           onTap: () {},
+        ),
+        //copy email forwarding link
+        ListTile(
+          title: const Text('Email'),
+          subtitle: const Text(
+              "Forward email requests to a dedicated inbox and we'll take care of the rest."),
+          leading: const Icon(Icons.alternate_email),
+          onTap: () {
+            //copy email to clipboard
+            //TODO: Create a function to copy text to clipboard
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Email copied to clipboard'),
+              ),
+            );
+          },
         ),
       ],
     ));
