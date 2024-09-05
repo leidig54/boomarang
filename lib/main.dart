@@ -1,8 +1,8 @@
-import 'package:boomarang/data/auth_provider.dart';
-import 'package:boomarang/data/user_provider.dart';
 import 'package:boomarang/firebase_options.dart';
-import 'package:boomarang/misc/tab_index_provider.dart';
-import 'package:boomarang/shared/auth_gate.dart';
+import 'package:boomarang/providers/auth_provider.dart';
+import 'package:boomarang/providers/tab_index_provider.dart';
+import 'package:boomarang/providers/user_provider.dart';
+import 'package:boomarang/screens/nav/auth_gate.dart';
 import 'package:boomarang_shared/theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
