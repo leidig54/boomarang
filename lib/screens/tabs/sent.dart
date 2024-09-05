@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
-import 'package:boomarang/misc/header_text_style.dart';
+import 'package:boomarang/screens/misc/header_text_style.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
