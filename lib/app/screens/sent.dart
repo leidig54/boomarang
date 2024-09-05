@@ -2,10 +2,7 @@ import 'dart:async';
 
 import 'package:boomarang/main.dart';
 import 'package:boomarang/misc/header_text_style.dart';
-import 'package:boomarang_shared/data/request_types.dart';
 import 'package:boomarang_shared/models/request.dart';
-import 'package:boomarang_shared/models/request_type.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -134,23 +131,6 @@ class _SentScreenState extends State<SentScreen> {
                       ),
                     )),
                 GridColumn(
-                  columnName: 'requestType',
-                  allowSorting: false,
-                  filterPopupMenuOptions: const FilterPopupMenuOptions(
-                    canShowSortingOptions: false,
-                    showColumnName: false,
-                    filterMode: FilterMode.checkboxFilter,
-                  ),
-                  label: Container(
-                    padding: const EdgeInsets.all(8),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Type',
-                      style: headerTextStyle,
-                    ),
-                  ),
-                ),
-                GridColumn(
                   columnName: 'status',
                   allowSorting: false,
                   filterPopupMenuOptions: const FilterPopupMenuOptions(
@@ -184,9 +164,6 @@ class SenderDataSource extends DataGridSource {
   void buildDataGridRows({required List<BoomarangRequest> requests}) {
     dataGridRows = requests.map(
       (e) {
-        RequestType? requestType = requestTypes
-            .firstWhereOrNull((element) => element.id == e.requestType);
-
         return DataGridRow(
           cells: [
             DataGridCell<String>(
@@ -196,8 +173,6 @@ class SenderDataSource extends DataGridSource {
                 value: "${e.subjectFirstName} ${e.subjectLastName}"),
             DataGridCell<String>(
                 columnName: 'recipientEmail', value: e.recipientEmail),
-            DataGridCell<String>(
-                columnName: 'requestType', value: requestType?.name ?? '-'),
             DataGridCell<String>(
                 columnName: 'status', value: e.formattedRequestStatus),
           ],
