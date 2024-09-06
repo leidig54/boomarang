@@ -61,7 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ListTile(
           title: const Text('Read The Guide'),
           //TODO: Add Guide
-          enabled: !hasReadGuide,
+          enabled: false,
           subtitle: const Text(
               'Learn how to use Boomarang to request and share data.'),
           leading: hasReadGuide
@@ -111,6 +111,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         ListTile(
           title: const Text('Website'),
+          enabled: false,
+          //TODO: Create website link
           subtitle: const Text(
               "Receive Boomarangs on your website - get a link to your portal here."),
           leading: const Icon(Icons.web),
@@ -119,18 +121,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         //copy email forwarding link
         ListTile(
           title: const Text('Email'),
+          enabled: false,
+          //TODO: Create email forwarding
           subtitle: const Text(
               "Forward email requests to a dedicated inbox and we'll take care of the rest."),
           leading: const Icon(Icons.alternate_email),
-          onTap: () {
-            //copy email to clipboard
-            //TODO: Create a function to copy text to clipboard
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Email copied to clipboard'),
-              ),
-            );
-          },
+          onTap: () {},
         ),
       ],
     ));
