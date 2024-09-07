@@ -1,13 +1,9 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
-import 'package:boomarang/screens/misc/header_text_style.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:syncfusion_flutter_core/theme.dart';
-import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
@@ -20,26 +16,31 @@ class _InboxScreenState extends State<InboxScreen> {
   List<BoomarangRequest> _requests = [];
   late StreamSubscription requestStreamSubscription;
 
-  late RecipientDataSource _dataSource;
+  BoomarangRequest? _selectedRequest;
 
   @override
   void initState() {
-    _dataSource = RecipientDataSource(requests: _requests);
+    super.initState();
     requestStreamSubscription = firestore
         .collection('requests')
         .where('recipientUserId', isEqualTo: auth.currentUser!.uid)
         .snapshots()
         .listen((snapshot) {
-      _requests =
-          snapshot.docs.map((e) => BoomarangRequest.fromMap(e.data())).toList();
-      _requests.sort((a, b) {
-        return b.dateCreated.compareTo(a.dateCreated);
+      setState(() {
+        _requests = snapshot.docs
+            .map((e) => BoomarangRequest.fromMap(e.data()))
+            .toList();
+        _requests.sort((a, b) {
+          return b.dateCreated.compareTo(a.dateCreated);
+        });
+        _selectedRequest = _requests.firstWhereOrNull(
+          (element) => element.id == _selectedRequest?.id,
+        );
+        if (_selectedRequest == null && _requests.isNotEmpty) {
+          _selectedRequest = _requests.first;
+        }
       });
-      _dataSource.buildDataGridRows(requests: _requests);
-      _dataSource.updateDataGridSource();
     });
-
-    super.initState();
   }
 
   @override
@@ -68,203 +69,271 @@ class _InboxScreenState extends State<InboxScreen> {
               ),
             ),
           ),
+          const Divider(
+            height: 1,
+            thickness: 0.5,
+          ),
           Expanded(
-            child: SfDataGridTheme(
-              data: SfDataGridThemeData(
-                filterPopupTextStyle: Theme.of(context).textTheme.bodyMedium,
-                headerColor: Theme.of(context).canvasColor,
-              ),
-              child: SfDataGrid(
-                source: _dataSource,
-                columnWidthMode: ColumnWidthMode.fill,
-                gridLinesVisibility: GridLinesVisibility.both,
-                headerGridLinesVisibility: GridLinesVisibility.both,
-                allowFiltering: true,
-                showColumnHeaderIconOnHover: false,
-                isScrollbarAlwaysShown: true,
-                allowSorting: true,
-                onCellDoubleTap: (details) {},
-                columns: [
-                  GridColumn(
-                    columnName: 'date',
-                    allowFiltering: false,
-                    allowSorting: true,
-                    label: Container(
-                      padding: const EdgeInsets.all(8),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Date',
-                        style: headerTextStyle,
-                      ),
-                    ),
+            child: Row(
+              children: [
+                Container(
+                  constraints: const BoxConstraints(
+                    maxWidth: 300,
+                    minWidth: 100,
                   ),
-                  GridColumn(
-                    columnName: 'subjectName',
-                    allowFiltering: true,
-                    filterPopupMenuOptions: const FilterPopupMenuOptions(
-                      canShowSortingOptions: false,
-                      showColumnName: false,
-                      filterMode: FilterMode.checkboxFilter,
-                    ),
-                    allowSorting: false,
-                    label: Container(
-                      padding: const EdgeInsets.all(8),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Subject',
-                        style: headerTextStyle,
-                      ),
-                    ),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0, vertical: 16.0),
+                    itemBuilder: (context, index) {
+                      //complete - blue
+                      //awaiting consent - yellow
+                      //awaiting completion - green
+                      //rejected - red
+
+                      BoomarangRequest request = _requests[index];
+                      Color? color;
+
+                      if (request.requestStatus == "rejected") {
+                        color = Colors.grey;
+                      } else if (request.requestStatus == "replied") {
+                        color = Colors.blue;
+                      } else if (request.consentVerified == false ||
+                          request.consentVerified == null) {
+                        color = Colors.amber;
+                      } else {
+                        color = Colors.green;
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: _selectedRequest == request
+                                ? Theme.of(context)
+                                    .highlightColor
+                                    .withOpacity(0.3)
+                                : Colors.transparent,
+                            border: Border(
+                              left: BorderSide(
+                                color: color,
+                                width: 4,
+                              ),
+                            ),
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(8),
+                            onTap: () {
+                              setState(() {
+                                _selectedRequest = request;
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                                vertical: 4.0,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(request.senderEmail ?? "Unknown",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge!
+                                              .copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              )),
+                                      Text(
+                                        request.formattedCreatedDateOrTime,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                  //subject first and last name
+                                  Text(
+                                    "${request.subjectFirstName} ${request.subjectLastName}",
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                  //two lines of details
+                                  Text(
+                                    request.requestDetails ?? "No details",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall!
+                                        .copyWith(
+                                          color: Colors.black45,
+                                        ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    separatorBuilder: (context, index) {
+                      return const Divider(
+                        indent: 8,
+                        endIndent: 8,
+                      );
+                    },
+                    itemCount: _requests.length,
                   ),
-                  GridColumn(
-                    columnName: 'sender',
-                    allowFiltering: true,
-                    filterPopupMenuOptions: const FilterPopupMenuOptions(
-                      canShowSortingOptions: false,
-                      showColumnName: false,
-                      filterMode: FilterMode.checkboxFilter,
-                    ),
-                    allowSorting: false,
-                    label: Container(
-                      padding: const EdgeInsets.all(8),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Sender',
-                        style: headerTextStyle,
+                ),
+                const VerticalDivider(
+                  width: 1,
+                ),
+                _selectedRequest == null
+                    ? const Center(child: Text("No request selected"))
+                    : AnimatedSwitcher(
+                        key: ValueKey(_selectedRequest!.id),
+                        duration: const Duration(milliseconds: 300),
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            maxWidth: 800,
+                          ),
+                          child: ListView(
+                            padding: const EdgeInsets.all(16.0),
+                            children: [
+                              //received date
+                              const Text("Boomarang Details"),
+                              ListTile(
+                                subtitle: const Text("Received"),
+                                title: Text(
+                                  _selectedRequest!.formattedCreatedFullDate,
+                                ),
+                                leading: const Icon(Icons.calendar_today),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              const Text("Sender Details"),
+                              //sender email
+                              ListTile(
+                                subtitle: const Text("Sender Email"),
+                                title: Text(
+                                  _selectedRequest!.senderEmail ?? "Unknown",
+                                ),
+                                leading: const Icon(Icons.email),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              const Text("Subject Details"),
+                              //subject details
+                              ListTile(
+                                subtitle: const Text("Subject"),
+                                title: Text(
+                                  "${_selectedRequest!.subjectFirstName} ${_selectedRequest!.subjectLastName}",
+                                ),
+                                leading: const Icon(Icons.person),
+                              ),
+                              //dob verified
+                              ListTile(
+                                subtitle: const Text("Date of Birth"),
+                                title: Text(
+                                  _selectedRequest!.formattedSubjectDob,
+                                ),
+                                leading: const Icon(Icons.cake),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              const Text("Identity Verification"),
+                              //email verified
+                              ListTile(
+                                title: const Text("Email"),
+                                subtitle: Text(
+                                  _selectedRequest!.subjectEmailVerified == true
+                                      ? "Verified"
+                                      : "Not Verified",
+                                ),
+                                leading:
+                                    _selectedRequest!.subjectEmailVerified ==
+                                            true
+                                        ? const Icon(
+                                            Icons.verified,
+                                            color: Colors.green,
+                                          )
+                                        : const Icon(
+                                            Icons.warning,
+                                            color: Colors.amber,
+                                          ),
+                              ),
+                              //dob verified
+                              ListTile(
+                                title: const Text("Date of Birth"),
+                                subtitle: Text(
+                                  _selectedRequest!.subjectDOBVerified == true
+                                      ? "Verified"
+                                      : "Not Verified",
+                                ),
+                                leading:
+                                    _selectedRequest!.subjectDOBVerified == true
+                                        ? const Icon(
+                                            Icons.verified,
+                                            color: Colors.green,
+                                          )
+                                        : const Icon(Icons.warning,
+                                            color: Colors.amber),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              //consent details
+                              const Text("Consent Details"),
+                              ListTile(
+                                title: const Text("Standard Usage Policy"),
+                                subtitle: Text(
+                                  _selectedRequest!.consentVerified == true
+                                      ? "Accepted"
+                                      : "Not Accepted",
+                                ),
+                                leading:
+                                    _selectedRequest!.consentVerified == true
+                                        ? const Icon(
+                                            Icons.verified,
+                                            color: Colors.green,
+                                          )
+                                        : const Icon(
+                                            Icons.warning,
+                                            color: Colors.amber,
+                                          ),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              //request details
+                              const Text("Request Details"),
+                              ListTile(
+                                title: const Text("Description"),
+                                subtitle: Text(
+                                  _selectedRequest!.requestDetails ?? "Unknown",
+                                ),
+                                leading: const Icon(Icons.description),
+                              ),
+                              //reply options
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              const Text("Response"),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  GridColumn(
-                    columnName: 'status',
-                    allowSorting: false,
-                    // columnWidthMode: ColumnWidthMode.fitByColumnName,
-                    filterPopupMenuOptions: const FilterPopupMenuOptions(
-                      canShowSortingOptions: false,
-                      showColumnName: false,
-                      filterMode: FilterMode.checkboxFilter,
-                    ),
-                    label: Container(
-                      padding: const EdgeInsets.all(8),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Status',
-                        style: headerTextStyle,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
         ],
       ),
     );
-  }
-}
-
-class RecipientDataSource extends DataGridSource {
-  RecipientDataSource({required List<BoomarangRequest> requests}) {
-    buildDataGridRows(requests: requests);
-  }
-
-  void buildDataGridRows({required List<BoomarangRequest> requests}) {
-    dataGridRows = requests.map(
-      (e) {
-        return DataGridRow(
-          cells: [
-            DataGridCell(columnName: 'received', value: e.dateCreated),
-            DataGridCell<String>(
-                columnName: 'subjectName',
-                value: "${e.subjectFirstName} ${e.subjectLastName}"),
-            DataGridCell(columnName: 'senderEmail', value: e.senderEmail),
-            DataGridCell<String>(
-                columnName: 'status', value: e.formattedRequestStatus),
-          ],
-        );
-      },
-    ).toList();
-  }
-
-  List<DataGridRow> dataGridRows = [];
-
-  @override
-  List<DataGridRow> get rows => dataGridRows;
-
-  @override
-  int compare(DataGridRow? a, DataGridRow? b, SortColumnDetails sortColumn) {
-    //if subjectName, sort by last name
-    if (sortColumn.name == 'subjectName') {
-      final String? value1 = a
-          ?.getCells()
-          .firstWhereOrNull((element) => element.columnName == sortColumn.name)
-          ?.value
-          .toString();
-      final String? value2 = b
-          ?.getCells()
-          .firstWhereOrNull((element) => element.columnName == sortColumn.name)
-          ?.value
-          .toString();
-
-      if (value1 == null || value2 == null) {
-        return 0;
-      }
-
-      final List<String> aName = value1.split(' ');
-      final List<String> bName = value2.split(' ');
-
-      final String aLastName = aName.last;
-      final String bLastName = bName.last;
-
-      if (sortColumn.sortDirection == DataGridSortDirection.ascending) {
-        return aLastName.compareTo(bLastName);
-      } else {
-        return bLastName.compareTo(aLastName);
-      }
-    }
-    return super.compare(a, b, sortColumn);
-  }
-
-  @override
-  DataGridRowAdapter? buildRow(DataGridRow row) {
-    return DataGridRowAdapter(
-      cells: row.getCells().map<Widget>((e) {
-        if (e.columnName == 'received') {
-          late String formattedDateTime;
-
-          //if today, show time only
-          if (e.value.day == DateTime.now().day &&
-              e.value.month == DateTime.now().month &&
-              e.value.year == DateTime.now().year) {
-            formattedDateTime = DateFormat.jm().format(e.value);
-          } else {
-            //show date only, no time
-            formattedDateTime = DateFormat.yMMMd().format(e.value);
-          }
-
-          return Container(
-            padding: const EdgeInsets.all(8),
-            alignment: Alignment.center,
-            child: Text(
-              formattedDateTime,
-              style:
-                  Theme.of(navigatorKey.currentContext!).textTheme.bodyMedium!,
-            ),
-          );
-        }
-
-        return Container(
-          padding: const EdgeInsets.all(8),
-          alignment: Alignment.center,
-          child: Text(
-            e.value.toString(),
-            style: Theme.of(navigatorKey.currentContext!).textTheme.bodyMedium!,
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  void updateDataGridSource() {
-    notifyListeners();
   }
 }
