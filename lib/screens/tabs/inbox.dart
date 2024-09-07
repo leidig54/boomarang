@@ -4,7 +4,6 @@ import 'package:boomarang/main.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
@@ -18,8 +17,6 @@ class _InboxScreenState extends State<InboxScreen> {
   late StreamSubscription requestStreamSubscription;
 
   BoomarangRequest? _selectedRequest;
-
-  final QuillController _quillController = QuillController.basic();
 
   @override
   void initState() {
@@ -55,11 +52,6 @@ class _InboxScreenState extends State<InboxScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        label: const Text("Respond"),
-        icon: const Icon(Icons.reply),
-      ),
       body: Column(
         children: [
           Container(
@@ -170,8 +162,7 @@ class _InboxScreenState extends State<InboxScreen> {
                                   ),
                                   //two lines of details
                                   Text(
-                                    request.requestDescription ??
-                                        "No description",
+                                    request.requestDetails ?? "No details",
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodySmall!
@@ -200,162 +191,144 @@ class _InboxScreenState extends State<InboxScreen> {
                 const VerticalDivider(
                   width: 1,
                 ),
-                Expanded(
-                  child: _selectedRequest == null
-                      ? const Center(child: Text("No request selected"))
-                      : ListView(
-                          padding: const EdgeInsets.all(16.0),
-                          children: [
-                            //received date
-                            const Text("Details"),
-                            ListTile(
-                              subtitle: const Text("Received"),
-                              title: Text(
-                                _selectedRequest!.formattedCreatedFullDate,
+                _selectedRequest == null
+                    ? const Center(child: Text("No request selected"))
+                    : AnimatedSwitcher(
+                        key: ValueKey(_selectedRequest!.id),
+                        duration: const Duration(milliseconds: 300),
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            maxWidth: 800,
+                          ),
+                          child: ListView(
+                            padding: const EdgeInsets.all(16.0),
+                            children: [
+                              //received date
+                              const Text("Boomarang Details"),
+                              ListTile(
+                                subtitle: const Text("Received"),
+                                title: Text(
+                                  _selectedRequest!.formattedCreatedFullDate,
+                                ),
+                                leading: const Icon(Icons.calendar_today),
                               ),
-                              leading: const Icon(Icons.calendar_today),
-                            ),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            const Text("Requester"),
-                            //sender email
-                            ListTile(
-                              subtitle: const Text("Email"),
-                              title: Text(
-                                _selectedRequest!.senderEmail ?? "Unknown",
+                              const SizedBox(
+                                height: 16,
                               ),
-                              leading: const Icon(Icons.email),
-                            ),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            const Text("Subject"),
-                            //subject details
-                            ListTile(
-                              subtitle: const Text("Name"),
-                              title: Text(
-                                "${_selectedRequest!.subjectFirstName} ${_selectedRequest!.subjectLastName}",
+                              const Text("Sender Details"),
+                              //sender email
+                              ListTile(
+                                subtitle: const Text("Sender Email"),
+                                title: Text(
+                                  _selectedRequest!.senderEmail ?? "Unknown",
+                                ),
+                                leading: const Icon(Icons.email),
                               ),
-                              leading: const Icon(Icons.person),
-                            ),
-                            //dob verified
-                            ListTile(
-                              subtitle: const Text("Date of Birth"),
-                              title: Text(
-                                _selectedRequest!.formattedSubjectDob,
+                              const SizedBox(
+                                height: 16,
                               ),
-                              leading: const Icon(Icons.cake),
-                            ),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            const Text("Identity Verification"),
-                            //email verified
-                            ListTile(
-                              title: const Text("Email"),
-                              subtitle: Text(
-                                _selectedRequest!.subjectEmailVerified == true
-                                    ? "Verified"
-                                    : "Not Verified",
+                              const Text("Subject Details"),
+                              //subject details
+                              ListTile(
+                                subtitle: const Text("Subject"),
+                                title: Text(
+                                  "${_selectedRequest!.subjectFirstName} ${_selectedRequest!.subjectLastName}",
+                                ),
+                                leading: const Icon(Icons.person),
                               ),
-                              leading:
+                              //dob verified
+                              ListTile(
+                                subtitle: const Text("Date of Birth"),
+                                title: Text(
+                                  _selectedRequest!.formattedSubjectDob,
+                                ),
+                                leading: const Icon(Icons.cake),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              const Text("Identity Verification"),
+                              //email verified
+                              ListTile(
+                                title: const Text("Email"),
+                                subtitle: Text(
                                   _selectedRequest!.subjectEmailVerified == true
-                                      ? const Icon(
-                                          Icons.verified,
-                                          color: Colors.green,
-                                        )
-                                      : const Icon(
-                                          Icons.warning,
-                                          color: Colors.amber,
-                                        ),
-                            ),
-                            //dob verified
-                            ListTile(
-                              title: const Text("Date of Birth"),
-                              subtitle: Text(
-                                _selectedRequest!.subjectDOBVerified == true
-                                    ? "Verified"
-                                    : "Not Verified",
+                                      ? "Verified"
+                                      : "Not Verified",
+                                ),
+                                leading:
+                                    _selectedRequest!.subjectEmailVerified ==
+                                            true
+                                        ? const Icon(
+                                            Icons.verified,
+                                            color: Colors.green,
+                                          )
+                                        : const Icon(
+                                            Icons.warning,
+                                            color: Colors.amber,
+                                          ),
                               ),
-                              leading:
+                              //dob verified
+                              ListTile(
+                                title: const Text("Date of Birth"),
+                                subtitle: Text(
                                   _selectedRequest!.subjectDOBVerified == true
-                                      ? const Icon(
-                                          Icons.verified,
-                                          color: Colors.green,
-                                        )
-                                      : const Icon(Icons.warning,
-                                          color: Colors.amber),
-                            ),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            //consent details
-                            const Text("Consent Details"),
-                            ListTile(
-                              title: const Text("Standard Consent Policy"),
-                              subtitle: Text(
-                                _selectedRequest!.consentVerified == true
-                                    ? "Accepted"
-                                    : "Not Accepted",
+                                      ? "Verified"
+                                      : "Not Verified",
+                                ),
+                                leading:
+                                    _selectedRequest!.subjectDOBVerified == true
+                                        ? const Icon(
+                                            Icons.verified,
+                                            color: Colors.green,
+                                          )
+                                        : const Icon(Icons.warning,
+                                            color: Colors.amber),
                               ),
-                              leading: _selectedRequest!.consentVerified == true
-                                  ? const Icon(
-                                      Icons.verified,
-                                      color: Colors.green,
-                                    )
-                                  : const Icon(
-                                      Icons.warning,
-                                      color: Colors.amber,
-                                    ),
-                              //generic consent policy highlights in a list
-                            ),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            const Text("Overview"),
-                            //request details
-                            ListTile(
-                              title: const Text("Description"),
-                              subtitle: Text(
-                                _selectedRequest?.requestDescription ??
-                                    "Unknown",
+                              const SizedBox(
+                                height: 16,
                               ),
-                              leading: const Icon(Icons.description),
-                            ),
-                            //reply options
-                            const SizedBox(
-                              height: 100,
-                            ),
-                          ],
-                        ),
-                ),
-                const VerticalDivider(),
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        QuillSimpleToolbar(
-                          controller: _quillController,
-                          configurations:
-                              const QuillSimpleToolbarConfigurations(),
-                        ),
-                        const Divider(
-                          thickness: 0.4,
-                        ),
-                        QuillEditor.basic(
-                          controller: _quillController,
-                          configurations: const QuillEditorConfigurations(
-                            minHeight: 500,
+                              //consent details
+                              const Text("Consent Details"),
+                              ListTile(
+                                title: const Text("Standard Usage Policy"),
+                                subtitle: Text(
+                                  _selectedRequest!.consentVerified == true
+                                      ? "Accepted"
+                                      : "Not Accepted",
+                                ),
+                                leading:
+                                    _selectedRequest!.consentVerified == true
+                                        ? const Icon(
+                                            Icons.verified,
+                                            color: Colors.green,
+                                          )
+                                        : const Icon(
+                                            Icons.warning,
+                                            color: Colors.amber,
+                                          ),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              //request details
+                              const Text("Request Details"),
+                              ListTile(
+                                title: const Text("Description"),
+                                subtitle: Text(
+                                  _selectedRequest!.requestDetails ?? "Unknown",
+                                ),
+                                leading: const Icon(Icons.description),
+                              ),
+                              //reply options
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              const Text("Response"),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                )
+                      ),
               ],
             ),
           ),
