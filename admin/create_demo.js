@@ -61,24 +61,6 @@ async function createDemoEnvironment() {
   const createRequest = async () => {
     const id = faker.string.uuid();
 
-    const requesterOrgs = {
-      "private_medical_insurance": ["Vitality", "BUPA", "Aviva", "AXA"],
-      "dwp_pip": ["DWP"],
-      "disability_living_allowance": ["DWP"],
-      "police_report": [
-        "Metropolitan Police",
-        "City of London Police",
-        "British Transport Police",
-      ],
-      "dwp_uc113": ["DWP"],
-      "disability_student_allowance": ["Student Finance England"],
-      "subject_access_request": ["self"],
-      "other": ["self"],
-    };
-
-    //get a random request type from the map
-    const requestType = faker.helpers.arrayElement(Object.keys(requesterOrgs));
-
     //for 10% of requests, set the status to rejected. for the others, set to awaiting_response
     const requestStatus =
       Math.random() < 0.1 ? "rejected" : "awaiting_response";
@@ -104,7 +86,6 @@ async function createDemoEnvironment() {
       }),
       consentVerified: Math.random() < 0.5,
       requestStatus: requestStatus,
-      requestType: requestType,
       requestDetails: requestDetails,
       isDemo: true,
     };
