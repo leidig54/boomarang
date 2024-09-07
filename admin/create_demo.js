@@ -65,7 +65,7 @@ async function createDemoEnvironment() {
     const requestStatus =
       Math.random() < 0.1 ? "rejected" : "awaiting_response";
 
-    let requestDetails = faker.lorem.sentences(
+    let requestDescription = faker.lorem.sentences(
       Math.floor(Math.random() * 4) + 4
     );
 
@@ -75,18 +75,20 @@ async function createDemoEnvironment() {
       subjectLastName: faker.person.lastName(),
       subjectEmail: faker.internet.email(),
       subjectEmailVerified: true,
-      subjectDOB: faker.date.past(),
+      subjectDOB: faker.date.past().getTime(),
       subjectDOBVerified: true,
       senderUserId: "1",
       senderEmail: user.email,
       recipientUserId: "1",
       recipientEmail: user.email,
-      dateCreated: faker.date.recent({
-        days: 4,
-      }),
+      dateCreated: faker.date
+        .recent({
+          days: 4,
+        })
+        .getTime(),
       consentVerified: Math.random() < 0.5,
       requestStatus: requestStatus,
-      requestDetails: requestDetails,
+      requestDescription: requestDescription,
       isDemo: true,
     };
 
