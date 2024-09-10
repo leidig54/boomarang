@@ -1,8 +1,8 @@
 import 'package:boomarang/providers/user_provider.dart';
-import 'package:boomarang/screens/misc/loading.dart';
 import 'package:boomarang/screens/nav/home.dart';
 import 'package:boomarang/screens/onboarding/enter_email_verification_code.dart';
 import 'package:boomarang/screens/onboarding/resend_email_verification_code.dart';
+import 'package:boomarang/widgets/loading.dart';
 import 'package:boomarang_shared/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
