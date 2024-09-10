@@ -1,7 +1,7 @@
 import 'package:boomarang/main.dart';
-import 'package:boomarang/screens/misc/alert_dialog.dart';
-import 'package:boomarang/screens/misc/loading.dart';
 import 'package:boomarang/screens/onboarding/onboarding_gate.dart';
+import 'package:boomarang/widgets/alert_dialog.dart';
+import 'package:boomarang/widgets/loading.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart' hide ProfileScreen;
