@@ -1,11 +1,8 @@
-import 'package:boomarang/providers/organisation_provider.dart';
 import 'package:boomarang/providers/user_provider.dart';
-import 'package:boomarang/screens/create_org.dart';
 import 'package:boomarang/screens/nav/home.dart';
 import 'package:boomarang/screens/onboarding/enter_email_verification_code.dart';
 import 'package:boomarang/screens/onboarding/resend_email_verification_code.dart';
 import 'package:boomarang/widgets/loading.dart';
-import 'package:boomarang_shared/models/organisation.dart';
 import 'package:boomarang_shared/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -35,14 +32,7 @@ class _OnboardingGateScreenState extends State<OnboardingGateScreen> {
       }
     }
 
-    Organisation? organisation =
-        context.watch<OrganisationProvider>().organisation;
-
-    if (organisation == null) {
-      return const CreateOrganisation();
-    }
-
-    //onboarding - profile
+    // //onboarding - profile
     // if (!user.profileIsComplete) {
     //   return const BoomarangProfileScreen();
     // }

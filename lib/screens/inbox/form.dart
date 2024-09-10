@@ -1,14 +1,16 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
+import 'package:boomarang/providers/request_provider.dart';
 import 'package:boomarang_shared/models/boomarang_element.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:provider/provider.dart';
 
-class InboxRequestForm extends StatefulWidget {
-  const InboxRequestForm({
+class RequestForm extends StatefulWidget {
+  const RequestForm({
     super.key,
     required this.selectedRequest,
   });
@@ -16,56 +18,38 @@ class InboxRequestForm extends StatefulWidget {
   final BoomarangRequest selectedRequest;
 
   @override
-  State<InboxRequestForm> createState() => _InboxRequestFormState();
+  State<RequestForm> createState() => _RequestFormState();
 }
 
-class _InboxRequestFormState extends State<InboxRequestForm> {
+class _RequestFormState extends State<RequestForm> {
   GlobalKey<FormBuilderState> formKey = GlobalKey<FormBuilderState>();
   bool isSaving = false;
 
   @override
   Widget build(BuildContext context) {
-    BoomarangRequest request = widget.selectedRequest;
-
+    BoomarangRequest request =
+        context.watch<RequestProvider>().receivedRequests.firstWhere(
+              (element) => element.id == widget.selectedRequest.id,
+            );
     return FormBuilder(
       key: formKey,
       child: ListView(
         padding: const EdgeInsets.all(32.0),
         children: [
-          Text(request.form.name,
-              style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(
-            height: 4,
-          ),
-          Text(
-            request.form.description,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(
-            height: 32,
-          ),
-          if (request.form.elements.isNotEmpty == true)
+          if (request.elements != null && request.elements!.isNotEmpty == true)
             ...List.generate(
-              request.form.elements.length,
+              request.elements!.length,
               (index) {
-                FormElement element = request.form.elements[index];
+                BoomarangElement element = request.elements![index];
                 bool responseComplete = request.responseSubmitted;
 
                 if (element.type == "text") {
-                  dynamic initialValue;
-                  if (request.response?[element.id] != null) {
-                    initialValue = request.response?[element.id];
-                  } else {
-                    initialValue =
-                        kDebugMode ? "Test response for text fields" : null;
-                  }
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderTextField(
-                      key: Key(element.id),
                       name: element.id,
                       enabled: !responseComplete && !isSaving,
-                      initialValue: initialValue,
+                      initialValue: kDebugMode ? "Test" : null,
                       decoration: InputDecoration(
                         labelText: element.labelText,
                         border: const OutlineInputBorder(),
@@ -73,20 +57,12 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                     ),
                   );
                 } else if (element.type == "checkbox") {
-                  dynamic initialValue;
-                  if (request.response?[element.id] != null) {
-                    initialValue = request.response?[element.id];
-                  } else {
-                    initialValue = kDebugMode ? true : null;
-                  }
-
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderCheckbox(
-                      key: Key(element.id),
                       name: element.id,
                       enabled: !responseComplete && !isSaving,
-                      initialValue: initialValue,
+                      initialValue: kDebugMode ? true : null,
                       controlAffinity: ListTileControlAffinity.trailing,
                       title: Text(element.labelText!),
                       decoration: const InputDecoration(
@@ -95,20 +71,12 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                     ),
                   );
                 } else if (element.type == 'radio') {
-                  dynamic initialValue;
-                  if (request.response?[element.id] != null) {
-                    initialValue = request.response?[element.id];
-                  } else {
-                    initialValue = kDebugMode ? element.options?.first : null;
-                  }
-
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderRadioGroup(
-                      key: Key(element.id),
                       name: element.id,
                       enabled: !responseComplete && !isSaving,
-                      initialValue: initialValue,
+                      initialValue: kDebugMode ? element.options!.first : null,
                       decoration: InputDecoration(
                         labelText: element.labelText,
                         border: const OutlineInputBorder(),
@@ -124,18 +92,6 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                                 ),
                               ))
                           .toList(),
-                    ),
-                  );
-                } else if (element.type == "statement") {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Text(
-                      element.text!,
-                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                            color: responseComplete || isSaving
-                                ? Colors.grey
-                                : null,
-                          ),
                     ),
                   );
                 } else {
