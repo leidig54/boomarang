@@ -6,9 +6,7 @@ import 'package:flutter/material.dart';
 
 class RequestProvider extends ChangeNotifier {
   List<BoomarangRequest> receivedRequests = [];
-  List<BoomarangRequest> sentRequests = [];
   late StreamSubscription receivedRequestStreamSubscription;
-  late StreamSubscription sentRequestStreamSubscription;
 
   RequestProvider() {
     receivedRequestStreamSubscription = firestore
@@ -19,18 +17,6 @@ class RequestProvider extends ChangeNotifier {
       receivedRequests =
           snapshot.docs.map((e) => BoomarangRequest.fromMap(e.data())).toList();
       receivedRequests.sort((a, b) {
-        return b.dateCreated.compareTo(a.dateCreated);
-      });
-      notifyListeners();
-    });
-    sentRequestStreamSubscription = firestore
-        .collection('requests')
-        .where('senderUserId', isEqualTo: auth.currentUser!.uid)
-        .snapshots()
-        .listen((snapshot) {
-      sentRequests =
-          snapshot.docs.map((e) => BoomarangRequest.fromMap(e.data())).toList();
-      sentRequests.sort((a, b) {
         return b.dateCreated.compareTo(a.dateCreated);
       });
       notifyListeners();
