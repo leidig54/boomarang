@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
-import 'package:boomarang/providers/request_provider.dart';
+import 'package:boomarang/providers/inbox_provider.dart';
 import 'package:boomarang_shared/models/boomarang_element.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/foundation.dart';
@@ -27,21 +27,21 @@ class _RequestFormState extends State<RequestForm> {
 
   @override
   Widget build(BuildContext context) {
-    BoomarangRequest request =
-        context.watch<RequestProvider>().receivedRequests.firstWhere(
-              (element) => element.id == widget.selectedRequest.id,
-            );
     return FormBuilder(
       key: formKey,
       child: ListView(
         padding: const EdgeInsets.all(32.0),
         children: [
-          if (request.elements != null && request.elements!.isNotEmpty == true)
+          if (widget.selectedRequest.elements != null &&
+              widget.selectedRequest.elements!.isNotEmpty == true)
             ...List.generate(
-              request.elements!.length,
+              widget.selectedRequest.elements!.length,
               (index) {
-                BoomarangElement element = request.elements![index];
-                bool responseComplete = request.responseSubmitted;
+                BoomarangElement element =
+                    widget.selectedRequest.elements![index];
+
+                bool responseComplete =
+                    context.watch<InboxProvider>().responseComplete;
 
                 if (element.type == "text") {
                   return Padding(
@@ -100,7 +100,7 @@ class _RequestFormState extends State<RequestForm> {
               },
             ),
           //submit button
-          if (!request.responseSubmitted)
+          if (!context.watch<InboxProvider>().responseComplete)
             FloatingActionButton.extended(
               onPressed: isSaving
                   ? null
@@ -114,7 +114,7 @@ class _RequestFormState extends State<RequestForm> {
                       await Future.delayed(const Duration(seconds: 2));
 
                       await functions.httpsCallable('submitResponse').call({
-                        'requestId': request.id,
+                        'requestId': widget.selectedRequest.id,
                         'response': formKey.currentState!.value,
                       });
 
@@ -128,8 +128,8 @@ class _RequestFormState extends State<RequestForm> {
                   ? const CircularProgressIndicator.adaptive()
                   : const Text("Submit"),
             ),
-          if (request.consentVerified != true &&
-              !request.responseSubmitted) ...[
+          if (widget.selectedRequest.consentVerified != true &&
+              !context.watch<InboxProvider>().responseComplete) ...[
             const SizedBox(
               height: 16,
             ),

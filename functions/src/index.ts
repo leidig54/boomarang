@@ -134,9 +134,7 @@ export const createUserDocument = functions
     return null;
   });
 
-// when a request is updated and the recipientEmail field is no longer null or has changed, check to see if the user with that recipientEmail already exists.
-// if it does, assign the userId to the recipientUserId field in the request
-// if it doesn't, email the recipient email to create an account
+// when a request is updated and the recipientEmail field is no longer null or has changed, check to see if the user with that recipientEmail already exists. if it does, assign the userId to the recipientUserId field in the request
 export const assignRecipientToRequestOnRequestCreate = functions
   .region("europe-west2")
   .firestore.document("requests/{requestId}")
@@ -165,10 +163,6 @@ export const assignRecipientToRequestOnRequestCreate = functions
           console.log(
             "User does not exist. Sending email to recipient to create an account..."
           );
-
-          if (change.after.data()?.isDemo) {
-            return "Is Demo";
-          }
           // Configure the email transport using the provided SMTP server.
           const email = "george@joinoto.com";
           const password = "GHD9XULrYSFwdOKM"; // Ensure you're securely handling passwords and sensitive information
@@ -215,9 +209,7 @@ export const assignRecipientToRequestOnRequestCreate = functions
     return null;
   });
 
-// when a request is added by a recipient and the sender already exists, assign the senderUserId to the request.
-// otherwise email them to create an account
-// this is for manually adding paper requests
+// when a request is added by a recipient and the sender already exists, assign the senderUserId to the request. otherwise email them to create an account
 export const assignSenderToRequestOnRequestCreate = functions
   .region("europe-west2")
   .firestore.document("requests/{requestId}")
@@ -246,10 +238,6 @@ export const assignSenderToRequestOnRequestCreate = functions
           console.log(
             "User does not exist. Sending email to sender to create an account..."
           );
-
-          if (change.after.data()?.isDemo) {
-            return "Is Demo";
-          }
           // Configure the email transport using the provided SMTP server.
           // email the sender with a link to sign up
           // Configure the email transport using the provided SMTP server.
@@ -304,8 +292,7 @@ export const assignSenderToRequestOnRequestCreate = functions
     return null;
   });
 
-// when a user is verified, check if the user has a request with a recipientEmail that matches the user's email.
-// if it does, assign the userId to the recipientUserId field in the request
+// when a user is verified, check if the user has a request with a recipientEmail that matches the user's email. if it does, assign the userId to the recipientUserId field in the request
 export const assignRequestToUserOnUserVerification = functions
   .region("europe-west2")
   .firestore.document("users/{userId}")
@@ -524,6 +511,20 @@ export const checkEmailVerificationCode = functions
     return "Email verified";
   });
 
+export const markRequestAsCompleteWhenResponseSubmitted = functions
+  .region("europe-west2")
+  .firestore.document("responses/{responseId}")
+  .onCreate(async (change) => {
+    // when a response is created, mark the request as complete
+    const response = change.data();
+    const requestId = response.id;
+    const requestDoc = admin.firestore().collection("requests").doc(requestId);
+    await requestDoc.update({
+      requestStatus: "complete",
+    });
+    return null;
+  });
+
 export const getFirstandLastName = functions
   .region("europe-west2")
   .https.onCall(async (data) => {
@@ -671,6 +672,33 @@ export const confirmEmailAddress = functions
     return { verified };
   });
 
+export const rejectRequest = functions
+  .region("europe-west2")
+  .https.onCall(async (data, context) => {
+    // get the requestId from the call data, then update the request document to mark the request as rejected
+    const requestId = data.requestId;
+    const requestDoc = admin.firestore().collection("requests").doc(requestId);
+
+    // check if the user uid is the same as the recipientUserId in the request document
+    const request = await requestDoc.get();
+    if (!request.exists) {
+      throw new functions.https.HttpsError("not-found", "Request not found");
+    }
+
+    if (request.data()?.recipientUserId !== context.auth?.uid) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "User does not have permission to reject request"
+      );
+    }
+
+    await requestDoc.update({
+      requestStatus: "rejected",
+    });
+
+    return "Request rejected";
+  });
+
 export const requestBoomarang = functions
   .region("europe-west2")
   .https.onCall(async (data, context) => {
@@ -700,41 +728,3 @@ export const requestBoomarang = functions
 
     return requestDoc.id;
   });
-
-export const submitResponse = functions
-  .region("europe-west2")
-  .https.onCall(async (data, context) => {
-    // get the request id from the data
-    const requestId = data.requestId;
-
-    // get the request document
-    const requestDoc = admin.firestore().collection("requests").doc(requestId);
-
-    // check that the user uid is the same as the recipientUserId in the request
-    const request = await requestDoc.get();
-    if (!request.exists) {
-      throw new functions.https.HttpsError("not-found", "Request not found");
-    }
-
-    // get the recipientUserId from the request
-    const recipientUserId = request.data()?.recipientUserId;
-
-    // check if the user is authenticated
-    if (context.auth?.uid !== recipientUserId) {
-      throw new functions.https.HttpsError(
-        "permission-denied",
-        "User does not have permission to save a response"
-      );
-    }
-
-    // save the response data to the request document
-    await requestDoc.update({
-      response: data.response,
-      responseDate: FieldValue.serverTimestamp(),
-      requestStatus: "response_submitted",
-    });
-
-    return "Response saved";
-  });
-
-// TODO: Extract send email function
