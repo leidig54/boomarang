@@ -1,7 +1,6 @@
-import 'package:boomarang/providers/inbox_provider.dart';
-import 'package:boomarang/providers/sentbox_provider.dart';
-import 'package:boomarang/providers/tab_index_provider.dart';
-import 'package:boomarang/screens/misc/navigation_bottom_widget.dart';
+import 'package:boomarang/providers/request_provider.dart';
+import 'package:boomarang/providers/tab_provider.dart';
+import 'package:boomarang/widgets/navigation_bottom_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,8 +18,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => InboxProvider()),
-        ChangeNotifierProvider(create: (context) => SentboxProvider()),
+        ChangeNotifierProvider(create: (context) => RequestProvider()),
       ],
       child: Row(
         children: [

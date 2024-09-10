@@ -1,7 +1,5 @@
-import 'package:boomarang/providers/tab_index_provider.dart';
+import 'package:boomarang/providers/tab_provider.dart';
 import 'package:boomarang/providers/user_provider.dart';
-import 'package:boomarang/screens/dialogs/add_request.dart';
-import 'package:boomarang/screens/dialogs/request_boomarang.dart';
 import 'package:boomarang_shared/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -81,15 +79,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           title: const Text('Create New'),
           subtitle:
               const Text('Want to request sensitive data? Send a Boomarang.'),
+          enabled: false,
           leading: const Icon(Icons.send),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) => const CreateBoomarangScreen(),
-            );
-          },
+          onTap: () {},
         ),
-
         Padding(
           padding: const EdgeInsets.only(left: 16.0, bottom: 8.0, top: 32.0),
           child: Text(
@@ -99,15 +92,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         ListTile(
           title: const Text('Letter'),
+          enabled: false,
           subtitle: const Text(
               "Received a paper request? We'll help you request it via Boomarang instead."),
           leading: const Icon(Icons.mail),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) => const RequestBoomarangScreen(),
-            );
-          },
+          onTap: () {},
         ),
         ListTile(
           title: const Text('Website'),
