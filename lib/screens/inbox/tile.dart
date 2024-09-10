@@ -45,8 +45,7 @@ class RequestTile extends StatelessWidget {
                           style:
                               Theme.of(context).textTheme.bodyMedium!.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: tileRequest.requestStatus ==
-                                            "response_submitted"
+                                    color: tileRequest.responseSubmitted
                                         ? Colors.grey
                                         : null,
                                   )),
@@ -63,9 +62,8 @@ class RequestTile extends StatelessWidget {
                 Text(
                   "${tileRequest.subjectFirstName} ${tileRequest.subjectLastName}",
                   style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        color: tileRequest.requestStatus == "response_submitted"
-                            ? Colors.grey
-                            : null,
+                        color:
+                            tileRequest.responseSubmitted ? Colors.grey : null,
                       ),
                 ),
               ],
