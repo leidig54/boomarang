@@ -1,7 +1,7 @@
 import 'package:boomarang/screens/tabs/dashboard.dart';
-import 'package:boomarang/screens/tabs/inbox.dart';
+import 'package:boomarang/screens/tabs/inbox/inbox.dart';
 import 'package:boomarang/screens/tabs/profile.dart';
-import 'package:boomarang/screens/tabs/sent.dart';
+import 'package:boomarang/screens/tabs/sentbox/sent.dart';
 import 'package:flutter/material.dart';
 
 class TabIndexProvider extends ChangeNotifier {
