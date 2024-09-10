@@ -1,6 +1,6 @@
 import 'package:boomarang/firebase_options.dart';
 import 'package:boomarang/providers/auth_provider.dart';
-import 'package:boomarang/providers/tab_index_provider.dart';
+import 'package:boomarang/providers/tab_provider.dart';
 import 'package:boomarang/providers/user_provider.dart';
 import 'package:boomarang/screens/nav/auth_gate.dart';
 import 'package:boomarang_shared/theme.dart';
