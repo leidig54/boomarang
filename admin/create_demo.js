@@ -13,9 +13,38 @@ db.settings({
   ssl: false,
 });
 
-const withUser = true;
-
 async function createDemoEnvironment() {
+  const auth = admin.auth();
+  //clear all users from firebase auth
+  // For clearing all users from Firebase Auth
+  const listUsers = await auth.listUsers();
+  await Promise.all(listUsers.users.map((user) => auth.deleteUser(user.uid)));
+
+  // For clearing the users collection
+  const usersCollection = db.collection("users");
+  const users = await usersCollection.get();
+  await Promise.all(
+    users.docs.map((user) => usersCollection.doc(user.id).delete())
+  );
+
+  // For clearing the requests collection
+  const requestCollection = db.collection("requests");
+  const requests = await requestCollection.get();
+  await Promise.all(
+    requests.docs.map((request) => requestCollection.doc(request.id).delete())
+  );
+
+  await auth
+    .createUser({
+      uid: "1",
+      email: "georgeleidig@icloud.com",
+      password: "boomarang",
+      emailVerified: true,
+    })
+    .then((user) => {
+      console.log("requester created");
+    });
+
   const user = {
     title: "Dr",
     email: "georgeleidig@icloud.com",
@@ -26,82 +55,19 @@ async function createDemoEnvironment() {
     isDemo: true,
   };
 
-  const requestCollection = db.collection("requests");
-  // For clearing the requests collection
-  const requests = await requestCollection.get();
-  await Promise.all(
-    requests.docs.map((request) => requestCollection.doc(request.id).delete())
-  );
-
-  if (withUser) {
-    const auth = admin.auth();
-    //clear all users from firebase auth
-    // For clearing all users from Firebase Auth
-    const listUsers = await auth.listUsers();
-    await Promise.all(listUsers.users.map((user) => auth.deleteUser(user.uid)));
-
-    // For clearing the users collection
-    const usersCollection = db.collection("users");
-    const users = await usersCollection.get();
-    await Promise.all(
-      users.docs.map((user) => usersCollection.doc(user.id).delete())
-    );
-
-    await auth
-      .createUser({
-        uid: "1",
-        email: "georgeleidig@icloud.com",
-        password: "boomarang",
-        emailVerified: true,
-      })
-      .then((user) => {
-        console.log("requester created");
-      });
-
-    const user = {
-      title: "Dr",
-      email: "georgeleidig@icloud.com",
-      firstName: "George",
-      lastName: "Leidig",
-      emailVerified: true,
-      verificationCodeExpiresAt: null,
-      isDemo: true,
-    };
-
-    await usersCollection.doc("1").set(user);
-    console.log("Holder document created");
-  }
+  await usersCollection.doc("1").set(user);
+  console.log("Holder document created");
 
   const createRequest = async () => {
     const id = faker.string.uuid();
 
     //for 10% of requests, set the status to rejected. for the others, set to awaiting_response
-    const requestStatus = "awaiting_response";
+    const requestStatus =
+      Math.random() < 0.1 ? "rejected" : "awaiting_response";
 
     let requestDescription = faker.lorem.sentences(
       Math.floor(Math.random() * 4) + 4
     );
-
-    //generate 5-10 boomarangElements
-    const numElements = Math.floor(Math.random() * 6) + 5;
-
-    const possibleTypes = ["text", "checkbox", "radio", "file"];
-    const elements = [];
-    const options = ["Yes", "No"];
-
-    for (let i = 0; i < numElements; i++) {
-      const type =
-        possibleTypes[Math.floor(Math.random() * possibleTypes.length)];
-      elements.push({
-        id: faker.string.uuid(),
-        labelText: faker.lorem.sentence().slice(0, -1) + "?",
-        hintText: faker.lorem.words(3),
-        //only for 1/3 of elements, set the helperText
-        helperText: Math.random() < 0.33 ? faker.lorem.words(3) : null,
-        type: type,
-        options: type === "radio" ? options : [],
-      });
-    }
 
     const request = {
       id: id,
@@ -124,7 +90,6 @@ async function createDemoEnvironment() {
       requestStatus: requestStatus,
       requestDescription: requestDescription,
       isDemo: true,
-      elements: elements,
     };
 
     await requestCollection.doc(request.id).set(request);
