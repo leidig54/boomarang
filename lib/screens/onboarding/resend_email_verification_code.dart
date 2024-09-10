@@ -1,5 +1,5 @@
 import 'package:boomarang/main.dart';
-import 'package:boomarang/widgets/error.dart';
+import 'package:boomarang/widgets/alert_dialog.dart';
 import 'package:flutter/material.dart';
 
 class ResendEmailVerificationCodeScreen extends StatefulWidget {

@@ -672,33 +672,6 @@ export const confirmEmailAddress = functions
     return { verified };
   });
 
-export const rejectRequest = functions
-  .region("europe-west2")
-  .https.onCall(async (data, context) => {
-    // get the requestId from the call data, then update the request document to mark the request as rejected
-    const requestId = data.requestId;
-    const requestDoc = admin.firestore().collection("requests").doc(requestId);
-
-    // check if the user uid is the same as the recipientUserId in the request document
-    const request = await requestDoc.get();
-    if (!request.exists) {
-      throw new functions.https.HttpsError("not-found", "Request not found");
-    }
-
-    if (request.data()?.recipientUserId !== context.auth?.uid) {
-      throw new functions.https.HttpsError(
-        "permission-denied",
-        "User does not have permission to reject request"
-      );
-    }
-
-    await requestDoc.update({
-      requestStatus: "rejected",
-    });
-
-    return "Request rejected";
-  });
-
 export const requestBoomarang = functions
   .region("europe-west2")
   .https.onCall(async (data, context) => {
@@ -727,4 +700,40 @@ export const requestBoomarang = functions
     await requestDoc.set(request);
 
     return requestDoc.id;
+  });
+
+export const submitResponse = functions
+  .region("europe-west2")
+  .https.onCall(async (data, context) => {
+    // get the request id from the data
+    const requestId = data.requestId;
+
+    // get the request document
+    const requestDoc = admin.firestore().collection("requests").doc(requestId);
+
+    // check that the user uid is the same as the recipientUserId in the request
+    const request = await requestDoc.get();
+    if (!request.exists) {
+      throw new functions.https.HttpsError("not-found", "Request not found");
+    }
+
+    // get the recipientUserId from the request
+    const recipientUserId = request.data()?.recipientUserId;
+
+    // check if the user is authenticated
+    if (context.auth?.uid !== recipientUserId) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "User does not have permission to save a response"
+      );
+    }
+
+    // save the response data to the request document
+    await requestDoc.update({
+      response: data.response,
+      responseDate: FieldValue.serverTimestamp(),
+      requestStatus: "response_submitted",
+    });
+
+    return "Response saved";
   });
