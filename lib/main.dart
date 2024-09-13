@@ -1,6 +1,5 @@
 import 'package:boomarang/firebase_options.dart';
 import 'package:boomarang/providers/auth_provider.dart';
-import 'package:boomarang/providers/organisation_provider.dart';
 import 'package:boomarang/providers/tab_provider.dart';
 import 'package:boomarang/providers/user_provider.dart';
 import 'package:boomarang/screens/nav/auth_gate.dart';
@@ -14,7 +13,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
-//TODO: Provide request templates
+//TODO: View and respond to received requests
+//TODO: View and cancel sent requests
+//TODO: Establish request types
 
 bool useEmulators = true;
 
@@ -52,8 +53,6 @@ class _MainAppState extends State<MainApp> {
             key: ValueKey(context.watch<UserAuthProvider>().user?.uid),
             providers: [
               ChangeNotifierProvider(create: (context) => UserProvider()),
-              ChangeNotifierProvider(
-                  create: (context) => OrganisationProvider()),
               ChangeNotifierProvider(create: (context) => TabIndexProvider()),
             ],
             child: MaterialApp(

@@ -2,9 +2,8 @@ import 'package:boomarang/data/templates.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/providers/tab_provider.dart';
 import 'package:boomarang_shared/dob_formatter.dart';
-import 'package:boomarang_shared/models/consent_form.dart';
+import 'package:boomarang_shared/models/boomarang_element.dart';
 import 'package:boomarang_shared/models/request.dart';
-import 'package:boomarang_shared/models/request_form.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,10 +23,12 @@ class CreateNewRequest extends StatefulWidget {
 }
 
 class _CreateNewRequestState extends State<CreateNewRequest> {
+  List<FormElement> elements = [];
+  //formbuilder key
   final _formKey = GlobalKey<FormBuilderState>();
+  List<String> forms = ['Form 1', 'Form 2', 'Form 3', 'Form 4'];
   bool isSaving = false;
   late String id;
-  RequestForm? selectedForm;
 
   @override
   void initState() {
@@ -37,14 +38,14 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          constraints: const BoxConstraints(
-            maxWidth: 600,
-          ),
-          child: FormBuilder(
-            key: _formKey,
+    return FormBuilder(
+      key: _formKey,
+      child: Row(
+        children: [
+          Container(
+            constraints: const BoxConstraints(
+              maxWidth: 600,
+            ),
             child: ListView(
               padding: const EdgeInsets.all(32),
               children: [
@@ -139,24 +140,18 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                   validator: FormBuilderValidators.compose([
                     FormBuilderValidators.required(),
                   ]),
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
                   orientation: OptionsOrientation.vertical,
                   onChanged: (value) {
-                    setState(() {
-                      selectedForm = forms.firstWhere(
-                          (element) => element.id == value.toString());
-                    });
+                    setState(() {});
                   },
-                  options: forms.map((form) {
+                  options: b2bForms.map((form) {
                     return FormBuilderFieldOption(
                       value: form.id,
                       child: Text(form.name),
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 32),
                 FloatingActionButton.extended(
                   onPressed: () async {
                     if (_formKey.currentState!.saveAndValidate()) {
@@ -166,28 +161,6 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
 
                       // Simulate a delay to show the loading indicator
                       await Future.delayed(const Duration(seconds: 1));
-
-                      ConsentForm consentForm = ConsentForm(
-                        id: 'general_consent',
-                        title: 'General Data Consent Form',
-                        content: '''
-                ## General Data Consent Form
-                
-                By providing your consent, you allow us to request and share your data for the purpose outlined in the data request.
-                
-                The data requested may include sensitive information such as:
-                
-                - Medical records
-                - Financial details
-                - Employment history
-                - Other personal data
-                
-                We assure you that your data will be handled securely and in compliance with relevant data protection laws (e.g., GDPR). 
-                You have the right to withdraw your consent at any time.
-                
-                By clicking **Agree**, you confirm that you understand the nature of the request and consent to the transfer of your data.
-              ''',
-                      );
 
                       BoomarangRequest request = BoomarangRequest(
                         id: id,
@@ -206,10 +179,9 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                         recipientEmail: _formKey.currentState!
                             .fields['recipient_email']!.value as String,
                         dateCreated: DateTime.now(),
-                        form: forms.firstWhere((element) =>
+                        form: b2bForms.firstWhere((element) =>
                             element.id ==
                             _formKey.currentState!.fields['form']!.value),
-                        consentForm: consentForm,
                       );
                       //add isDemo: true to the request map
 
@@ -238,8 +210,8 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
               ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

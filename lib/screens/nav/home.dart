@@ -30,10 +30,7 @@ class _HomeState extends State<Home> {
                   const SizedBox(
                     height: 40,
                   ),
-                  Transform.flip(
-                    flipX: true,
-                    child: const FlutterLogo(size: 100),
-                  ),
+                  const FlutterLogo(size: 100),
                   const SizedBox(
                     height: 40,
                   ),
@@ -73,7 +70,7 @@ class _HomeState extends State<Home> {
               NavigationRailDestination(
                 icon: const Icon(Icons.person),
                 label: Text(
-                  'Admin',
+                  'Profile',
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
               ),
