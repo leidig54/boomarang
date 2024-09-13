@@ -28,11 +28,11 @@ class _SentRequestFormState extends State<SentRequestForm> {
       child: ListView(
         padding: const EdgeInsets.all(32.0),
         children: [
-          if (request.form.elements.isNotEmpty == true)
+          if (request.elements != null && request.elements!.isNotEmpty == true)
             ...List.generate(
-              request.form.elements.length,
+              request.elements!.length,
               (index) {
-                FormElement element = request.form.elements[index];
+                BoomarangElement element = request.elements![index];
 
                 if (element.type == "text") {
                   dynamic initialValue;
