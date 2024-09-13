@@ -1,14 +1,10 @@
-import 'dart:async';
-
-import 'package:boomarang/main.dart';
 import 'package:boomarang_shared/models/boomarang_element.dart';
 import 'package:boomarang_shared/models/request.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-class InboxRequestForm extends StatefulWidget {
-  const InboxRequestForm({
+class SentRequestForm extends StatefulWidget {
+  const SentRequestForm({
     super.key,
     required this.selectedRequest,
   });
@@ -16,10 +12,10 @@ class InboxRequestForm extends StatefulWidget {
   final BoomarangRequest selectedRequest;
 
   @override
-  State<InboxRequestForm> createState() => _InboxRequestFormState();
+  State<SentRequestForm> createState() => _SentRequestFormState();
 }
 
-class _InboxRequestFormState extends State<InboxRequestForm> {
+class _SentRequestFormState extends State<SentRequestForm> {
   GlobalKey<FormBuilderState> formKey = GlobalKey<FormBuilderState>();
   bool isSaving = false;
 
@@ -43,15 +39,13 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                   dynamic initialValue;
                   if (request.response?[element.id] != null) {
                     initialValue = request.response?[element.id];
-                  } else {
-                    initialValue =
-                        kDebugMode ? "Test response for text fields" : null;
                   }
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderTextField(
                       name: element.id,
-                      enabled: !responseComplete && !isSaving,
+                      readOnly: true,
+                      enabled: false,
                       initialValue: initialValue,
                       decoration: InputDecoration(
                         labelText: element.labelText,
@@ -63,15 +57,13 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                   dynamic initialValue;
                   if (request.response?[element.id] != null) {
                     initialValue = request.response?[element.id];
-                  } else {
-                    initialValue = kDebugMode ? true : null;
                   }
-
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderCheckbox(
                       name: element.id,
-                      enabled: !responseComplete && !isSaving,
+                      enabled: false,
+                      onChanged: null,
                       initialValue: initialValue,
                       controlAffinity: ListTileControlAffinity.trailing,
                       title: Text(element.labelText!),
@@ -84,15 +76,12 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                   dynamic initialValue;
                   if (request.response?[element.id] != null) {
                     initialValue = request.response?[element.id];
-                  } else {
-                    initialValue = kDebugMode ? element.options?.first : null;
                   }
-
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderRadioGroup(
                       name: element.id,
-                      enabled: !responseComplete && !isSaving,
+                      enabled: false,
                       initialValue: initialValue,
                       decoration: InputDecoration(
                         labelText: element.labelText,
@@ -103,9 +92,12 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                                 value: e,
                                 child: Text(
                                   e,
-                                  style: !responseComplete && !isSaving
-                                      ? null
-                                      : const TextStyle(color: Colors.grey),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium!
+                                      .copyWith(
+                                        color: Colors.grey,
+                                      ),
                                 ),
                               ))
                           .toList(),
@@ -116,46 +108,6 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                 }
               },
             ),
-          //submit button
-          if (!request.responseSubmitted)
-            FloatingActionButton.extended(
-              onPressed: isSaving
-                  ? null
-                  : () async {
-                      formKey.currentState!.save();
-
-                      setState(() {
-                        isSaving = true;
-                      });
-
-                      await Future.delayed(const Duration(seconds: 2));
-
-                      await functions.httpsCallable('submitResponse').call({
-                        'requestId': request.id,
-                        'response': formKey.currentState!.value,
-                      });
-
-                      await Future.delayed(const Duration(milliseconds: 100));
-
-                      setState(() {
-                        isSaving = false;
-                      });
-                    },
-              label: isSaving
-                  ? const CircularProgressIndicator.adaptive()
-                  : const Text("Submit"),
-            ),
-          if (request.consentVerified != true &&
-              !request.responseSubmitted) ...[
-            const SizedBox(
-              height: 16,
-            ),
-            Text(
-              "Your response won't be released until the subject has accepted the consent policy.",
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
           const SizedBox(
             height: 100,
           ),
