@@ -1,6 +1,6 @@
 import 'package:boomarang/providers/request_provider.dart';
 import 'package:boomarang/providers/tab_provider.dart';
-import 'package:boomarang/widgets/navigation_bottom_widget.dart';
+import 'package:boomarang/screens/nav/navigation_bottom_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
