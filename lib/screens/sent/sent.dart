@@ -3,7 +3,6 @@ import 'package:boomarang/screens/sent/form.dart';
 import 'package:boomarang/screens/shared/meta.dart';
 import 'package:boomarang/screens/shared/tile.dart';
 import 'package:boomarang_shared/models/request.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,7 +25,7 @@ class _SentScreenState extends State<SentScreen> {
       selectedRequest = context
           .read<RequestProvider>()
           .receivedRequests
-          .firstWhereOrNull((e) => e.id == selectedRequest!.id);
+          .firstWhere((e) => e.id == selectedRequest!.id);
     }
     super.didChangeDependencies();
   }
@@ -62,34 +61,39 @@ class _SentScreenState extends State<SentScreen> {
                   maxWidth: 300,
                   minWidth: 100,
                 ),
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8.0,
-                    vertical: 16.0,
-                  ),
-                  itemBuilder: (context, index) {
-                    BoomarangRequest thisRequest =
-                        context.watch<RequestProvider>().sentRequests[index];
+                child: Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 16.0,
+                    ),
+                    itemBuilder: (context, index) {
+                      BoomarangRequest thisRequest =
+                          context.watch<RequestProvider>().sentRequests[index];
 
-                    return RequestTile(
-                      tileRequest:
-                          context.watch<RequestProvider>().sentRequests[index],
-                      isSelected: thisRequest.id == selectedRequest?.id,
-                      onTap: (request) {
-                        setState(() {
-                          selectedRequest = thisRequest;
-                        });
-                      },
-                    );
-                  },
-                  separatorBuilder: (context, index) {
-                    return const Divider(
-                      indent: 8,
-                      endIndent: 8,
-                    );
-                  },
-                  itemCount:
-                      context.watch<RequestProvider>().receivedRequests.length,
+                      return RequestTile(
+                        tileRequest: context
+                            .watch<RequestProvider>()
+                            .sentRequests[index],
+                        isSelected: thisRequest.id == selectedRequest?.id,
+                        onTap: (request) {
+                          setState(() {
+                            selectedRequest = thisRequest;
+                          });
+                        },
+                      );
+                    },
+                    separatorBuilder: (context, index) {
+                      return const Divider(
+                        indent: 8,
+                        endIndent: 8,
+                      );
+                    },
+                    itemCount: context
+                        .watch<RequestProvider>()
+                        .receivedRequests
+                        .length,
+                  ),
                 ),
               ),
               const VerticalDivider(
