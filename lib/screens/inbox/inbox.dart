@@ -3,7 +3,6 @@ import 'package:boomarang/screens/inbox/form.dart';
 import 'package:boomarang/screens/shared/meta.dart';
 import 'package:boomarang/screens/shared/tile.dart';
 import 'package:boomarang_shared/models/request.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,7 +26,7 @@ class _InboxScreenState extends State<InboxScreen> {
       selectedRequest = context
           .read<RequestProvider>()
           .receivedRequests
-          .firstWhereOrNull((e) => e.id == selectedRequest!.id);
+          .firstWhere((e) => e.id == selectedRequest!.id);
     }
     super.didChangeDependencies();
   }
