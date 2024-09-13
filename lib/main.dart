@@ -13,9 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
-//TODO: View and respond to received requests
-//TODO: View and cancel sent requests
-//TODO: Establish request types
+//TODO: Provide request templates
 
 bool useEmulators = true;
 
