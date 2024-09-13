@@ -16,7 +16,7 @@ class InboxScreen extends StatefulWidget {
 
 class _InboxScreenState extends State<InboxScreen> {
   BoomarangRequest? selectedRequest;
-  bool hideCompleted = false;
+  bool hideSubmitted = false;
 
   @override
   void didChangeDependencies() {
@@ -66,11 +66,11 @@ class _InboxScreenState extends State<InboxScreen> {
                 child: Column(
                   children: [
                     CheckboxListTile(
-                        value: hideCompleted,
+                        value: hideSubmitted,
                         tileColor: Theme.of(context).canvasColor,
                         onChanged: (value) {
                           setState(() {
-                            hideCompleted = value ?? false;
+                            hideSubmitted = value ?? false;
                             if (value == true &&
                                 selectedRequest?.responseSubmitted == true) {
                               selectedRequest = context
@@ -81,7 +81,7 @@ class _InboxScreenState extends State<InboxScreen> {
                             }
                           });
                         },
-                        title: const Text("Hide Completed"),
+                        title: const Text("Hide Submitted"),
                         controlAffinity: ListTileControlAffinity.trailing),
                     const Divider(
                       height: 1,
@@ -98,7 +98,7 @@ class _InboxScreenState extends State<InboxScreen> {
                               .watch<RequestProvider>()
                               .receivedRequests[index];
 
-                          if (hideCompleted && thisRequest.responseSubmitted) {
+                          if (hideSubmitted && thisRequest.responseSubmitted) {
                             return Container();
                           }
 
@@ -117,7 +117,7 @@ class _InboxScreenState extends State<InboxScreen> {
                               .watch<RequestProvider>()
                               .receivedRequests[index];
 
-                          if (hideCompleted && thisRequest.responseSubmitted) {
+                          if (hideSubmitted && thisRequest.responseSubmitted) {
                             return Container();
                           }
                           return const Divider(
@@ -141,7 +141,6 @@ class _InboxScreenState extends State<InboxScreen> {
                 child: selectedRequest == null
                     ? Container()
                     : RequestMeta(
-                        key: Key(selectedRequest!.id),
                         selectedRequest: selectedRequest!,
                         inbox: true,
                       ),
@@ -153,10 +152,7 @@ class _InboxScreenState extends State<InboxScreen> {
                 flex: 2,
                 child: selectedRequest == null
                     ? Container()
-                    : InboxRequestForm(
-                        key: Key(selectedRequest!.id),
-                        selectedRequest: selectedRequest!,
-                      ),
+                    : InboxRequestForm(selectedRequest: selectedRequest!),
               ),
             ],
           ),
