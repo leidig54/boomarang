@@ -39,16 +39,14 @@ class RequestTile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: Text(tileRequest.senderEmail ?? "Unknown",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium!.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: tileRequest.responseSubmitted
-                                        ? Colors.grey
-                                        : null,
-                                  )),
+                      child: Text(
+                        tileRequest.senderEmail ?? "Unknown",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
                     ),
                     Text(
                       tileRequest.formattedCreatedDateOrTime,
@@ -59,13 +57,21 @@ class RequestTile extends StatelessWidget {
                   ],
                 ),
                 //subject first and last name
-                Text(
-                  "${tileRequest.subjectFirstName} ${tileRequest.subjectLastName}",
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        color:
-                            tileRequest.responseSubmitted ? Colors.grey : null,
-                      ),
-                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "${tileRequest.subjectFirstName} ${tileRequest.subjectLastName}",
+                      style: Theme.of(context).textTheme.bodyMedium!,
+                    ),
+                    Icon(
+                      tileRequest.responseSubmitted
+                          ? Icons.check
+                          : Icons.horizontal_rule,
+                      size: 15,
+                    ),
+                  ],
+                )
               ],
             ),
           ),
