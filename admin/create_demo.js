@@ -13,7 +13,7 @@ db.settings({
   ssl: false,
 });
 
-const withUser = false;
+const withUser = true;
 
 async function createDemoEnvironment() {
   const user = {

@@ -1,7 +1,7 @@
 import 'package:boomarang/providers/request_provider.dart';
 import 'package:boomarang/screens/inbox/form.dart';
-import 'package:boomarang/screens/inbox/meta.dart';
-import 'package:boomarang/screens/inbox/tile.dart';
+import 'package:boomarang/screens/shared/meta.dart';
+import 'package:boomarang/screens/shared/tile.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,8 +19,15 @@ class _InboxScreenState extends State<InboxScreen> {
 
   @override
   void didChangeDependencies() {
-    selectedRequest ??=
-        context.read<RequestProvider>().receivedRequests.firstOrNull;
+    if (selectedRequest == null) {
+      selectedRequest =
+          context.read<RequestProvider>().receivedRequests.firstOrNull;
+    } else {
+      selectedRequest = context
+          .read<RequestProvider>()
+          .receivedRequests
+          .firstWhere((e) => e.id == selectedRequest!.id);
+    }
     super.didChangeDependencies();
   }
 
@@ -63,6 +70,14 @@ class _InboxScreenState extends State<InboxScreen> {
                         onChanged: (value) {
                           setState(() {
                             hideSubmitted = value ?? false;
+                            if (value == true &&
+                                selectedRequest?.responseSubmitted == true) {
+                              selectedRequest = context
+                                  .read<RequestProvider>()
+                                  .receivedRequests
+                                  .where((e) => !e.responseSubmitted)
+                                  .firstOrNull;
+                            }
                           });
                         },
                         title: const Text("Hide Submitted"),
@@ -124,7 +139,10 @@ class _InboxScreenState extends State<InboxScreen> {
               Expanded(
                 child: selectedRequest == null
                     ? Container()
-                    : RequestMeta(selectedRequest: selectedRequest!),
+                    : RequestMeta(
+                        selectedRequest: selectedRequest!,
+                        inbox: true,
+                      ),
               ),
               const VerticalDivider(
                 width: 1,
@@ -133,7 +151,7 @@ class _InboxScreenState extends State<InboxScreen> {
                 flex: 2,
                 child: selectedRequest == null
                     ? Container()
-                    : RequestForm(selectedRequest: selectedRequest!),
+                    : InboxRequestForm(selectedRequest: selectedRequest!),
               ),
             ],
           ),
