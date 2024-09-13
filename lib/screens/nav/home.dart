@@ -70,7 +70,7 @@ class _HomeState extends State<Home> {
               NavigationRailDestination(
                 icon: const Icon(Icons.person),
                 label: Text(
-                  'Admin',
+                  'Profile',
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
               ),

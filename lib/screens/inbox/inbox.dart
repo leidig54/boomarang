@@ -3,7 +3,6 @@ import 'package:boomarang/screens/inbox/form.dart';
 import 'package:boomarang/screens/shared/meta.dart';
 import 'package:boomarang/screens/shared/tile.dart';
 import 'package:boomarang_shared/models/request.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,7 +15,7 @@ class InboxScreen extends StatefulWidget {
 
 class _InboxScreenState extends State<InboxScreen> {
   BoomarangRequest? selectedRequest;
-  bool hideCompleted = false;
+  bool hideSubmitted = false;
 
   @override
   void didChangeDependencies() {
@@ -27,7 +26,7 @@ class _InboxScreenState extends State<InboxScreen> {
       selectedRequest = context
           .read<RequestProvider>()
           .receivedRequests
-          .firstWhereOrNull((e) => e.id == selectedRequest!.id);
+          .firstWhere((e) => e.id == selectedRequest!.id);
     }
     super.didChangeDependencies();
   }
@@ -66,11 +65,11 @@ class _InboxScreenState extends State<InboxScreen> {
                 child: Column(
                   children: [
                     CheckboxListTile(
-                        value: hideCompleted,
+                        value: hideSubmitted,
                         tileColor: Theme.of(context).canvasColor,
                         onChanged: (value) {
                           setState(() {
-                            hideCompleted = value ?? false;
+                            hideSubmitted = value ?? false;
                             if (value == true &&
                                 selectedRequest?.responseSubmitted == true) {
                               selectedRequest = context
@@ -81,7 +80,7 @@ class _InboxScreenState extends State<InboxScreen> {
                             }
                           });
                         },
-                        title: const Text("Hide Completed"),
+                        title: const Text("Hide Submitted"),
                         controlAffinity: ListTileControlAffinity.trailing),
                     const Divider(
                       height: 1,
@@ -98,7 +97,7 @@ class _InboxScreenState extends State<InboxScreen> {
                               .watch<RequestProvider>()
                               .receivedRequests[index];
 
-                          if (hideCompleted && thisRequest.responseSubmitted) {
+                          if (hideSubmitted && thisRequest.responseSubmitted) {
                             return Container();
                           }
 
@@ -117,7 +116,7 @@ class _InboxScreenState extends State<InboxScreen> {
                               .watch<RequestProvider>()
                               .receivedRequests[index];
 
-                          if (hideCompleted && thisRequest.responseSubmitted) {
+                          if (hideSubmitted && thisRequest.responseSubmitted) {
                             return Container();
                           }
                           return const Divider(

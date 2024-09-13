@@ -71,13 +71,7 @@ class RequestTile extends StatelessWidget {
                       size: 15,
                     ),
                   ],
-                ),
-                Text(
-                  tileRequest.form.name,
-                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                        color: Colors.grey,
-                      ),
-                ),
+                )
               ],
             ),
           ),
