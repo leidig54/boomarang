@@ -33,7 +33,6 @@ class _SentRequestFormState extends State<SentRequestForm> {
               request.elements!.length,
               (index) {
                 BoomarangElement element = request.elements![index];
-                bool responseComplete = request.responseSubmitted;
 
                 if (element.type == "text") {
                   dynamic initialValue;
