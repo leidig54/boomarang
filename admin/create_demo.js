@@ -13,22 +13,6 @@ db.settings({
   ssl: false,
 });
 
-const consentForm = {
-  id: "general_consent",
-  title: "General Data Consent Form",
-  content:
-    "## General Data Consent Form\n\n" +
-    "By providing your consent, you allow us to request and share your data for the purpose outlined in the data request.\n\n" +
-    "The data requested may include sensitive information such as:\n\n" +
-    "- Medical records\n" +
-    "- Financial details\n" +
-    "- Employment history\n" +
-    "- Other personal data\n\n" +
-    "We assure you that your data will be handled securely and in compliance with relevant data protection laws (e.g., GDPR).\n" +
-    "You have the right to withdraw your consent at any time.\n\n" +
-    "By clicking **Agree**, you confirm that you understand the nature of the request and consent to the transfer of your data.\n",
-};
-
 const withUser = true;
 
 async function createDemoEnvironment() {
@@ -89,78 +73,44 @@ async function createDemoEnvironment() {
   }
 
   const createRequest = async () => {
-    const forms = [
-      {
-        id: "veterinary_insurance_claim",
-        name: "Veterinary Insurance Claim",
-        description: "Claim for veterinary insurance.",
-        elements: [
-          {
-            id: "symptom_start_date",
-            labelText: "Symptom Start Date",
-            type: "text",
-            isRequired: true,
-            preFilled: false,
-            //format date as a readable string
-            sampleResponse: faker.date.recent().toDateString(),
-          },
-          {
-            id: "consultation_date",
-            labelText: "Treatment Date",
-            type: "text",
-            isRequired: true,
-            preFilled: false,
-            sampleResponse: faker.date.recent().toDateString(),
-          },
-          {
-            id: "new_or_existing_condition",
-            labelText: "New or Existing Condition",
-            type: "radio",
-            isRequired: true,
-            preFilled: false,
-            options: ["New", "Existing"],
-          },
-          {
-            id: "diagnosis",
-            labelText: "Diagnosis",
-            type: "text",
-            isRequired: true,
-            preFilled: false,
-            sampleResponse: faker.lorem.sentence(),
-          },
-          {
-            id: "treatment",
-            labelText: "Treatment",
-            expectedLines: 2,
-            type: "text",
-            isRequired: true,
-            preFilled: false,
-            sampleResponse: faker.lorem.paragraph(),
-          },
-          {
-            id: "cost",
-            labelText: "Cost",
-            type: "text",
-            isRequired: true,
-            preFilled: false,
-            sampleResponse: faker.finance.amount(),
-          },
-        ],
-      },
-    ];
-
     const id = faker.string.uuid();
 
-    const hasVerified = Math.random() < 0.5;
+    //for 10% of requests, set the status to rejected. for the others, set to awaiting_response
+    const requestStatus = "awaiting_response";
+
+    let requestDescription = faker.lorem.sentences(
+      Math.floor(Math.random() * 4) + 4
+    );
+
+    //generate 5-10 boomarangElements
+    const numElements = Math.floor(Math.random() * 6) + 5;
+
+    const possibleTypes = ["text", "checkbox", "radio", "file"];
+    const elements = [];
+    const options = ["Yes", "No"];
+
+    for (let i = 0; i < numElements; i++) {
+      const type =
+        possibleTypes[Math.floor(Math.random() * possibleTypes.length)];
+      elements.push({
+        id: faker.string.uuid(),
+        labelText: faker.lorem.sentence().slice(0, -1) + "?",
+        hintText: faker.lorem.words(3),
+        //only for 1/3 of elements, set the helperText
+        helperText: Math.random() < 0.33 ? faker.lorem.words(3) : null,
+        type: type,
+        options: type === "radio" ? options : [],
+      });
+    }
 
     const request = {
       id: id,
       subjectFirstName: faker.person.firstName(),
       subjectLastName: faker.person.lastName(),
       subjectEmail: faker.internet.email(),
-      subjectEmailVerified: hasVerified,
+      subjectEmailVerified: true,
       subjectDOB: faker.date.past().getTime(),
-      subjectDOBVerified: hasVerified,
+      subjectDOBVerified: true,
       senderUserId: "1",
       senderEmail: user.email,
       recipientUserId: "1",
@@ -170,17 +120,18 @@ async function createDemoEnvironment() {
           days: 4,
         })
         .getTime(),
-      consentVerified: hasVerified,
-      consentForm: consentForm,
+      consentVerified: Math.random() < 0.5,
+      requestStatus: requestStatus,
+      requestDescription: requestDescription,
       isDemo: true,
-      form: forms[Math.floor(Math.random() * forms.length)],
+      elements: elements,
     };
 
     await requestCollection.doc(request.id).set(request);
   };
 
   //add 30 requests
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 90; i++) {
     await createRequest();
   }
 }

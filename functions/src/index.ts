@@ -34,6 +34,11 @@ export const sendConsentAppWhenRequestSubmitted = functions
 
     console.log("IsDemo: ", request?.isDemo);
 
+    // if isDemo, dont send email
+    if (request?.isDemo) {
+      return "Demo request";
+    }
+
     // if the subject email hasn't changed, return
     if (before?.subjectEmail === request?.subjectEmail) {
       console.log("Subject email has not changed. Exiting...");
@@ -59,11 +64,6 @@ export const sendConsentAppWhenRequestSubmitted = functions
         createdAt: FieldValue.serverTimestamp(),
         expiresAt: Timestamp.fromDate(expiresAt),
       });
-
-    // if isDemo, dont send email
-    if (request?.isDemo) {
-      return "Demo request";
-    }
 
     // get the subject email from the request
     const subjectEmail = request?.subjectEmail;
@@ -554,15 +554,8 @@ export const verifyDateOfBirth = functions
     // Convert ISO 8601 string to Timestamp
     const submittedDateOfBirthTimestamp = new Date(dateOfBirthISO);
 
-    // Get the subjectDOB from the request document and convert it to Date object
-    const subjectDOBMillis = request.data()?.subjectDOB;
-    if (subjectDOBMillis == null) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "subjectDOB is missing"
-      );
-    }
-    const requestDateOfBirthTimestamp = new Date(subjectDOBMillis);
+    // Convert Firestore Timestamp to Date object
+    const requestDateOfBirthTimestamp = request.data()?.subjectDOB.toDate();
 
     // Normalize dates to the start of the day in UTC for accurate day comparison
     const normalizeDateToUTCStartOfDay = (date: Date) => {
