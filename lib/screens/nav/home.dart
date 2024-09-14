@@ -30,10 +30,7 @@ class _HomeState extends State<Home> {
                   const SizedBox(
                     height: 40,
                   ),
-                  Transform.flip(
-                    flipX: true,
-                    child: const FlutterLogo(size: 100),
-                  ),
+                  const FlutterLogo(size: 100),
                   const SizedBox(
                     height: 40,
                   ),
