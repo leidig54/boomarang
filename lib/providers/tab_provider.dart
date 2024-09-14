@@ -1,7 +1,7 @@
 import 'package:boomarang/screens/dashboard.dart';
 import 'package:boomarang/screens/inbox/inbox.dart';
-import 'package:boomarang/screens/profile.dart';
 import 'package:boomarang/screens/sent/sent.dart';
+import 'package:boomarang/screens/shared/settings.dart';
 import 'package:flutter/material.dart';
 
 class TabIndexProvider extends ChangeNotifier {
@@ -31,6 +31,6 @@ class TabIndexProvider extends ChangeNotifier {
     const DashboardScreen(),
     const InboxScreen(),
     const SentScreen(),
-    const BoomarangProfileScreen(),
+    const AdminScreen(),
   ];
 }
