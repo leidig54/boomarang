@@ -48,10 +48,6 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
             child: ListView(
               padding: const EdgeInsets.all(32),
               children: [
-                //Create New
-                Text("Create New Request",
-                    style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 32),
                 const Text("Subject"),
                 const SizedBox(height: 16),
                 FormBuilderTextField(
@@ -136,7 +132,7 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                   ]),
                 ),
                 const SizedBox(height: 32),
-                const Text("Request Type"),
+                const Text("Request"),
                 const SizedBox(height: 16),
                 FormBuilderRadioGroup(
                   name: 'form',

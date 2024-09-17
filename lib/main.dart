@@ -14,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+//TODO: Provide request templates
+
 bool useEmulators = true;
 
 FirebaseAuth auth = FirebaseAuth.instance;
