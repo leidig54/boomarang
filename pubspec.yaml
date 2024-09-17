@@ -31,6 +31,7 @@ dependencies:
   provider: ^6.1.2
   syncfusion_flutter_core: ^26.1.40
   form_builder_file_picker: ^4.2.0
+  form_builder_extra_fields: ^11.0.0
 
 dev_dependencies:
   flutter_test:
