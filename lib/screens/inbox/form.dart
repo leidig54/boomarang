@@ -32,11 +32,23 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
       child: ListView(
         padding: const EdgeInsets.all(32.0),
         children: [
-          if (request.elements != null && request.elements!.isNotEmpty == true)
+          Text(request.form.name,
+              style: Theme.of(context).textTheme.headlineMedium),
+          const SizedBox(
+            height: 4,
+          ),
+          Text(
+            request.form.description,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(
+            height: 32,
+          ),
+          if (request.form.elements.isNotEmpty == true)
             ...List.generate(
-              request.elements!.length,
+              request.form.elements.length,
               (index) {
-                BoomarangElement element = request.elements![index];
+                FormElement element = request.form.elements[index];
                 bool responseComplete = request.responseSubmitted;
 
                 if (element.type == "text") {
@@ -50,6 +62,7 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderTextField(
+                      key: Key(element.id),
                       name: element.id,
                       enabled: !responseComplete && !isSaving,
                       initialValue: initialValue,
@@ -70,6 +83,7 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderCheckbox(
+                      key: Key(element.id),
                       name: element.id,
                       enabled: !responseComplete && !isSaving,
                       initialValue: initialValue,
@@ -91,6 +105,7 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderRadioGroup(
+                      key: Key(element.id),
                       name: element.id,
                       enabled: !responseComplete && !isSaving,
                       initialValue: initialValue,
@@ -109,6 +124,18 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                                 ),
                               ))
                           .toList(),
+                    ),
+                  );
+                } else if (element.type == "statement") {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: Text(
+                      element.text!,
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                            color: responseComplete || isSaving
+                                ? Colors.grey
+                                : null,
+                          ),
                     ),
                   );
                 } else {
