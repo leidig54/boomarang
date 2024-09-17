@@ -3,6 +3,7 @@ import 'package:boomarang/main.dart';
 import 'package:boomarang/providers/tab_provider.dart';
 import 'package:boomarang_shared/dob_formatter.dart';
 import 'package:boomarang_shared/models/boomarang_element.dart';
+import 'package:boomarang_shared/models/consent_form.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -140,6 +141,9 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                   validator: FormBuilderValidators.compose([
                     FormBuilderValidators.required(),
                   ]),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
                   orientation: OptionsOrientation.vertical,
                   onChanged: (value) {
                     setState(() {});
@@ -162,6 +166,28 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                       // Simulate a delay to show the loading indicator
                       await Future.delayed(const Duration(seconds: 1));
 
+                      ConsentForm consentForm = ConsentForm(
+                        id: 'general_consent',
+                        title: 'General Data Consent Form',
+                        content: '''
+    ## General Data Consent Form
+    
+    By providing your consent, you allow us to request and share your data for the purpose outlined in the data request.
+    
+    The data requested may include sensitive information such as:
+    
+    - Medical records
+    - Financial details
+    - Employment history
+    - Other personal data
+    
+    We assure you that your data will be handled securely and in compliance with relevant data protection laws (e.g., GDPR). 
+    You have the right to withdraw your consent at any time.
+    
+    By clicking **Agree**, you confirm that you understand the nature of the request and consent to the transfer of your data.
+  ''',
+                      );
+
                       BoomarangRequest request = BoomarangRequest(
                         id: id,
                         subjectFirstName: _formKey.currentState!
@@ -182,6 +208,7 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                         form: b2bForms.firstWhere((element) =>
                             element.id ==
                             _formKey.currentState!.fields['form']!.value),
+                        consentForm: consentForm,
                       );
                       //add isDemo: true to the request map
 
