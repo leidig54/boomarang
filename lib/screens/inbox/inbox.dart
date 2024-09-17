@@ -16,7 +16,7 @@ class InboxScreen extends StatefulWidget {
 
 class _InboxScreenState extends State<InboxScreen> {
   BoomarangRequest? selectedRequest;
-  bool hideSubmitted = false;
+  bool hideCompleted = false;
 
   @override
   void didChangeDependencies() {
@@ -66,11 +66,11 @@ class _InboxScreenState extends State<InboxScreen> {
                 child: Column(
                   children: [
                     CheckboxListTile(
-                        value: hideSubmitted,
+                        value: hideCompleted,
                         tileColor: Theme.of(context).canvasColor,
                         onChanged: (value) {
                           setState(() {
-                            hideSubmitted = value ?? false;
+                            hideCompleted = value ?? false;
                             if (value == true &&
                                 selectedRequest?.responseSubmitted == true) {
                               selectedRequest = context
@@ -81,7 +81,7 @@ class _InboxScreenState extends State<InboxScreen> {
                             }
                           });
                         },
-                        title: const Text("Hide Submitted"),
+                        title: const Text("Hide Completed"),
                         controlAffinity: ListTileControlAffinity.trailing),
                     const Divider(
                       height: 1,
@@ -98,7 +98,7 @@ class _InboxScreenState extends State<InboxScreen> {
                               .watch<RequestProvider>()
                               .receivedRequests[index];
 
-                          if (hideSubmitted && thisRequest.responseSubmitted) {
+                          if (hideCompleted && thisRequest.responseSubmitted) {
                             return Container();
                           }
 
@@ -117,7 +117,7 @@ class _InboxScreenState extends State<InboxScreen> {
                               .watch<RequestProvider>()
                               .receivedRequests[index];
 
-                          if (hideSubmitted && thisRequest.responseSubmitted) {
+                          if (hideCompleted && thisRequest.responseSubmitted) {
                             return Container();
                           }
                           return const Divider(
