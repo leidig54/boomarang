@@ -22,18 +22,18 @@ class _SentRequestFormState extends State<SentRequestForm> {
   @override
   Widget build(BuildContext context) {
     BoomarangRequest request = widget.selectedRequest;
+    print(request.response);
 
     return FormBuilder(
       key: formKey,
       child: ListView(
         padding: const EdgeInsets.all(32.0),
         children: [
-          if (request.elements != null && request.elements!.isNotEmpty == true)
+          if (request.form.elements.isNotEmpty == true)
             ...List.generate(
-              request.elements!.length,
+              request.form.elements.length,
               (index) {
-                BoomarangElement element = request.elements![index];
-                bool responseComplete = request.responseSubmitted;
+                FormElement element = request.form.elements[index];
 
                 if (element.type == "text") {
                   dynamic initialValue;
@@ -43,6 +43,7 @@ class _SentRequestFormState extends State<SentRequestForm> {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderTextField(
+                      key: Key(element.id),
                       name: element.id,
                       readOnly: true,
                       enabled: false,
@@ -61,6 +62,7 @@ class _SentRequestFormState extends State<SentRequestForm> {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderCheckbox(
+                      key: Key(element.id),
                       name: element.id,
                       enabled: false,
                       onChanged: null,
@@ -80,6 +82,7 @@ class _SentRequestFormState extends State<SentRequestForm> {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderRadioGroup(
+                      key: Key(element.id),
                       name: element.id,
                       enabled: false,
                       initialValue: initialValue,
