@@ -207,7 +207,7 @@ class RequestMeta extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           title: Text(
-            selectedRequest.responseSubmitted ? "Submitted" : "Incomplete",
+            selectedRequest.formattedRequestStatus,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
