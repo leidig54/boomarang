@@ -48,6 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Row(
             children: [
               Expanded(
+                flex: 2,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -151,7 +152,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 thickness: 0.5,
               ),
               const Expanded(
-                flex: 2,
+                flex: 3,
                 child: CreateNewRequest(),
               )
             ],
