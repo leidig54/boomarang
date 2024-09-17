@@ -215,6 +215,22 @@ const b2bForms = [
   },
 ];
 
+const consentForm = {
+  id: "general_consent",
+  title: "General Data Consent Form",
+  content:
+    "## General Data Consent Form\n\n" +
+    "By providing your consent, you allow us to request and share your data for the purpose outlined in the data request.\n\n" +
+    "The data requested may include sensitive information such as:\n\n" +
+    "- Medical records\n" +
+    "- Financial details\n" +
+    "- Employment history\n" +
+    "- Other personal data\n\n" +
+    "We assure you that your data will be handled securely and in compliance with relevant data protection laws (e.g., GDPR).\n" +
+    "You have the right to withdraw your consent at any time.\n\n" +
+    "By clicking **Agree**, you confirm that you understand the nature of the request and consent to the transfer of your data.\n",
+};
+
 const withUser = true;
 
 async function createDemoEnvironment() {
@@ -277,14 +293,16 @@ async function createDemoEnvironment() {
   const createRequest = async () => {
     const id = faker.string.uuid();
 
+    const hasVerified = Math.random() < 0.5;
+
     const request = {
       id: id,
       subjectFirstName: faker.person.firstName(),
       subjectLastName: faker.person.lastName(),
       subjectEmail: faker.internet.email(),
-      subjectEmailVerified: true,
+      subjectEmailVerified: hasVerified,
       subjectDOB: faker.date.past().getTime(),
-      subjectDOBVerified: true,
+      subjectDOBVerified: hasVerified,
       senderUserId: "1",
       senderEmail: user.email,
       recipientUserId: "1",
@@ -294,7 +312,8 @@ async function createDemoEnvironment() {
           days: 4,
         })
         .getTime(),
-      consentVerified: Math.random() < 0.5,
+      consentVerified: hasVerified,
+      consentForm: consentForm,
       isDemo: true,
       form: b2bForms[Math.floor(Math.random() * b2bForms.length)],
     };
@@ -303,7 +322,7 @@ async function createDemoEnvironment() {
   };
 
   //add 30 requests
-  for (let i = 0; i < 90; i++) {
+  for (let i = 0; i < 10; i++) {
     await createRequest();
   }
 }
