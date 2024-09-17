@@ -17,6 +17,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     BoomarangUser? user = context.watch<UserProvider>().user;
     bool profileIsComplete = user?.profileIsComplete ?? false;
+    bool hasReadGuide = user?.flags?['readGuide'] ?? false;
 
     String selected = 'create';
 
@@ -73,7 +74,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           context.read<TabIndexProvider>().setTabIndex(3);
                         },
                       ),
-
+                      ListTile(
+                        title: const Text('Read The Guide'),
+                        //TODO: Add Guide
+                        enabled: false,
+                        subtitle: const Text(
+                            'Learn how to use Boomarang to request and share data.'),
+                        leading: hasReadGuide
+                            ? const Icon(Icons.check_box)
+                            : const Icon(Icons.check_box_outline_blank),
+                        onTap: () {},
+                      ),
+                      //actions
                       Padding(
                         padding: const EdgeInsets.only(
                             left: 16.0, bottom: 8.0, top: 32.0),
