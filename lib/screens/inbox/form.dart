@@ -55,17 +55,17 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                   dynamic initialValue;
                   if (request.response?[element.id] != null) {
                     initialValue = request.response?[element.id];
-                  } else {
-                    initialValue =
-                        kDebugMode ? "Test response for text fields" : null;
                   }
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderTextField(
-                      key: Key(element.id),
+                      // key: Key(element.id),
                       name: element.id,
+                      //disable if response is complete, or if saving, or if pre-filled
                       enabled: !responseComplete && !isSaving,
                       initialValue: initialValue,
+                      minLines: element.expectedLines ?? 1,
+                      maxLines: ((element.expectedLines ?? 1) + 2),
                       decoration: InputDecoration(
                         labelText: element.labelText,
                         border: const OutlineInputBorder(),
