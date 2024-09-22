@@ -141,6 +141,7 @@ class _InboxScreenState extends State<InboxScreen> {
                 child: selectedRequest == null
                     ? Container()
                     : RequestMeta(
+                        key: Key(selectedRequest!.id),
                         selectedRequest: selectedRequest!,
                         inbox: true,
                       ),
@@ -152,7 +153,10 @@ class _InboxScreenState extends State<InboxScreen> {
                 flex: 2,
                 child: selectedRequest == null
                     ? Container()
-                    : InboxRequestForm(selectedRequest: selectedRequest!),
+                    : InboxRequestForm(
+                        key: Key(selectedRequest!.id),
+                        selectedRequest: selectedRequest!,
+                      ),
               ),
             ],
           ),

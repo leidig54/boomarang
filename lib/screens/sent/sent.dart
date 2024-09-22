@@ -99,6 +99,7 @@ class _SentScreenState extends State<SentScreen> {
                 child: selectedRequest == null
                     ? Container()
                     : RequestMeta(
+                        key: Key(selectedRequest!.id),
                         selectedRequest: selectedRequest!,
                         inbox: false,
                       ),
@@ -110,7 +111,10 @@ class _SentScreenState extends State<SentScreen> {
                 flex: 2,
                 child: selectedRequest == null
                     ? Container()
-                    : SentRequestForm(selectedRequest: selectedRequest!),
+                    : SentRequestForm(
+                        key: Key(selectedRequest!.id),
+                        selectedRequest: selectedRequest!,
+                      ),
               ),
             ],
           ),
