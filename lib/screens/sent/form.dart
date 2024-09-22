@@ -22,7 +22,6 @@ class _SentRequestFormState extends State<SentRequestForm> {
   @override
   Widget build(BuildContext context) {
     BoomarangRequest request = widget.selectedRequest;
-    print(request.response);
 
     return FormBuilder(
       key: formKey,
@@ -43,7 +42,6 @@ class _SentRequestFormState extends State<SentRequestForm> {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderTextField(
-                      key: Key(element.id),
                       name: element.id,
                       readOnly: true,
                       enabled: false,
@@ -62,7 +60,6 @@ class _SentRequestFormState extends State<SentRequestForm> {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderCheckbox(
-                      key: Key(element.id),
                       name: element.id,
                       enabled: false,
                       onChanged: null,
@@ -82,7 +79,6 @@ class _SentRequestFormState extends State<SentRequestForm> {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderRadioGroup(
-                      key: Key(element.id),
                       name: element.id,
                       enabled: false,
                       initialValue: initialValue,
