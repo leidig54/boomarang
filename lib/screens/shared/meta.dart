@@ -1,4 +1,3 @@
-import 'package:boomarang/main.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:flutter/material.dart';
 
@@ -67,45 +66,12 @@ class RequestMeta extends StatelessWidget {
           ),
           title: Text(
             inbox
-                ? selectedRequest.senderEmail ?? "Unknown"
-                : selectedRequest.recipientEmail ?? "Unknown",
+                ? selectedRequest.recipientEmail ?? "Unknown"
+                : selectedRequest.senderEmail ?? "Unknown",
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           leading: const Icon(Icons.send),
-        ),
-        //Organisation ID
-        ListTile(
-          title: StreamBuilder(
-              stream: firestore
-                  .collection('organisations')
-                  .doc(
-                    inbox
-                        ? selectedRequest.recipientOrganisationId
-                        : selectedRequest.senderOrganisationId,
-                  )
-                  .snapshots(),
-              builder: (context, snapshot) {
-                String name = "";
-                if (snapshot.hasData && snapshot.data != null) {
-                  name = snapshot.data!['name'];
-                }
-                return AnimatedOpacity(
-                  duration: const Duration(milliseconds: 400),
-                  opacity: name.isNotEmpty ? 1 : 0,
-                  child: Text(
-                    name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                );
-              }),
-          subtitle: const Text(
-            "Organisation",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          leading: const Icon(Icons.business),
         ),
         const SizedBox(
           height: 32,
