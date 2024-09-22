@@ -35,6 +35,20 @@ class RequestMeta extends StatelessWidget {
           ),
           leading: const Icon(Icons.calendar_today),
         ),
+        //request type
+        ListTile(
+          subtitle: const Text(
+            "Type",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          title: Text(
+            selectedRequest.form.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          leading: const Icon(Icons.select_all),
+        ),
         const SizedBox(
           height: 32,
         ),
