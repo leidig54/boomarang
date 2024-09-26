@@ -1,6 +1,7 @@
 import 'package:boomarang/main.dart';
 import 'package:boomarang/providers/organisation_provider.dart';
 import 'package:boomarang_shared/models/organisation.dart';
+import 'package:boomarang_shared/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -65,7 +66,6 @@ class _OrganisationScreenState extends State<OrganisationScreen> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  //TODO: List of users and permissions if admin
                   const SizedBox(height: 32),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.save),
@@ -88,6 +88,60 @@ class _OrganisationScreenState extends State<OrganisationScreen> {
                             }
                           },
                     label: const Text('Save'),
+                  ),
+                  const SizedBox(height: 32),
+
+                  Text("User Management",
+                      style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 4),
+                  //TODO: List of users and permissions if admin
+                  ListView.builder(
+                    itemBuilder: (context, index) {
+                      String uid = organisation.admins[index];
+                      return FutureBuilder(
+                          future: firestore.collection('users').doc(uid).get(),
+                          builder: (context, snapshot) {
+                            BoomarangUser? user;
+                            bool? userIsAdmin;
+
+                            if (snapshot.hasData && snapshot.data!.exists) {
+                              user = BoomarangUser.fromMap(snapshot.data!.data()
+                                  as Map<String, dynamic>);
+                              userIsAdmin = organisation.admins
+                                  .contains(snapshot.data!.id);
+                            }
+
+                            if (user == null || userIsAdmin == null) {
+                              return const SizedBox();
+                            }
+
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('${user.firstName} ${user.lastName}'),
+                                Text('${user.email}'),
+                                DropdownButton(
+                                  value: userIsAdmin ? 'admin' : 'member',
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value: 'admin',
+                                      child: Text('Admin'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'member',
+                                      child: Text('Member'),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    //TODO: Add user ID to the user object.
+                                  },
+                                )
+                              ],
+                            );
+                          });
+                    },
+                    itemCount: organisation.members.length,
+                    shrinkWrap: true,
                   ),
                 ],
               ),
