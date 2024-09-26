@@ -1,7 +1,6 @@
 import 'package:boomarang/firebase_options.dart';
 import 'package:boomarang/providers/auth_provider.dart';
 import 'package:boomarang/providers/organisation_provider.dart';
-import 'package:boomarang/providers/request_provider.dart';
 import 'package:boomarang/providers/tab_provider.dart';
 import 'package:boomarang/providers/user_provider.dart';
 import 'package:boomarang/screens/nav/auth_gate.dart';
@@ -15,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
-//TODO: make sure unused/expired invites are removed
 bool useEmulators = true;
 
 FirebaseAuth auth = FirebaseAuth.instance;
@@ -55,9 +53,6 @@ class _MainAppState extends State<MainApp> {
               ChangeNotifierProvider(
                   create: (context) => OrganisationProvider()),
               ChangeNotifierProvider(create: (context) => TabIndexProvider()),
-              if (context.watch<UserAuthProvider>().user?.uid != null) ...[
-                ChangeNotifierProvider(create: (context) => RequestProvider())
-              ]
             ],
             child: MaterialApp(
               debugShowCheckedModeBanner: false,

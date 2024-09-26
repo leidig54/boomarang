@@ -193,6 +193,7 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                             _formKey.currentState!.fields['form']!.value),
                         consentForm: consentForm,
                       );
+                      //add isDemo: true to the request map
 
                       Map<String, dynamic> requestMap = request.toMap();
                       requestMap['isDemo'] = true;
