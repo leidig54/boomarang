@@ -132,7 +132,7 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                   ]),
                 ),
                 const SizedBox(height: 32),
-                const Text("Request"),
+                const Text("Request Type"),
                 const SizedBox(height: 16),
                 FormBuilderRadioGroup(
                   name: 'form',

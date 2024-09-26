@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:boomarang/main.dart';
-import 'package:boomarang_shared/models/boomarang_element.dart';
+import 'package:boomarang_shared/models/form_element.dart';
 import 'package:boomarang_shared/models/request.dart';
-import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:intl/intl.dart';
 
 class InboxRequestForm extends StatefulWidget {
   const InboxRequestForm({
@@ -52,41 +53,29 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                 bool responseComplete = request.responseSubmitted;
 
                 if (element.type == "text") {
-                  dynamic initialValue;
-                  if (request.response?[element.id] != null) {
-                    initialValue = request.response?[element.id];
-                  }
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderTextField(
-                      // key: Key(element.id),
                       name: element.id,
-                      //disable if response is complete, or if saving, or if pre-filled
                       enabled: !responseComplete && !isSaving,
-                      initialValue: initialValue,
-                      minLines: element.expectedLines ?? 1,
-                      maxLines: ((element.expectedLines ?? 1) + 2),
+                      initialValue: request.response?[element.id],
+                      minLines: element.minLines,
+                      maxLines: element.maxLines,
                       decoration: InputDecoration(
                         labelText: element.labelText,
                         border: const OutlineInputBorder(),
+                        alignLabelWithHint: true,
                       ),
                     ),
                   );
                 } else if (element.type == "checkbox") {
-                  dynamic initialValue;
-                  if (request.response?[element.id] != null) {
-                    initialValue = request.response?[element.id];
-                  } else {
-                    initialValue = kDebugMode ? true : null;
-                  }
-
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderCheckbox(
                       key: Key(element.id),
                       name: element.id,
                       enabled: !responseComplete && !isSaving,
-                      initialValue: initialValue,
+                      initialValue: request.response?[element.id],
                       controlAffinity: ListTileControlAffinity.trailing,
                       title: Text(element.labelText!),
                       decoration: const InputDecoration(
@@ -95,20 +84,13 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                     ),
                   );
                 } else if (element.type == 'radio') {
-                  dynamic initialValue;
-                  if (request.response?[element.id] != null) {
-                    initialValue = request.response?[element.id];
-                  } else {
-                    initialValue = kDebugMode ? element.options?.first : null;
-                  }
-
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 32.0),
                     child: FormBuilderRadioGroup(
                       key: Key(element.id),
                       name: element.id,
                       enabled: !responseComplete && !isSaving,
-                      initialValue: initialValue,
+                      initialValue: request.response?[element.id],
                       decoration: InputDecoration(
                         labelText: element.labelText,
                         border: const OutlineInputBorder(),
@@ -138,7 +120,27 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
                           ),
                     ),
                   );
-                } else {
+                } else if (element.type == "date") {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 32.0),
+                    child: FormBuilderDateTimePicker(
+                      name: element.id,
+                      enabled: !responseComplete && !isSaving,
+                      initialValue: request.response?[element.id] != null
+                          ? (request.response?[element.id] as Timestamp)
+                              .toDate()
+                          : null,
+                      initialEntryMode: DatePickerEntryMode.calendarOnly,
+                      inputType: InputType.date,
+                      format: DateFormat.yMMMMd(),
+                      decoration: InputDecoration(
+                        labelText: element.labelText,
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                  );
+                }
+                {
                   return Container();
                 }
               },
@@ -157,9 +159,9 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
 
                       await Future.delayed(const Duration(seconds: 2));
 
-                      await functions.httpsCallable('submitResponse').call({
-                        'requestId': request.id,
+                      firestore.collection('requests').doc(request.id).update({
                         'response': formKey.currentState!.value,
+                        'responseSubmitted': true,
                       });
 
                       await Future.delayed(const Duration(milliseconds: 100));
