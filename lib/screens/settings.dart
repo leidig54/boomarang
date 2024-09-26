@@ -86,14 +86,18 @@ class _AdminScreenState extends State<AdminScreen> {
                   width: 1,
                 ),
                 Expanded(
-                    flex: 2,
-                    child: Builder(builder: (context) {
+                  key: ValueKey(selectedTile),
+                  flex: 2,
+                  child: Builder(
+                    builder: (context) {
                       if (selectedTile == 'profile') {
                         return const BoomarangProfileScreen();
                       } else {
                         return const OrganisationScreen();
                       }
-                    })),
+                    },
+                  ),
+                ),
               ],
             ),
           )
