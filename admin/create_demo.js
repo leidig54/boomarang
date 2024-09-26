@@ -32,8 +32,7 @@ const consentForm = {
 const withUser = true;
 
 async function createDemoEnvironment() {
-  const mainUser = {
-    id: "1",
+  const user = {
     title: "Dr",
     email: "georgeleidig@icloud.com",
     firstName: "George",
@@ -42,24 +41,6 @@ async function createDemoEnvironment() {
     verificationCodeExpiresAt: null,
     isDemo: true,
   };
-
-  //a list of 5 more users
-  const otherUsers = [];
-
-  //create 5 more using faker
-  for (let i = 0; i < 5; i++) {
-    const user = {
-      id: (i + 2).toString(),
-      title: faker.person.prefix(),
-      email: faker.internet.email(),
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
-      emailVerified: true,
-      verificationCodeExpiresAt: null,
-      isDemo: true,
-    };
-    otherUsers.push(user);
-  }
 
   const requestCollection = db.collection("requests");
   // For clearing the requests collection
@@ -93,35 +74,19 @@ async function createDemoEnvironment() {
         console.log("requester created");
       });
 
-    await usersCollection.doc("1").set(mainUser);
+    const user = {
+      title: "Dr",
+      email: "georgeleidig@icloud.com",
+      firstName: "George",
+      lastName: "Leidig",
+      emailVerified: true,
+      verificationCodeExpiresAt: null,
+      isDemo: true,
+    };
 
-    for (let i = 0; i < otherUsers.length; i++) {
-      const user = otherUsers[i];
-      await auth
-        .createUser({
-          uid: user.id,
-          email: user.email,
-          password: "boomarang",
-          emailVerified: user.emailVerified,
-        })
-        .then((user) => {
-          console.log("user created");
-        });
-
-      await usersCollection.doc(user.id).set(user);
-    }
+    await usersCollection.doc("1").set(user);
     console.log("Holder document created");
   }
-
-  const organisation = {
-    id: "1",
-    name: "Rosehill Vet Clinic",
-    members: ["1", "2", "3", "4", "5", "6"],
-    admins: ["1"],
-  };
-
-  const organisationsCollection = db.collection("organisations");
-  await organisationsCollection.doc(organisation.id).set(organisation);
 
   const createRequest = async () => {
     const forms = [
@@ -133,20 +98,26 @@ async function createDemoEnvironment() {
           {
             id: "symptom_start_date",
             labelText: "Symptom Start Date",
-            type: "date",
+            type: "text",
             isRequired: true,
+            preFilled: false,
+            //format date as a readable string
+            sampleResponse: faker.date.recent().toDateString(),
           },
           {
             id: "consultation_date",
             labelText: "Treatment Date",
-            type: "date",
+            type: "text",
             isRequired: true,
+            preFilled: false,
+            sampleResponse: faker.date.recent().toDateString(),
           },
           {
             id: "new_or_existing_condition",
             labelText: "New or Existing Condition",
             type: "radio",
             isRequired: true,
+            preFilled: false,
             options: ["New", "Existing"],
           },
           {
@@ -154,20 +125,25 @@ async function createDemoEnvironment() {
             labelText: "Diagnosis",
             type: "text",
             isRequired: true,
+            preFilled: false,
+            sampleResponse: faker.lorem.sentence(),
           },
           {
             id: "treatment",
             labelText: "Treatment",
-            minLines: 2,
-            maxLines: 4,
+            expectedLines: 2,
             type: "text",
             isRequired: true,
+            preFilled: false,
+            sampleResponse: faker.lorem.paragraph(),
           },
           {
             id: "cost",
             labelText: "Cost",
             type: "text",
             isRequired: true,
+            preFilled: false,
+            sampleResponse: faker.finance.amount(),
           },
         ],
       },
@@ -186,9 +162,9 @@ async function createDemoEnvironment() {
       subjectDOB: faker.date.past().getTime(),
       subjectDOBVerified: hasVerified,
       senderUserId: "1",
-      senderEmail: mainUser.email,
+      senderEmail: user.email,
       recipientUserId: "1",
-      recipientEmail: mainUser.email,
+      recipientEmail: user.email,
       dateCreated: faker.date
         .recent({
           days: 4,

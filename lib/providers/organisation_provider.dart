@@ -12,7 +12,7 @@ class OrganisationProvider extends ChangeNotifier {
   OrganisationProvider() {
     organisationSubscription = firestore
         .collection('organisations')
-        .where('users', arrayContains: auth.currentUser?.uid)
+        .where('members', arrayContains: auth.currentUser?.uid)
         .snapshots()
         .listen((event) {
       if (event.docs.isEmpty) {
