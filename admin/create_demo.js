@@ -88,6 +88,16 @@ async function createDemoEnvironment() {
     console.log("Holder document created");
   }
 
+  const organisation = {
+    id: "1",
+    name: "Rosehill Vet Clinic",
+    members: ["1"],
+    admins: ["1"],
+  };
+
+  const organisationsCollection = db.collection("organisations");
+  await organisationsCollection.doc(organisation.id).set(organisation);
+
   const createRequest = async () => {
     const forms = [
       {
