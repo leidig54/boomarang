@@ -34,7 +34,7 @@ class _InboxRequestFormState extends State<InboxRequestForm> {
         padding: const EdgeInsets.all(32.0),
         children: [
           Text(request.form.name,
-              style: Theme.of(context).textTheme.headlineSmall),
+              style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(
             height: 4,
           ),

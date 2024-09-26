@@ -1,13 +1,16 @@
 import 'package:boomarang/data/templates.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/providers/tab_provider.dart';
+import 'package:boomarang_shared/dob_formatter.dart';
+import 'package:boomarang_shared/models/boomarang_element.dart';
 import 'package:boomarang_shared/models/consent_form.dart';
 import 'package:boomarang_shared/models/request.dart';
-import 'package:boomarang_shared/models/request_form.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -21,10 +24,12 @@ class CreateNewRequest extends StatefulWidget {
 }
 
 class _CreateNewRequestState extends State<CreateNewRequest> {
+  List<FormElement> elements = [];
+  //formbuilder key
   final _formKey = GlobalKey<FormBuilderState>();
+  List<String> forms = ['Form 1', 'Form 2', 'Form 3', 'Form 4'];
   bool isSaving = false;
   late String id;
-  RequestForm? selectedForm;
 
   @override
   void initState() {
@@ -34,21 +39,17 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          constraints: const BoxConstraints(
-            maxWidth: 600,
-          ),
-          child: FormBuilder(
-            key: _formKey,
+    return FormBuilder(
+      key: _formKey,
+      child: Row(
+        children: [
+          Container(
+            constraints: const BoxConstraints(
+              maxWidth: 600,
+            ),
             child: ListView(
               padding: const EdgeInsets.all(32),
               children: [
-                //Create New
-                Text("Create New Request",
-                    style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 32),
                 const Text("Subject"),
                 const SizedBox(height: 16),
                 FormBuilderTextField(
@@ -88,16 +89,32 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                   ]),
                 ),
                 const SizedBox(height: 16),
-                FormBuilderDateTimePicker(
+                FormBuilderTextField(
                   name: 'subject_dob',
-                  initialValue: kDebugMode ? DateTime(1990, 1, 1) : null,
+                  initialValue: kDebugMode ? '01/01/2000' : null,
                   validator: FormBuilderValidators.compose([
                     FormBuilderValidators.required(),
                   ]),
-                  inputType: InputType.date,
-                  initialEntryMode: DatePickerEntryMode.calendarOnly,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(8),
+                    DateFormatInputFormatter(DateFormat('dd/MM/yyyy')),
+                  ],
+                  valueTransformer: (value) {
+                    if (value == null) {
+                      return null;
+                    }
+                    // Parse the date, set to start of the day, and convert to UTC
+                    DateTime localDate = DateFormat('dd/MM/yyyy').parse(value);
+                    DateTime localMidnight = DateTime.utc(
+                        localDate.year, localDate.month, localDate.day);
+
+                    DateTime utcDate = localMidnight.toUtc();
+                    return utcDate;
+                  },
                   decoration: const InputDecoration(
                     labelText: 'Date of Birth',
+                    hintText: 'dd/mm/yyyy',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -117,7 +134,7 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                   ]),
                 ),
                 const SizedBox(height: 32),
-                const Text("Request Type"),
+                const Text("Request"),
                 const SizedBox(height: 16),
                 FormBuilderRadioGroup(
                   name: 'form',
@@ -129,19 +146,16 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                   ),
                   orientation: OptionsOrientation.vertical,
                   onChanged: (value) {
-                    setState(() {
-                      selectedForm = forms.firstWhere(
-                          (element) => element.id == value.toString());
-                    });
+                    setState(() {});
                   },
-                  options: forms.map((form) {
+                  options: b2bForms.map((form) {
                     return FormBuilderFieldOption(
                       value: form.id,
                       child: Text(form.name),
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 32),
                 FloatingActionButton.extended(
                   onPressed: () async {
                     if (_formKey.currentState!.saveAndValidate()) {
@@ -156,22 +170,22 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                         id: 'general_consent',
                         title: 'General Data Consent Form',
                         content: '''
-                ## General Data Consent Form
-                
-                By providing your consent, you allow us to request and share your data for the purpose outlined in the data request.
-                
-                The data requested may include sensitive information such as:
-                
-                - Medical records
-                - Financial details
-                - Employment history
-                - Other personal data
-                
-                We assure you that your data will be handled securely and in compliance with relevant data protection laws (e.g., GDPR). 
-                You have the right to withdraw your consent at any time.
-                
-                By clicking **Agree**, you confirm that you understand the nature of the request and consent to the transfer of your data.
-              ''',
+    ## General Data Consent Form
+    
+    By providing your consent, you allow us to request and share your data for the purpose outlined in the data request.
+    
+    The data requested may include sensitive information such as:
+    
+    - Medical records
+    - Financial details
+    - Employment history
+    - Other personal data
+    
+    We assure you that your data will be handled securely and in compliance with relevant data protection laws (e.g., GDPR). 
+    You have the right to withdraw your consent at any time.
+    
+    By clicking **Agree**, you confirm that you understand the nature of the request and consent to the transfer of your data.
+  ''',
                       );
 
                       BoomarangRequest request = BoomarangRequest(
@@ -182,13 +196,16 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                             .fields['subject_last_name']!.value as String,
                         subjectEmail: _formKey.currentState!
                             .fields['subject_email']!.value as String,
-                        subjectDOB: _formKey.currentState!
-                            .fields['subject_dob']!.value as DateTime,
+                        subjectDOB: DateFormat('dd/MM/yyyy').tryParse(
+                            _formKey.currentState!.fields['subject_dob']
+                                    ?.value ??
+                                "",
+                            true),
                         senderEmail: auth.currentUser!.email!,
                         recipientEmail: _formKey.currentState!
                             .fields['recipient_email']!.value as String,
                         dateCreated: DateTime.now(),
-                        form: forms.firstWhere((element) =>
+                        form: b2bForms.firstWhere((element) =>
                             element.id ==
                             _formKey.currentState!.fields['form']!.value),
                         consentForm: consentForm,
@@ -220,8 +237,8 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
               ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
