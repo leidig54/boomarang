@@ -1,5 +1,7 @@
-import 'package:boomarang/providers/user_provider.dart';
-import 'package:boomarang_shared/models/user.dart';
+import 'package:boomarang/main.dart';
+import 'package:boomarang/providers/organisation_provider.dart';
+import 'package:boomarang_shared/models/organisation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -18,7 +20,16 @@ class _OrganisationScreenState extends State<OrganisationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    BoomarangUser? user = context.watch<UserProvider>().user;
+    Organisation? organisation =
+        context.watch<OrganisationProvider>().organisation;
+
+    if (organisation == null) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    bool isAdmin = organisation.admins.contains(auth.currentUser?.uid);
 
     return FormBuilder(
       key: _organisationFormKey,
@@ -42,63 +53,40 @@ class _OrganisationScreenState extends State<OrganisationScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   FormBuilderTextField(
-                    name: 'title',
-                    autofocus: user?.title == null,
+                    name: 'name',
+                    autofocus: organisation.name.isEmpty,
                     validator: FormBuilderValidators.compose([
                       FormBuilderValidators.required(),
                     ]),
-                    initialValue: user?.title,
+                    initialValue: organisation.name,
+                    enabled: isAdmin,
                     decoration: const InputDecoration(
-                      labelText: 'Title',
-                      hintText: 'Mr, Mrs, Dr, etc.',
+                      labelText: 'Name',
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  FormBuilderTextField(
-                    name: 'firstName',
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(),
-                      FormBuilderValidators.minLength(2),
-                    ]),
-                    initialValue: user?.firstName,
-                    decoration: const InputDecoration(
-                      labelText: 'First Name',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  FormBuilderTextField(
-                    name: 'lastName',
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(),
-                      FormBuilderValidators.minLength(2),
-                    ]),
-                    initialValue: user?.lastName,
-                    decoration: const InputDecoration(
-                      labelText: 'Last Name',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-                  //verify email
-                  FormBuilderTextField(
-                    name: 'email',
-                    readOnly: true,
-                    enableInteractiveSelection: false,
-                    enabled: false,
-                    initialValue: user?.email,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                      helperText: 'Email cannot be changed',
-                    ),
-                  ),
+                  //TODO: List of users and permissions if admin
                   const SizedBox(height: 32),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.save),
-                    onPressed: () {},
+                    onPressed: !_formChanged
+                        ? null
+                        : () async {
+                            if (_organisationFormKey.currentState!
+                                .saveAndValidate()) {
+                              final data =
+                                  _organisationFormKey.currentState!.value;
+                              await firestore
+                                  .collection('organisations')
+                                  .doc(organisation.id)
+                                  .set(data, SetOptions(merge: true));
+                              if (mounted) {
+                                setState(() {
+                                  _formChanged = false;
+                                });
+                              }
+                            }
+                          },
                     label: const Text('Save'),
                   ),
                 ],
