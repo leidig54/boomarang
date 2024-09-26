@@ -1,3 +1,4 @@
+import 'package:boomarang/screens/organisation.dart';
 import 'package:boomarang/screens/profile.dart';
 import 'package:flutter/material.dart';
 
@@ -57,6 +58,25 @@ class _AdminScreenState extends State<AdminScreen> {
                           tileColor: selectedTile == 'profile'
                               ? Theme.of(context).highlightColor
                               : null,
+                          onTap: () => setState(() {
+                            selectedTile = 'profile';
+                          }),
+                        ),
+                        //Organisation
+                        ListTile(
+                          title: const Text('Organisation'),
+                          subtitle:
+                              const Text('Edit your organisation details'),
+                          leading: const Icon(Icons.business),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          tileColor: selectedTile == 'organisation'
+                              ? Theme.of(context).highlightColor
+                              : null,
+                          onTap: () => setState(() {
+                            selectedTile = 'organisation';
+                          }),
                         ),
                       ],
                     ),
@@ -65,10 +85,15 @@ class _AdminScreenState extends State<AdminScreen> {
                 const VerticalDivider(
                   width: 1,
                 ),
-                const Expanded(
-                  flex: 2,
-                  child: BoomarangProfileScreen(),
-                ),
+                Expanded(
+                    flex: 2,
+                    child: Builder(builder: (context) {
+                      if (selectedTile == 'profile') {
+                        return const BoomarangProfileScreen();
+                      } else {
+                        return const OrganisationScreen();
+                      }
+                    })),
               ],
             ),
           )
