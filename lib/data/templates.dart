@@ -1,4 +1,4 @@
-import 'package:boomarang_shared/models/boomarang_element.dart';
+import 'package:boomarang_shared/models/form_element.dart';
 import 'package:boomarang_shared/models/request_form.dart';
 
 List<RequestForm> forms = [
@@ -10,14 +10,14 @@ List<RequestForm> forms = [
       FormElement(
         id: "symptom_start_date",
         labelText: "Symptom Start Date",
-        type: "text",
+        type: "date",
         isRequired: true,
       ),
       //incident date
       FormElement(
         id: "consultation_date",
         labelText: "Treatment Date",
-        type: "text",
+        type: "date",
         isRequired: true,
       ),
       //new or existing condition
@@ -43,7 +43,8 @@ List<RequestForm> forms = [
         id: "treatment",
         labelText: "Treatment",
         type: "text",
-        expectedLines: 2,
+        minLines: 2,
+        maxLines: 4,
         isRequired: true,
       ),
       //cost
