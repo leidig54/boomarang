@@ -1,6 +1,7 @@
 import 'package:boomarang/firebase_options.dart';
 import 'package:boomarang/providers/auth_provider.dart';
 import 'package:boomarang/providers/organisation_provider.dart';
+import 'package:boomarang/providers/request_provider.dart';
 import 'package:boomarang/providers/tab_provider.dart';
 import 'package:boomarang/providers/user_provider.dart';
 import 'package:boomarang/screens/nav/auth_gate.dart';
@@ -53,6 +54,9 @@ class _MainAppState extends State<MainApp> {
               ChangeNotifierProvider(
                   create: (context) => OrganisationProvider()),
               ChangeNotifierProvider(create: (context) => TabIndexProvider()),
+              if (context.watch<UserAuthProvider>().user?.uid != null) ...[
+                ChangeNotifierProvider(create: (context) => RequestProvider())
+              ]
             ],
             child: MaterialApp(
               debugShowCheckedModeBanner: false,
