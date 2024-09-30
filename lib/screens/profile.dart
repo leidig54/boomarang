@@ -43,6 +43,11 @@ class _BoomarangProfileScreenState extends State<BoomarangProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    'Profile',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 32),
                   FormBuilderTextField(
                     name: 'title',
                     autofocus: user?.title == null,
