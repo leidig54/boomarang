@@ -41,6 +41,8 @@ async function createDemoEnvironment() {
     emailVerified: true,
     verificationCodeExpiresAt: null,
     isDemo: true,
+    organisationId: "1",
+    organisationRole: "admin",
   };
 
   //a list of 5 more users
@@ -57,6 +59,8 @@ async function createDemoEnvironment() {
       emailVerified: true,
       verificationCodeExpiresAt: null,
       isDemo: true,
+      organisationId: "1",
+      organisationRole: "user",
     };
     otherUsers.push(user);
   }
@@ -116,8 +120,7 @@ async function createDemoEnvironment() {
   const organisation = {
     id: "1",
     name: "Rosehill Vet Clinic",
-    members: ["1", "2", "3", "4", "5", "6"],
-    admins: ["1"],
+    users: ["1", "2", "3", "4", "5", "6"],
   };
 
   const organisationsCollection = db.collection("organisations");
@@ -187,8 +190,10 @@ async function createDemoEnvironment() {
       subjectDOBVerified: hasVerified,
       senderUserId: "1",
       senderEmail: mainUser.email,
+      senderOrganisationId: "1",
       recipientUserId: "1",
       recipientEmail: mainUser.email,
+      recipientOrganisationId: "1",
       dateCreated: faker.date
         .recent({
           days: 4,
