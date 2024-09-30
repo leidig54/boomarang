@@ -33,6 +33,7 @@ const withUser = true;
 
 async function createDemoEnvironment() {
   const user = {
+    id: "1",
     title: "Dr",
     email: "georgeleidig@icloud.com",
     firstName: "George",
