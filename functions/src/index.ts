@@ -157,6 +157,22 @@ export const assignRecipientToRequestOnRequestCreate = functions
         await change.after.ref.update({
           recipientUserId: user.uid,
         });
+
+        // get the user document and get the organisationId
+        const userDoc = admin.firestore().collection("users").doc(user.uid);
+        const userDocData = await userDoc.get();
+        const organisationId = userDocData.data()?.organisationId;
+
+        // if the organisationId is null, return
+        if (!organisationId) {
+          console.log("OrganisationId is null. Exiting...");
+          return null;
+        }
+
+        // assign the organisationId to the request
+        await change.after.ref.update({
+          recipientOrganisationId: organisationId,
+        });
       } catch (error) {
         // Assert 'error' as an object with a 'code' property
         const errorCode = (error as { code?: string }).code;
@@ -742,6 +758,206 @@ export const submitResponse = functions
     });
 
     return "Response saved";
+  });
+
+// updateOrganisationRole
+export const updateOrganisationRole = functions
+  .region("europe-west2")
+  .https.onCall(async (data, context) => {
+    // check the request is coming from an admin
+
+    // get the user id from the context
+    const userId = context.auth?.uid;
+
+    // if the user is not authenticated, throw an error
+    if (!userId) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "User must be authenticated to update organisation role"
+      );
+    }
+
+    // get the user document and check if the user is an admin
+    const userDoc = admin.firestore().collection("users").doc(userId);
+    const user = await userDoc.get();
+    if (!user.exists) {
+      throw new functions.https.HttpsError("not-found", "User not found");
+    }
+
+    // check if the user is an admin
+    if (user.data()?.organisationRole !== "admin") {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "User is not an admin"
+      );
+    }
+
+    // get the organisation id and the id of the person and the new role we're updating from the data
+    const organisationId = data.organisationId;
+    const userIdToUpdate = data.id;
+    const newRole = data.role;
+
+    // if any of the fields are missing, throw an error
+    if (!organisationId || !userIdToUpdate || !newRole) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Missing fields"
+      );
+    }
+
+    // get the user document
+    const userToUpdateDoc = admin
+      .firestore()
+      .collection("users")
+      .doc(userIdToUpdate);
+    const userToUpdate = await userToUpdateDoc.get();
+    if (!userToUpdate.exists) {
+      throw new functions.https.HttpsError("not-found", "User not found");
+    }
+
+    // update the user document with the new role
+    await userToUpdateDoc.update({
+      organisationRole: newRole,
+    });
+
+    return "Role updated";
+  });
+
+// each time the senderUserId field is updated (or created) in a request, update the senderOrganisationId field in the request
+export const updateSenderOrganisationId = functions
+  .region("europe-west2")
+  .firestore.document("requests/{requestId}")
+  .onWrite(async (change) => {
+    const before = change.before.data();
+    const after = change.after.data();
+
+    if (before?.senderUserId !== after?.senderUserId) {
+      console.log("Sender user id has changed. Checking if user exists...");
+      const senderUserId = after?.senderUserId;
+      if (!senderUserId) {
+        console.log("Sender user id is null. Exiting...");
+        return null;
+      }
+      try {
+        const user = await admin.auth().getUser(senderUserId);
+        console.log(
+          "User exists. Assigning senderOrganisationId to request..."
+        );
+
+        // get the user document and get the organisationId
+        const userDoc = admin.firestore().collection("users").doc(user.uid);
+        const userDocData = await userDoc.get();
+        const organisationId = userDocData.data()?.organisationId;
+
+        // if the organisationId is null, return
+        if (!organisationId) {
+          console.log("OrganisationId is null. Exiting...");
+          return null;
+        }
+
+        // assign the organisationId to the request
+        await change.after.ref.update({
+          senderOrganisationId: organisationId,
+        });
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    } else {
+      console.log("Sender user id has not changed. Exiting...");
+    }
+    return null;
+  });
+
+// each time the recipientUserId field is updated (or created) in a request, update the recipientOrganisationId field in the request
+export const updateRecipientOrganisationId = functions
+  .region("europe-west2")
+  .firestore.document("requests/{requestId}")
+  .onWrite(async (change) => {
+    const before = change.before.data();
+    const after = change.after.data();
+
+    if (before?.recipientUserId !== after?.recipientUserId) {
+      console.log("Recipient user id has changed. Checking if user exists...");
+      const recipientUserId = after?.recipientUserId;
+      if (!recipientUserId) {
+        console.log("Recipient user id is null. Exiting...");
+        return null;
+      }
+      try {
+        const user = await admin.auth().getUser(recipientUserId);
+        console.log(
+          "User exists. Assigning recipientOrganisationId to request..."
+        );
+
+        // get the user document and get the organisationId
+        const userDoc = admin.firestore().collection("users").doc(user.uid);
+        const userDocData = await userDoc.get();
+        const organisationId = userDocData.data()?.organisationId;
+
+        // if the organisationId is null, return
+        if (!organisationId) {
+          console.log("OrganisationId is null. Exiting...");
+          return null;
+        }
+
+        // assign the organisationId to the request
+        await change.after.ref.update({
+          recipientOrganisationId: organisationId,
+        });
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    } else {
+      console.log("Recipient user id has not changed. Exiting...");
+    }
+    return null;
+  });
+
+// each time a users organisationId is updated, update the organisationId in the users requests (both sender and recipient)
+export const updateOrganisationIdInRequests = functions
+  .region("europe-west2")
+  .firestore.document("users/{userId}")
+  .onUpdate(async (change) => {
+    const before = change.before.data();
+    const after = change.after.data();
+
+    if (before?.organisationId !== after?.organisationId) {
+      console.log(
+        "OrganisationId has changed. Updating organisationId in requests..."
+      );
+
+      const userId = change.after.id;
+      const organisationId = after?.organisationId;
+
+      // get all the requests where the senderUserId is the user id
+      const senderRequests = await admin
+        .firestore()
+        .collection("requests")
+        .where("senderUserId", "==", userId)
+        .get();
+      senderRequests.forEach(async (request) => {
+        console.log("Request found. Updating senderOrganisationId...");
+        await request.ref.update({
+          senderOrganisationId: organisationId,
+        });
+      });
+
+      // get all the requests where the recipientUserId is the user id
+      const recipientRequests = await admin
+        .firestore()
+        .collection("requests")
+        .where("recipientUserId", "==", userId)
+        .get();
+      recipientRequests.forEach(async (request) => {
+        console.log("Request found. Updating recipientOrganisationId...");
+        await request.ref.update({
+          recipientOrganisationId: organisationId,
+        });
+      });
+    } else {
+      console.log("OrganisationId has not changed. Exiting...");
+    }
+    return null;
   });
 
 // TODO: Extract send email function

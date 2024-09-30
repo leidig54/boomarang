@@ -21,11 +21,11 @@ class _SentScreenState extends State<SentScreen> {
   void didChangeDependencies() {
     if (selectedRequest == null) {
       selectedRequest =
-          context.read<RequestProvider>().receivedRequests.firstOrNull;
+          context.read<RequestProvider>().sentRequests.firstOrNull;
     } else {
       selectedRequest = context
           .read<RequestProvider>()
-          .receivedRequests
+          .sentRequests
           .firstWhereOrNull((e) => e.id == selectedRequest!.id);
     }
     super.didChangeDependencies();
@@ -89,7 +89,7 @@ class _SentScreenState extends State<SentScreen> {
                     );
                   },
                   itemCount:
-                      context.watch<RequestProvider>().receivedRequests.length,
+                      context.watch<RequestProvider>().sentRequests.length,
                 ),
               ),
               const VerticalDivider(
