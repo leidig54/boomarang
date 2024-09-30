@@ -31,7 +31,7 @@ class _SentRequestFormState extends State<SentRequestForm> {
         padding: const EdgeInsets.all(32.0),
         children: [
           Text(request.form.name,
-              style: Theme.of(context).textTheme.headlineMedium),
+              style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(
             height: 4,
           ),
