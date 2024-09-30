@@ -1,6 +1,5 @@
 import 'package:boomarang/main.dart';
 import 'package:boomarang/providers/organisation_provider.dart';
-import 'package:boomarang/providers/user_provider.dart';
 import 'package:boomarang_shared/models/organisation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -30,8 +29,7 @@ class _OrganisationScreenState extends State<OrganisationScreen> {
       );
     }
 
-    bool isAdmin =
-        context.watch<UserProvider>().user?.organisationRole == 'admin';
+    bool isAdmin = organisation.admins.contains(auth.currentUser?.uid);
 
     return FormBuilder(
       key: _organisationFormKey,

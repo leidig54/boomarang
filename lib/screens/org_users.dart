@@ -1,8 +1,8 @@
 import 'package:boomarang/main.dart';
 import 'package:boomarang/providers/organisation_provider.dart';
-import 'package:boomarang/providers/user_provider.dart';
 import 'package:boomarang_shared/models/organisation.dart';
 import 'package:boomarang_shared/models/user.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,8 +26,7 @@ class _OrganisationUsersScreenState extends State<OrganisationUsersScreen> {
       );
     }
 
-    bool isAdmin =
-        context.watch<UserProvider>().user?.organisationRole == 'admin';
+    bool isAdmin = organisation.admins.contains(auth.currentUser?.uid);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,7 +35,7 @@ class _OrganisationUsersScreenState extends State<OrganisationUsersScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Container(
             constraints: const BoxConstraints(
-              maxWidth: 800,
+              maxWidth: 600,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,7 +47,7 @@ class _OrganisationUsersScreenState extends State<OrganisationUsersScreen> {
                 const SizedBox(height: 32),
                 ListView.builder(
                   itemBuilder: (context, index) {
-                    String uid = organisation.users[index];
+                    String uid = organisation.members[index];
                     return FutureBuilder(
                         future: firestore.collection('users').doc(uid).get(),
                         builder: (context, snapshot) {
@@ -58,7 +57,8 @@ class _OrganisationUsersScreenState extends State<OrganisationUsersScreen> {
                           if (snapshot.hasData && snapshot.data!.exists) {
                             user = BoomarangUser.fromMap(
                                 snapshot.data!.data() as Map<String, dynamic>);
-                            userIsAdmin = user.organisationRole == 'admin';
+                            userIsAdmin =
+                                organisation.admins.contains(snapshot.data!.id);
                           }
 
                           if (user == null || userIsAdmin == null) {
@@ -70,31 +70,25 @@ class _OrganisationUsersScreenState extends State<OrganisationUsersScreen> {
                             children: [
                               Expanded(
                                 flex: 2,
-                                child: Text(
-                                    '${user.firstName} ${user.lastName}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium),
+                                child:
+                                    Text('${user.firstName} ${user.lastName}'),
                               ),
                               Expanded(
-                                flex: 3,
-                                child: Text('${user.email}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium),
+                                flex: 2,
+                                child: Text('${user.email}'),
                               ),
                               Expanded(
                                 child: PermissionsDropdown(
-                                  isAdmin: isAdmin,
-                                  organisation: organisation,
-                                  user: user,
-                                ),
+                                    userIsAdmin: userIsAdmin,
+                                    isAdmin: isAdmin,
+                                    organisation: organisation,
+                                    user: user),
                               )
                             ],
                           );
                         });
                   },
-                  itemCount: organisation.users.length,
+                  itemCount: organisation.members.length,
                   shrinkWrap: true,
                 ),
               ],
@@ -109,11 +103,13 @@ class _OrganisationUsersScreenState extends State<OrganisationUsersScreen> {
 class PermissionsDropdown extends StatefulWidget {
   const PermissionsDropdown({
     super.key,
+    required this.userIsAdmin,
     required this.isAdmin,
     required this.organisation,
     required this.user,
   });
 
+  final bool userIsAdmin;
   final bool isAdmin;
   final Organisation organisation;
   final BoomarangUser user;
@@ -127,64 +123,77 @@ class _PermissionsDropdownState extends State<PermissionsDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-        stream: firestore.collection('users').doc(widget.user.id).snapshots(),
-        builder: (context, snapshot) {
-          BoomarangUser? user;
-          if (snapshot.hasData && snapshot.data!.exists) {
-            user = BoomarangUser.fromMap(
-                snapshot.data!.data() as Map<String, dynamic>);
-          }
-
-          return DropdownButton(
-              value: user?.organisationRole,
-              disabledHint: const CircularProgressIndicator.adaptive(),
-              isExpanded: true,
-              underline: const SizedBox(),
-              items: isUpdatingPermissions
-                  ? null
-                  : [
-                      const DropdownMenuItem(
-                        value: 'admin',
-                        child: Text('Admin'),
-                      ),
-                      const DropdownMenuItem(
-                        value: 'user',
-                        child: Text('User'),
-                      ),
-                    ],
-              onChanged: !widget.isAdmin
-                  ? null
-                  : (value) async {
-                      //if the value is the same, don't do anything
-                      if (value == user?.organisationRole) {
-                        return;
-                      }
-                      setState(() {
-                        isUpdatingPermissions = true;
-                      });
-                      await Future.delayed(const Duration(seconds: 1));
-
-                      await functions
-                          .httpsCallable('updateOrganisationRole')
-                          .call({
-                        'id': user?.id,
-                        'organisationId': widget.organisation.id,
-                        'role': value,
-                      }).then((_) {
-                        if (mounted) {
-                          setState(() {
-                            isUpdatingPermissions = false;
-                          });
-                        }
-                      }).catchError((error) {
-                        if (mounted) {
-                          setState(() {
-                            isUpdatingPermissions = false;
-                          });
-                        }
-                      });
+    return DropdownButton(
+        value: widget.userIsAdmin ? 'admin' : 'member',
+        disabledHint: const CircularProgressIndicator.adaptive(),
+        isExpanded: true,
+        items: isUpdatingPermissions
+            ? null
+            : [
+                const DropdownMenuItem(
+                  value: 'admin',
+                  child: Text('Admin'),
+                ),
+                const DropdownMenuItem(
+                  value: 'member',
+                  child: Text('Member'),
+                ),
+              ],
+        onChanged: !widget.isAdmin
+            ? null
+            : (value) async {
+                //if the value is the same, don't do anything
+                if ((value == 'admin' && widget.userIsAdmin) ||
+                    (value == 'member' && !widget.userIsAdmin)) {
+                  return;
+                }
+                setState(() {
+                  isUpdatingPermissions = true;
+                });
+                await Future.delayed(const Duration(seconds: 1));
+                if (value == 'admin') {
+                  await firestore
+                      .collection('organisations')
+                      .doc(widget.organisation.id)
+                      .update({
+                    'admins': FieldValue.arrayUnion([widget.user.id])
+                  });
+                } else {
+                  //if is the last admin, show an alert dialog and don't remove
+                  if (widget.organisation.admins.length == 1) {
+                    if (!context.mounted) return;
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Cannot remove last admin'),
+                          content: const Text(
+                              'You cannot remove the last admin from an organisation. Please add another admin before removing this user.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    await firestore
+                        .collection('organisations')
+                        .doc(widget.organisation.id)
+                        .update({
+                      'admins': FieldValue.arrayRemove([widget.user.id])
                     });
-        });
+                  }
+                }
+                if (mounted) {
+                  setState(() {
+                    isUpdatingPermissions = false;
+                  });
+                }
+              });
   }
 }
