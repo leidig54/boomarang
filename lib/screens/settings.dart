@@ -1,3 +1,4 @@
+import 'package:boomarang/screens/org_users.dart';
 import 'package:boomarang/screens/organisation.dart';
 import 'package:boomarang/screens/profile.dart';
 import 'package:flutter/material.dart';
@@ -64,7 +65,7 @@ class _AdminScreenState extends State<AdminScreen> {
                         ),
                         //Organisation
                         ListTile(
-                          title: const Text('Organisation'),
+                          title: const Text('Organisation Details'),
                           subtitle:
                               const Text('Edit your organisation details'),
                           leading: const Icon(Icons.business),
@@ -76,6 +77,22 @@ class _AdminScreenState extends State<AdminScreen> {
                               : null,
                           onTap: () => setState(() {
                             selectedTile = 'organisation';
+                          }),
+                        ),
+                        //Organisation Users
+                        ListTile(
+                          title: const Text('Organisation Users'),
+                          subtitle:
+                              const Text('Manage your organisation users'),
+                          leading: const Icon(Icons.people),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          tileColor: selectedTile == 'users'
+                              ? Theme.of(context).highlightColor
+                              : null,
+                          onTap: () => setState(() {
+                            selectedTile = 'users';
                           }),
                         ),
                       ],
@@ -92,8 +109,12 @@ class _AdminScreenState extends State<AdminScreen> {
                     builder: (context) {
                       if (selectedTile == 'profile') {
                         return const BoomarangProfileScreen();
-                      } else {
+                      } else if (selectedTile == 'organisation') {
                         return const OrganisationScreen();
+                      } else if (selectedTile == 'users') {
+                        return const OrganisationUsersScreen();
+                      } else {
+                        return const SizedBox();
                       }
                     },
                   ),
