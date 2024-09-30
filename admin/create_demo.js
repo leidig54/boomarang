@@ -32,7 +32,7 @@ const consentForm = {
 const withUser = true;
 
 async function createDemoEnvironment() {
-  const mainUser = {
+  const user = {
     id: "1",
     title: "Dr",
     email: "georgeleidig@icloud.com",
@@ -41,29 +41,7 @@ async function createDemoEnvironment() {
     emailVerified: true,
     verificationCodeExpiresAt: null,
     isDemo: true,
-    organisationId: "1",
-    organisationRole: "admin",
   };
-
-  //a list of 5 more users
-  const otherUsers = [];
-
-  //create 5 more using faker
-  for (let i = 0; i < 5; i++) {
-    const user = {
-      id: (i + 2).toString(),
-      title: faker.person.prefix(),
-      email: faker.internet.email(),
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
-      emailVerified: true,
-      verificationCodeExpiresAt: null,
-      isDemo: true,
-      organisationId: "1",
-      organisationRole: "user",
-    };
-    otherUsers.push(user);
-  }
 
   const requestCollection = db.collection("requests");
   // For clearing the requests collection
@@ -97,30 +75,25 @@ async function createDemoEnvironment() {
         console.log("requester created");
       });
 
-    await usersCollection.doc("1").set(mainUser);
+    const user = {
+      title: "Dr",
+      email: "georgeleidig@icloud.com",
+      firstName: "George",
+      lastName: "Leidig",
+      emailVerified: true,
+      verificationCodeExpiresAt: null,
+      isDemo: true,
+    };
 
-    for (let i = 0; i < otherUsers.length; i++) {
-      const user = otherUsers[i];
-      await auth
-        .createUser({
-          uid: user.id,
-          email: user.email,
-          password: "boomarang",
-          emailVerified: user.emailVerified,
-        })
-        .then((user) => {
-          console.log("user created");
-        });
-
-      await usersCollection.doc(user.id).set(user);
-    }
+    await usersCollection.doc("1").set(user);
     console.log("Holder document created");
   }
 
   const organisation = {
     id: "1",
     name: "Rosehill Vet Clinic",
-    users: ["1", "2", "3", "4", "5", "6"],
+    members: ["1"],
+    admins: ["1"],
   };
 
   const organisationsCollection = db.collection("organisations");
@@ -186,18 +159,17 @@ async function createDemoEnvironment() {
       subjectLastName: faker.person.lastName(),
       subjectEmail: faker.internet.email(),
       subjectEmailVerified: hasVerified,
-      //over 18
-      subjectDOB: faker.date.past(),
+      subjectDOB: faker.date.past().getTime(),
       subjectDOBVerified: hasVerified,
       senderUserId: "1",
-      senderEmail: mainUser.email,
-      senderOrganisationId: "1",
+      senderEmail: user.email,
       recipientUserId: "1",
-      recipientEmail: mainUser.email,
-      recipientOrganisationId: "1",
-      dateCreated: faker.date.recent({
-        days: 4,
-      }),
+      recipientEmail: user.email,
+      dateCreated: faker.date
+        .recent({
+          days: 4,
+        })
+        .getTime(),
       consentVerified: hasVerified,
       consentForm: consentForm,
       isDemo: true,
