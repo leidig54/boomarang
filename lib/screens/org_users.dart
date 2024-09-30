@@ -1,13 +1,9 @@
 import 'package:boomarang/main.dart';
 import 'package:boomarang/providers/organisation_provider.dart';
 import 'package:boomarang/providers/user_provider.dart';
-import 'package:boomarang/widgets/error.dart';
-import 'package:boomarang_shared/models/invite.dart';
 import 'package:boomarang_shared/models/organisation.dart';
 import 'package:boomarang_shared/models/user.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:provider/provider.dart';
 
 class OrganisationUsersScreen extends StatefulWidget {
@@ -49,20 +45,6 @@ class _OrganisationUsersScreenState extends State<OrganisationUsersScreen> {
                   'Organisation Users',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                //add user
-                const SizedBox(height: 16),
-                if (isAdmin)
-                  ElevatedButton(
-                    onPressed: () {
-                      //show dialog
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return const AddUserDialog();
-                          });
-                    },
-                    child: const Text('Add User'),
-                  ),
                 const SizedBox(height: 32),
                 ListView.builder(
                   itemBuilder: (context, index) {
@@ -115,175 +97,9 @@ class _OrganisationUsersScreenState extends State<OrganisationUsersScreen> {
                   itemCount: organisation.users.length,
                   shrinkWrap: true,
                 ),
-                //pending invites
-                const SizedBox(height: 64),
-                Text(
-                  'Pending Invites',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 16),
-                StreamBuilder(
-                    stream: firestore
-                        .collection('invites')
-                        .where('organisationId', isEqualTo: organisation.id)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return Text('No pending invites',
-                            style: Theme.of(context).textTheme.titleMedium);
-                      } else {
-                        return ListView.builder(
-                          itemBuilder: (context, index) {
-                            Invite invite = Invite.fromMap(
-                                snapshot.data!.docs[index].data());
-
-                            //recipient email, status, and option to resend if invite has expired
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(invite.recipientEmail,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium),
-                                ),
-                                Expanded(
-                                  child: invite.isExpired
-                                      ? ElevatedButton(
-                                          onPressed: () async {
-                                            await functions
-                                                .httpsCallable('sendInvite')
-                                                .call({
-                                              'recipientEmail':
-                                                  invite.recipientEmail,
-                                              'recipientRole':
-                                                  invite.recipientRole,
-                                            });
-                                          },
-                                          child: const Text('Resend'),
-                                        )
-                                      : const SizedBox(),
-                                )
-                              ],
-                            );
-                          },
-                          itemCount: snapshot.data!.docs.length,
-                          shrinkWrap: true,
-                        );
-                      }
-                    }),
               ],
             ),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class AddUserDialog extends StatefulWidget {
-  const AddUserDialog({
-    super.key,
-  });
-
-  @override
-  State<AddUserDialog> createState() => _AddUserDialogState();
-}
-
-class _AddUserDialogState extends State<AddUserDialog> {
-  bool isAddingUser = false;
-  //formkey
-  final _formKey = GlobalKey<FormBuilderState>();
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Add User'),
-      content: FormBuilder(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-                'Enter the email address of the user you would like to add to the organisation.'),
-            const SizedBox(height: 16),
-            FormBuilderTextField(
-              name: 'email',
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
-                FormBuilderValidators.email(),
-              ]),
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            //select role, admin or member from dropdown
-            FormBuilderDropdown(
-              name: 'role',
-              decoration: const InputDecoration(
-                labelText: 'Role',
-                border: OutlineInputBorder(),
-              ),
-              validator: FormBuilderValidators.compose([
-                FormBuilderValidators.required(),
-              ]),
-              items: const [
-                DropdownMenuItem(
-                  value: 'admin',
-                  child: Text('Admin'),
-                ),
-                DropdownMenuItem(
-                  value: 'member',
-                  child: Text('Member'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: isAddingUser
-              ? null
-              : () async {
-                  if (!_formKey.currentState!.saveAndValidate()) {
-                    return;
-                  }
-                  setState(() {
-                    isAddingUser = true;
-                  });
-                  await functions.httpsCallable('sendInvite').call({
-                    'recipientEmail': _formKey.currentState!.value['email'],
-                    'recipientRole': _formKey.currentState!.value['role'],
-                  }).then((_) {
-                    if (mounted) {
-                      setState(() {
-                        isAddingUser = false;
-                      });
-                      Navigator.pop(context);
-                    }
-                  }).catchError((error) {
-                    if (mounted) {
-                      buildErrorAlertDialog(error);
-                      setState(() {
-                        isAddingUser = false;
-                      });
-                    }
-                  });
-                },
-          child: isAddingUser
-              ? const CircularProgressIndicator.adaptive()
-              : const Text('Add'),
         ),
       ],
     );
@@ -311,7 +127,6 @@ class _PermissionsDropdownState extends State<PermissionsDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.user.id);
     return StreamBuilder(
         stream: firestore.collection('users').doc(widget.user.id).snapshots(),
         builder: (context, snapshot) {
@@ -334,8 +149,8 @@ class _PermissionsDropdownState extends State<PermissionsDropdown> {
                         child: Text('Admin'),
                       ),
                       const DropdownMenuItem(
-                        value: 'member',
-                        child: Text('Member'),
+                        value: 'user',
+                        child: Text('User'),
                       ),
                     ],
               onChanged: !widget.isAdmin
