@@ -1,6 +1,6 @@
+import 'package:boomarang/providers/tab_provider.dart';
 import 'package:boomarang/providers/user_provider.dart';
 import 'package:boomarang/screens/create.dart';
-import 'package:boomarang/screens/profile.dart';
 import 'package:boomarang_shared/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,12 +13,12 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  String selected = 'create';
-
   @override
   Widget build(BuildContext context) {
     BoomarangUser? user = context.watch<UserProvider>().user;
     bool profileIsComplete = user?.profileIsComplete ?? false;
+
+    String selected = 'create';
 
     return Scaffold(
         body: Column(
@@ -47,7 +47,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Row(
             children: [
               Expanded(
-                flex: 3,
+                flex: 2,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -64,21 +64,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ListTile(
                         title: const Text('Complete Profile'),
                         enabled: !profileIsComplete,
-                        trailing: const Icon(Icons.chevron_right),
-                        subtitle: const Text('Provide your personal details.'),
-                        tileColor: selected == 'profile'
-                            ? Theme.of(context).highlightColor
-                            : null,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        subtitle: const Text(
+                            'Complete your profile to share with others when requesting data.'),
                         leading: profileIsComplete
                             ? const Icon(Icons.check_box)
                             : const Icon(Icons.check_box_outline_blank),
                         onTap: () {
-                          setState(() {
-                            selected = 'profile';
-                          });
+                          context.read<TabIndexProvider>().setTabIndex(3);
                         },
                       ),
 
@@ -102,11 +94,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         tileColor: selected == 'create'
                             ? Theme.of(context).highlightColor
                             : null,
-                        onTap: () {
-                          setState(() {
-                            selected = 'create';
-                          });
-                        },
+                        onTap: () {},
                       ),
                       Padding(
                         padding: const EdgeInsets.only(
@@ -151,15 +139,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 width: 1,
                 thickness: 0.5,
               ),
-              Expanded(
-                flex: 7,
-                child: Builder(builder: (context) {
-                  if (selected == 'profile') {
-                    return const BoomarangProfileScreen();
-                  } else {
-                    return const CreateNewRequest();
-                  }
-                }),
+              const Expanded(
+                flex: 3,
+                child: CreateNewRequest(),
               )
             ],
           ),
