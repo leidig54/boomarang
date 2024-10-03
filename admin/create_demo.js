@@ -60,7 +60,7 @@ async function createDemoEnvironment() {
       verificationCodeExpiresAt: null,
       isDemo: true,
       organisationId: "1",
-      organisationRole: "user",
+      organisationRole: "member",
     };
     otherUsers.push(user);
   }
