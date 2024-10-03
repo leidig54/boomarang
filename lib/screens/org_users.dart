@@ -311,7 +311,6 @@ class _PermissionsDropdownState extends State<PermissionsDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.user.id);
     return StreamBuilder(
         stream: firestore.collection('users').doc(widget.user.id).snapshots(),
         builder: (context, snapshot) {
