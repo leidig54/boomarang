@@ -1,16 +1,13 @@
 import 'package:boomarang/data/templates.dart';
 import 'package:boomarang/main.dart';
 import 'package:boomarang/providers/tab_provider.dart';
-import 'package:boomarang_shared/dob_formatter.dart';
 import 'package:boomarang_shared/models/consent_form.dart';
 import 'package:boomarang_shared/models/request.dart';
 import 'package:boomarang_shared/models/request_form.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -91,32 +88,16 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                   ]),
                 ),
                 const SizedBox(height: 16),
-                FormBuilderTextField(
+                FormBuilderDateTimePicker(
                   name: 'subject_dob',
-                  initialValue: kDebugMode ? '01/01/2000' : null,
+                  initialValue: kDebugMode ? DateTime(1990, 1, 1) : null,
                   validator: FormBuilderValidators.compose([
                     FormBuilderValidators.required(),
                   ]),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(8),
-                    DateFormatInputFormatter(DateFormat('dd/MM/yyyy')),
-                  ],
-                  valueTransformer: (value) {
-                    if (value == null) {
-                      return null;
-                    }
-                    // Parse the date, set to start of the day, and convert to UTC
-                    DateTime localDate = DateFormat('dd/MM/yyyy').parse(value);
-                    DateTime localMidnight = DateTime.utc(
-                        localDate.year, localDate.month, localDate.day);
-
-                    DateTime utcDate = localMidnight.toUtc();
-                    return utcDate;
-                  },
+                  inputType: InputType.date,
+                  initialEntryMode: DatePickerEntryMode.calendarOnly,
                   decoration: const InputDecoration(
                     labelText: 'Date of Birth',
-                    hintText: 'dd/mm/yyyy',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -201,11 +182,8 @@ class _CreateNewRequestState extends State<CreateNewRequest> {
                             .fields['subject_last_name']!.value as String,
                         subjectEmail: _formKey.currentState!
                             .fields['subject_email']!.value as String,
-                        subjectDOB: DateFormat('dd/MM/yyyy').tryParse(
-                            _formKey.currentState!.fields['subject_dob']
-                                    ?.value ??
-                                "",
-                            true),
+                        subjectDOB: _formKey.currentState!
+                            .fields['subject_dob']!.value as DateTime,
                         senderEmail: auth.currentUser!.email!,
                         recipientEmail: _formKey.currentState!
                             .fields['recipient_email']!.value as String,
