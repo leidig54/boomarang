@@ -1,7 +1,9 @@
+import 'package:boomarang/providers/organisation_provider.dart';
 import 'package:boomarang/screens/org_users.dart';
 import 'package:boomarang/screens/organisation.dart';
 import 'package:boomarang/screens/profile.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -88,6 +90,10 @@ class _AdminScreenState extends State<AdminScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
+                          enabled: context
+                                  .watch<OrganisationProvider>()
+                                  .organisation !=
+                              null,
                           tileColor: selectedTile == 'users'
                               ? Theme.of(context).highlightColor
                               : null,
