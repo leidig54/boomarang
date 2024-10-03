@@ -32,7 +32,7 @@ const consentForm = {
 const withUser = true;
 
 async function createDemoEnvironment() {
-  const user = {
+  const mainUser = {
     id: "1",
     title: "Dr",
     email: "georgeleidig@icloud.com",
@@ -42,6 +42,24 @@ async function createDemoEnvironment() {
     verificationCodeExpiresAt: null,
     isDemo: true,
   };
+
+  //a list of 5 more users
+  const otherUsers = [];
+
+  //create 5 more using faker
+  for (let i = 0; i < 5; i++) {
+    const user = {
+      id: (i + 2).toString(),
+      title: faker.person.prefix(),
+      email: faker.internet.email(),
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      emailVerified: true,
+      verificationCodeExpiresAt: null,
+      isDemo: true,
+    };
+    otherUsers.push(user);
+  }
 
   const requestCollection = db.collection("requests");
   // For clearing the requests collection
@@ -75,24 +93,30 @@ async function createDemoEnvironment() {
         console.log("requester created");
       });
 
-    const user = {
-      title: "Dr",
-      email: "georgeleidig@icloud.com",
-      firstName: "George",
-      lastName: "Leidig",
-      emailVerified: true,
-      verificationCodeExpiresAt: null,
-      isDemo: true,
-    };
+    await usersCollection.doc("1").set(mainUser);
 
-    await usersCollection.doc("1").set(user);
+    for (let i = 0; i < otherUsers.length; i++) {
+      const user = otherUsers[i];
+      await auth
+        .createUser({
+          uid: user.id,
+          email: user.email,
+          password: "boomarang",
+          emailVerified: user.emailVerified,
+        })
+        .then((user) => {
+          console.log("user created");
+        });
+
+      await usersCollection.doc(user.id).set(user);
+    }
     console.log("Holder document created");
   }
 
   const organisation = {
     id: "1",
     name: "Rosehill Vet Clinic",
-    members: ["1"],
+    members: ["1", "2", "3", "4", "5", "6"],
     admins: ["1"],
   };
 
@@ -162,9 +186,9 @@ async function createDemoEnvironment() {
       subjectDOB: faker.date.past().getTime(),
       subjectDOBVerified: hasVerified,
       senderUserId: "1",
-      senderEmail: user.email,
+      senderEmail: mainUser.email,
       recipientUserId: "1",
-      recipientEmail: user.email,
+      recipientEmail: mainUser.email,
       dateCreated: faker.date
         .recent({
           days: 4,
