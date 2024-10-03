@@ -186,7 +186,8 @@ async function createDemoEnvironment() {
       subjectLastName: faker.person.lastName(),
       subjectEmail: faker.internet.email(),
       subjectEmailVerified: hasVerified,
-      subjectDOB: faker.date.past().getTime(),
+      //over 18
+      subjectDOB: faker.date.past(),
       subjectDOBVerified: hasVerified,
       senderUserId: "1",
       senderEmail: mainUser.email,
@@ -194,11 +195,9 @@ async function createDemoEnvironment() {
       recipientUserId: "1",
       recipientEmail: mainUser.email,
       recipientOrganisationId: "1",
-      dateCreated: faker.date
-        .recent({
-          days: 4,
-        })
-        .getTime(),
+      dateCreated: faker.date.recent({
+        days: 4,
+      }),
       consentVerified: hasVerified,
       consentForm: consentForm,
       isDemo: true,
