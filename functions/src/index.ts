@@ -560,25 +560,28 @@ export const verifyDateOfBirth = functions
   .https.onCall(async (data) => {
     // get the dateOfBirth and requestId from the call data, then get the dateOfBirth from the request document, and compare the two. return the result as 'verified' key in the response
     const requestId = data.requestId;
-    const dateOfBirthISO = data.dateOfBirth;
+    const submittedDOB = data.dateOfBirth;
+
     const requestDoc = admin.firestore().collection("requests").doc(requestId);
     const request = await requestDoc.get();
     if (!request.exists) {
       throw new functions.https.HttpsError("not-found", "Request not found");
     }
 
-    // Convert ISO 8601 string to Timestamp
-    const submittedDateOfBirthTimestamp = new Date(dateOfBirthISO);
+    // Convert millis to Timestamp
+    const submittedDateOfBirth = new Date(submittedDOB);
 
     // Get the subjectDOB from the request document and convert it to Date object
-    const subjectDOBMillis = request.data()?.subjectDOB;
-    if (subjectDOBMillis == null) {
+    const subjectDOB = request.data()?.subjectDOB;
+    if (subjectDOB == null) {
       throw new functions.https.HttpsError(
         "invalid-argument",
         "subjectDOB is missing"
       );
     }
-    const requestDateOfBirthTimestamp = new Date(subjectDOBMillis);
+
+    // convert timestamp to date
+    const requestDateOfBirth = subjectDOB.toDate();
 
     // Normalize dates to the start of the day in UTC for accurate day comparison
     const normalizeDateToUTCStartOfDay = (date: Date) => {
@@ -587,12 +590,10 @@ export const verifyDateOfBirth = functions
       );
     };
 
-    const requestDOBNormalized = normalizeDateToUTCStartOfDay(
-      requestDateOfBirthTimestamp
-    );
-    const submittedDOBNormalized = normalizeDateToUTCStartOfDay(
-      submittedDateOfBirthTimestamp
-    );
+    const requestDOBNormalized =
+      normalizeDateToUTCStartOfDay(requestDateOfBirth);
+    const submittedDOBNormalized =
+      normalizeDateToUTCStartOfDay(submittedDateOfBirth);
 
     // Compare the normalized dates
     const verified =
@@ -605,8 +606,8 @@ export const verifyDateOfBirth = functions
       });
     }
 
-    console.log("Normalized Request DOB: ", requestDOBNormalized);
-    console.log("Normalized Submitted DOB: ", submittedDOBNormalized);
+    console.log("Normalized Request DOB: ", requestDateOfBirth);
+    console.log("Normalized Submitted DOB: ", submittedDateOfBirth);
     console.log("Date of birth verified: ", verified);
 
     return { verified };
