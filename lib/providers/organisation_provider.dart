@@ -9,6 +9,8 @@ class OrganisationProvider extends ChangeNotifier {
 
   StreamSubscription? organisationSubscription;
 
+  bool hasLoaded = false;
+
   OrganisationProvider() {
     organisationSubscription = firestore
         .collection('organisations')
@@ -20,6 +22,7 @@ class OrganisationProvider extends ChangeNotifier {
       } else {
         organisation = Organisation.fromMap(event.docs.first.data());
       }
+      hasLoaded = true;
       notifyListeners();
     });
   }
