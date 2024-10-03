@@ -35,10 +35,6 @@ class _OnboardingGateScreenState extends State<OnboardingGateScreen> {
       }
     }
 
-    if (context.watch<OrganisationProvider>().hasLoaded == false) {
-      return const LoadingScreen(message: 'Loading organisation...');
-    }
-
     Organisation? organisation =
         context.watch<OrganisationProvider>().organisation;
 
