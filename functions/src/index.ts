@@ -145,9 +145,20 @@ export const assignRecipientToRequestOnRequestCreate = functions
           return null;
         }
 
+        // get the organisation document
+        const organisationDoc = admin
+          .firestore()
+          .collection("organisations")
+          .doc(organisationId);
+
+        // get the organisation name
+        const organisation = await organisationDoc.get();
+        const organisationName = organisation.data()?.name;
+
         // assign the organisationId to the request
         await change.after.ref.update({
           recipientOrganisationId: organisationId,
+          recipientOrganisationName: organisationName,
         });
       } catch (error) {
         // Assert 'error' as an object with a 'code' property
@@ -760,9 +771,19 @@ export const updateSenderOrganisationId = functions
           return null;
         }
 
+        // get the organisation name
+        const organisationDoc = admin
+          .firestore()
+          .collection("organisations")
+          .doc(organisationId);
+
+        const organisation = await organisationDoc.get();
+        const organisationName = organisation.data()?.name;
+
         // assign the organisationId to the request
         await change.after.ref.update({
           senderOrganisationId: organisationId,
+          senderOrganisationName: organisationName,
         });
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -805,9 +826,19 @@ export const updateRecipientOrganisationId = functions
           return null;
         }
 
+        // get the organisation name
+        const organisationDoc = admin
+          .firestore()
+          .collection("organisations")
+          .doc(organisationId);
+
+        const organisation = await organisationDoc.get();
+        const organisationName = organisation.data()?.name;
+
         // assign the organisationId to the request
         await change.after.ref.update({
           recipientOrganisationId: organisationId,
+          recipientOrganisationName: organisationName,
         });
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -842,8 +873,18 @@ export const updateOrganisationIdInRequests = functions
         .get();
       senderRequests.forEach(async (request) => {
         console.log("Request found. Updating senderOrganisationId...");
+
+        // get the new organisation name too and update the request
+        const organisationDoc = admin
+          .firestore()
+          .collection("organisations")
+          .doc(organisationId);
+        const organisation = await organisationDoc.get();
+        const organisationName = organisation.data()?.name;
+
         await request.ref.update({
           senderOrganisationId: organisationId,
+          senderOrganisationName: organisationName,
         });
       });
 
@@ -855,8 +896,19 @@ export const updateOrganisationIdInRequests = functions
         .get();
       recipientRequests.forEach(async (request) => {
         console.log("Request found. Updating recipientOrganisationId...");
+
+        // get the new organisation name too and update the request
+        const organisationDoc = admin
+          .firestore()
+          .collection("organisations")
+          .doc(organisationId);
+
+        const organisation = await organisationDoc.get();
+        const organisationName = organisation.data()?.name;
+
         await request.ref.update({
           recipientOrganisationId: organisationId,
+          recipientOrganisationName: organisationName,
         });
       });
     } else {
