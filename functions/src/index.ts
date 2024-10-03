@@ -68,19 +68,6 @@ export const sendConsentAppWhenRequestSubmitted = functions
     // get the subject email from the request
     const subjectEmail = request?.subjectEmail;
 
-    // email the subject with the request id
-    // Configure the email transport using the provided SMTP server.
-    const email = "george@joinoto.com";
-    const password = "GHD9XULrYSFwdOKM";
-    const mailTransport = nodemailer.createTransport({
-      host: "smtp-relay.brevo.com",
-      port: 587,
-      auth: {
-        user: email,
-        pass: password,
-      },
-    });
-
     const address = isEmulator
       ? "http://localhost:53079"
       : "https://boomarang-consent.web.app";
@@ -92,21 +79,9 @@ export const sendConsentAppWhenRequestSubmitted = functions
     <p>Click <a href="${address}?requestId=${context.params.requestId}&token=${token}">here</a> to provide your consent.</p>
     <p>Thank you.</p>`;
 
-    const mailOptions = {
-      from: '"George" <george@boomarang.com>',
-      to: subjectEmail,
-      subject: "Consent requested",
-      html: emailMessageHtml,
-    };
+    sendEmail(subjectEmail, "Consent Application", emailMessageHtml);
 
-    try {
-      await mailTransport.sendMail(mailOptions);
-      console.log(`Email sent to: ${mailOptions.to}`);
-      return null;
-    } catch (error) {
-      console.error("There was an error while sending the email:", error);
-      return null;
-    }
+    return null;
   });
 
 export const createUserDocument = functions
@@ -122,6 +97,7 @@ export const createUserDocument = functions
     // create the user document
     const userDoc = admin.firestore().collection("users").doc(user.uid);
     await userDoc.set({
+      id: user.uid,
       email: user.email,
       emailVerified: false,
       createdAt: FieldValue.serverTimestamp(),
@@ -185,17 +161,6 @@ export const assignRecipientToRequestOnRequestCreate = functions
           if (change.after.data()?.isDemo) {
             return "Is Demo";
           }
-          // Configure the email transport using the provided SMTP server.
-          const email = "george@joinoto.com";
-          const password = "GHD9XULrYSFwdOKM"; // Ensure you're securely handling passwords and sensitive information
-          const mailTransport = nodemailer.createTransport({
-            host: "smtp-relay.brevo.com",
-            port: 587,
-            auth: {
-              user: email,
-              pass: password,
-            },
-          });
 
           // Email the recipient to create an account
           // TODO: attach the email to the link to create an account
@@ -204,22 +169,11 @@ export const assignRecipientToRequestOnRequestCreate = functions
           <p>Click <a href="https://boomarang.web.app">here</a> to create an account.</p>
           <p>Thank you.</p>`;
 
-          const mailOptions = {
-            from: '"George" <george@boomarang.com>',
-            to: recipientEmail,
-            subject: "Create an account to view your request",
-            html: emailMessageHtml,
-          };
-
-          try {
-            await mailTransport.sendMail(mailOptions);
-            console.log(`Email sent to: ${mailOptions.to}`);
-          } catch (emailError) {
-            console.error(
-              "There was an error while sending the email:",
-              emailError
-            );
-          }
+          sendEmail(
+            recipientEmail,
+            "Create an account to view your request",
+            emailMessageHtml
+          );
         } else {
           // Log other errors
           console.error("Error fetching user:", error);
@@ -266,19 +220,6 @@ export const assignSenderToRequestOnRequestCreate = functions
           if (change.after.data()?.isDemo) {
             return "Is Demo";
           }
-          // Configure the email transport using the provided SMTP server.
-          // email the sender with a link to sign up
-          // Configure the email transport using the provided SMTP server.
-          const email = "george@joinoto.com";
-          const password = "GHD9XULrYSFwdOKM"; // Ensure you're securely handling passwords and sensitive information
-          const mailTransport = nodemailer.createTransport({
-            host: "smtp-relay.brevo.com",
-            port: 587,
-            auth: {
-              user: email,
-              pass: password,
-            },
-          });
 
           // get the recipient email from the request
           const recipientEmail = after?.recipientEmail;
@@ -295,23 +236,11 @@ export const assignSenderToRequestOnRequestCreate = functions
 
           console.log("Email message: ", senderEmail);
 
-          const mailOptions = {
-            from: '"Boomarang Request" <verificaton@boomarang.com>',
-            to: senderEmail,
-            subject: "Create an account to submit your request",
-            html: emailMessageHtml,
-          };
-
-          try {
-            await mailTransport.sendMail(mailOptions);
-            console.log(`Email sent to: ${mailOptions.to}`);
-          } catch (emailError) {
-            console.error(
-              "There was an error while sending the email:",
-              emailError
-            );
-            throw new Error("Failed to send verification email");
-          }
+          sendEmail(
+            senderEmail,
+            "Create an account to view your request",
+            emailMessageHtml
+          );
 
           return null;
         }
@@ -419,32 +348,7 @@ export const sendVerificationEmail = async (userId: string) => {
   <p>${code}</p>
   <p>Thank you.</p>`;
 
-  // Configure the email transport using the provided SMTP server.
-  const email = "george@joinoto.com";
-  const password = "GHD9XULrYSFwdOKM"; // Ensure you're securely handling passwords and sensitive information
-  const mailTransport = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
-    auth: {
-      user: email,
-      pass: password,
-    },
-  });
-
-  const mailOptions = {
-    from: '"Boomarang Verification" <verificaton@boomarang.com>',
-    to: user.data()?.email,
-    subject: "Create an account to view your request",
-    html: emailMessageHtml,
-  };
-
-  try {
-    await mailTransport.sendMail(mailOptions);
-    console.log(`Email sent to: ${mailOptions.to}`);
-  } catch (emailError) {
-    console.error("There was an error while sending the email:", emailError);
-    throw new Error("Failed to send verification email");
-  }
+  sendEmail(user.data()?.email, "Verify your email address", emailMessageHtml);
 
   // return a success message
   if (isEmulator) {
@@ -961,4 +865,292 @@ export const updateOrganisationIdInRequests = functions
     return null;
   });
 
-// TODO: Extract send email function
+// create an organisation with the name provided. add the creater to the list of users and set the user document with the organisation role as admin
+export const createOrganisation = functions
+  .region("europe-west2")
+  .https.onCall(async (data, context) => {
+    // get the user id from the context
+    const userId = context.auth?.uid;
+
+    // if the user is not authenticated, throw an error
+    if (!userId) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "User must be authenticated to create an organisation"
+      );
+    }
+
+    // get the organisation name from the data
+    const organisationName = data.name;
+
+    // create a new organisation document
+    const organisationDoc = admin.firestore().collection("organisations").doc();
+
+    // create a new organisation
+    const organisation = {
+      id: organisationDoc.id,
+      name: organisationName,
+      createdAt: FieldValue.serverTimestamp(),
+      users: [userId],
+    };
+
+    // set the organisation document
+    await organisationDoc.set(organisation);
+
+    // get the user document
+    const userDoc = admin.firestore().collection("users").doc(userId);
+    const user = await userDoc.get();
+    if (!user.exists) {
+      throw new functions.https.HttpsError("not-found", "User not found");
+    }
+
+    // update the user document with the organisation id and the organisation role as admin
+    await userDoc.update({
+      organisationId: organisationDoc.id,
+      organisationRole: "admin",
+    });
+
+    return organisationDoc.id;
+  });
+
+// process an invite code and add the user to the organisation
+export const joinOrganisation = functions
+  .region("europe-west2")
+  .https.onCall(async (data, context) => {
+    // get the user id from the context
+    const userId = context.auth?.uid;
+
+    // if the user is not authenticated, throw an error
+    if (!userId) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "User must be authenticated to process an invite code"
+      );
+    }
+
+    // get the invite code from the data
+    const inviteCode = data.inviteCode;
+
+    // get the invite document
+    const inviteDoc = admin.firestore().collection("invites").doc(inviteCode);
+    const invite = await inviteDoc.get();
+    if (!invite.exists) {
+      throw new functions.https.HttpsError("not-found", "Invite not found");
+    }
+
+    // check the invite hasn't expired
+    if (invite.data()?.expiresAt.toMillis() < Date.now()) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Invite has expired"
+      );
+    }
+
+    // get the organisation id from the invite
+    const organisationId = invite.data()?.organisationId;
+
+    // get the organisation role
+    const recipientRole = invite.data()?.recipientRole;
+
+    // get the organisation document
+    const organisationDoc = admin
+      .firestore()
+      .collection("organisations")
+      .doc(organisationId);
+    const organisation = await organisationDoc.get();
+    if (!organisation.exists) {
+      throw new functions.https.HttpsError(
+        "not-found",
+        "Organisation not found"
+      );
+    }
+
+    // get the user document
+    const userDoc = admin.firestore().collection("users").doc(userId);
+    const user = await userDoc.get();
+    if (!user.exists) {
+      throw new functions.https.HttpsError("not-found", "User not found");
+    }
+
+    // check the users email matches the recipient email by looking them up in the authentication system
+    const recipientEmail = invite.data()?.recipientEmail;
+    const recipientUser = await admin
+      .auth()
+      .getUserByEmail(recipientEmail)
+      .catch((error) => {
+        if (error.code === "auth/user-not-found") {
+          throw new functions.https.HttpsError(
+            "not-found",
+            "Recipient not has not registered"
+          );
+        } else {
+          throw new functions.https.HttpsError(
+            "internal",
+            "Error checking if user exists"
+          );
+        }
+      });
+
+    if (recipientUser.uid !== userId) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "User does not have permission to join the organisation"
+      );
+    }
+
+    // add the user to the organisation
+    await organisationDoc.update({
+      users: FieldValue.arrayUnion(userId),
+    });
+
+    // update the user document with the organisation id
+    await userDoc.update({
+      organisationId: organisationId,
+      organisationRole: recipientRole,
+    });
+
+    // delete the invite document
+    await inviteDoc.delete();
+
+    return "User added to organisation";
+  });
+
+// send an invite to join an organisation. create an invite document with the organisation id and the organisation role, and send an email to the recipient with the invite code
+export const sendInvite = functions
+  .region("europe-west2")
+  .https.onCall(async (data, context) => {
+    // get the user id from the context
+    const userId = context.auth?.uid;
+
+    // if the user is not authenticated, throw an error
+    if (!userId) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "User must be authenticated to send an invite"
+      );
+    }
+
+    // get the user document
+    const userDoc = admin.firestore().collection("users").doc(userId);
+    const user = await userDoc.get();
+    if (!user.exists) {
+      throw new functions.https.HttpsError("not-found", "User not found");
+    }
+
+    // get the organisation id from the user document
+    const organisationId = user.data()?.organisationId;
+    if (!organisationId) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "User is not part of an organisation"
+      );
+    }
+
+    // get the recipient email and the organisation role from the data
+    const recipientEmail = data.recipientEmail;
+    const recipientRole = data.recipientRole;
+
+    // check if the recipient email is already a user
+    const userExists = await admin
+      .auth()
+      .getUserByEmail(recipientEmail)
+      .catch((error) => {
+        if (error.code === "auth/user-not-found") {
+          return false;
+        } else {
+          throw new functions.https.HttpsError(
+            "internal",
+            "Error checking if user exists"
+          );
+        }
+      });
+
+    if (userExists) {
+      throw new functions.https.HttpsError(
+        "already-exists",
+        "User already exists"
+      );
+    }
+
+    // check if the recipient email is already invited
+    const inviteExists = await admin
+      .firestore()
+      .collection("invites")
+      .where("recipientEmail", "==", recipientEmail)
+      .get();
+
+    if (!inviteExists.empty) {
+      throw new functions.https.HttpsError(
+        "already-exists",
+        "Invite already exists"
+      );
+    }
+
+    // create a new invite document
+    const inviteDoc = admin.firestore().collection("invites").doc();
+
+    // set it to expire in 24 hours
+    const expiresIn = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    const expirationTime = new Date(Date.now() + expiresIn);
+
+    // create a new invite
+    const invite = {
+      id: inviteDoc.id,
+      organisationId: organisationId,
+      recipientRole: recipientRole,
+      recipientEmail: recipientEmail,
+      createdAt: FieldValue.serverTimestamp(),
+      expiresAt: Timestamp.fromDate(expirationTime),
+    };
+
+    // set the invite document
+    await inviteDoc.set(invite);
+
+    // Construct email verification template, embed the link and send the invite code in the email
+    const emailMessageHtml = `<p>Dear Recipient,</p>
+    <p>You have been invited to join an organisation. Please click the link below to join:</p>
+    <p><a href="https://boomarang.web.app">Join Organisation</a></p>
+    <p>Invite Code: ${inviteDoc.id}</p>
+    <p>Thank you.</p>`;
+
+    await sendEmail(
+      recipientEmail,
+      "You have been invited to join an organisation",
+      emailMessageHtml
+    );
+  });
+
+// Extract send email function so we can call it from multiple functions
+const sendEmail = async (
+  email: string,
+  subject: string,
+  emailMessageHtml: string
+) => {
+  // Configure the email transport using the provided SMTP server.
+  const smtpEmail = "george@joinoto.com";
+  const password = "GHD9XULrYSFwdOKM"; // Ensure you're securely handling passwords and sensitive information
+  const mailTransport = nodemailer.createTransport({
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    auth: {
+      user: smtpEmail,
+      pass: password,
+    },
+  });
+
+  const mailOptions = {
+    from: '"Support" <support@boomarang.com>',
+    to: email,
+    subject: subject,
+    html: emailMessageHtml,
+  };
+
+  try {
+    await mailTransport.sendMail(mailOptions);
+    console.log(`Email sent to: ${mailOptions.to}`);
+    return null;
+  } catch (error) {
+    console.error("There was an error while sending the email:", error);
+    return null;
+  }
+};
