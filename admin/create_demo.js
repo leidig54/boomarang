@@ -60,7 +60,7 @@ async function createDemoEnvironment() {
       verificationCodeExpiresAt: null,
       isDemo: true,
       organisationId: "1",
-      organisationRole: "member",
+      organisationRole: "user",
     };
     otherUsers.push(user);
   }
@@ -70,15 +70,6 @@ async function createDemoEnvironment() {
   const requests = await requestCollection.get();
   await Promise.all(
     requests.docs.map((request) => requestCollection.doc(request.id).delete())
-  );
-
-  // For clearing the organisations collection
-  const organisationsCollection = db.collection("organisations");
-  const organisations = await organisationsCollection.get();
-  await Promise.all(
-    organisations.docs.map((organisation) =>
-      organisationsCollection.doc(organisation.id).delete()
-    )
   );
 
   if (withUser) {
@@ -132,6 +123,7 @@ async function createDemoEnvironment() {
     users: ["1", "2", "3", "4", "5", "6"],
   };
 
+  const organisationsCollection = db.collection("organisations");
   await organisationsCollection.doc(organisation.id).set(organisation);
 
   const createRequest = async () => {
