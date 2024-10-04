@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+//TODO: make sure unused/expired invites are removed
 bool useEmulators = true;
 
 FirebaseAuth auth = FirebaseAuth.instance;
