@@ -30,7 +30,7 @@ class _HomeState extends State<Home> {
                   child: const FlutterLogo(size: 100),
                 ),
                 const SizedBox(
-                  height: 40,
+                  height: 10,
                 ),
                 Text(
                   'Boomarang',

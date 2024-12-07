@@ -63,18 +63,19 @@ class _CreateOrganisationState extends State<CreateOrganisation> {
                               setState(() {
                                 creatingOrganisation = true;
                               });
-
                               await functions
                                   .httpsCallable('createOrganisation')
                                   .call({
                                 'name': _createOrganisationFormKey
                                     .currentState!.value['name'],
                               }).then((value) {
+                                if (!context.mounted) return;
                                 setState(() {
                                   creatingOrganisation = false;
                                 });
                               }).catchError((error) {
                                 buildErrorAlertDialog(error);
+                                if (!context.mounted) return;
                                 setState(() {
                                   creatingOrganisation = false;
                                 });
@@ -121,13 +122,13 @@ class _CreateOrganisationState extends State<CreateOrganisation> {
                                 'inviteCode': _joinOrganisationFormKey
                                     .currentState!.value['inviteCode'],
                               }).then((value) {
-                                if (!mounted) return;
+                                if (!context.mounted) return;
                                 setState(() {
                                   creatingOrganisation = false;
                                 });
                               }).catchError((error) {
-                                if (!mounted) return;
                                 buildErrorAlertDialog(error);
+                                if (!context.mounted) return;
                                 setState(() {
                                   creatingOrganisation = false;
                                 });
