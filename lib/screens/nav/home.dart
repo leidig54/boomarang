@@ -45,23 +45,16 @@ class _HomeState extends State<Home> {
           ),
           destinations: [
             NavigationRailDestination(
-              icon: const Icon(Icons.dashboard),
+              icon: const Icon(Icons.create),
               label: Text(
-                'Dashboard',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ),
-            NavigationRailDestination(
-              icon: const Icon(Icons.inbox),
-              label: Text(
-                'Inbox',
+                'Create',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
             NavigationRailDestination(
               icon: const Icon(Icons.outbox),
               label: Text(
-                'Sent',
+                'View',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),

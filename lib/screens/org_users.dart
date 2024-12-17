@@ -266,7 +266,7 @@ class _AddUserDialogState extends State<AddUserDialog> {
                     'recipientEmail': _formKey.currentState!.value['email'],
                     'recipientRole': _formKey.currentState!.value['role'],
                   }).then((_) {
-                    if (mounted) {
+                    if (context.mounted) {
                       setState(() {
                         isAddingUser = false;
                       });

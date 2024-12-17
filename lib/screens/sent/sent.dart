@@ -1,21 +1,20 @@
 import 'package:boomarang/providers/request_provider.dart';
-import 'package:boomarang/screens/sent/form.dart';
 import 'package:boomarang/screens/shared/meta.dart';
 import 'package:boomarang/screens/shared/tile.dart';
-import 'package:boomarang_shared/models/request.dart';
+import 'package:boomarang_shared/models/consent_request.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class SentScreen extends StatefulWidget {
-  const SentScreen({super.key});
+class ViewScreen extends StatefulWidget {
+  const ViewScreen({super.key});
 
   @override
-  State<SentScreen> createState() => _SentScreenState();
+  State<ViewScreen> createState() => _ViewScreenState();
 }
 
-class _SentScreenState extends State<SentScreen> {
-  BoomarangRequest? selectedRequest;
+class _ViewScreenState extends State<ViewScreen> {
+  ConsentRequest? selectedRequest;
 
   @override
   void didChangeDependencies() {
@@ -44,7 +43,7 @@ class _SentScreenState extends State<SentScreen> {
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Text(
-                "Sentbox",
+                "View Requests",
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
             ),
@@ -68,7 +67,7 @@ class _SentScreenState extends State<SentScreen> {
                     vertical: 16.0,
                   ),
                   itemBuilder: (context, index) {
-                    BoomarangRequest thisRequest =
+                    ConsentRequest thisRequest =
                         context.watch<RequestProvider>().sentRequests[index];
 
                     return RequestTile(
@@ -109,12 +108,7 @@ class _SentScreenState extends State<SentScreen> {
               ),
               Expanded(
                 flex: 2,
-                child: selectedRequest == null
-                    ? Container()
-                    : SentRequestForm(
-                        key: Key(selectedRequest!.id),
-                        selectedRequest: selectedRequest!,
-                      ),
+                child: selectedRequest == null ? Container() : Container(),
               ),
             ],
           ),

@@ -1,4 +1,4 @@
-import 'package:boomarang_shared/models/request.dart';
+import 'package:boomarang_shared/models/consent_request.dart';
 import 'package:flutter/material.dart';
 
 class RequestTile extends StatelessWidget {
@@ -9,8 +9,8 @@ class RequestTile extends StatelessWidget {
     required this.onTap,
   });
 
-  final BoomarangRequest tileRequest;
-  final void Function(BoomarangRequest) onTap;
+  final ConsentRequest tileRequest;
+  final void Function(ConsentRequest) onTap;
   final bool isSelected;
 
   @override
@@ -65,15 +65,15 @@ class RequestTile extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodyMedium!,
                     ),
                     Icon(
-                      tileRequest.responseSubmitted
-                          ? Icons.check
-                          : Icons.horizontal_rule,
+                      //TODO
+                      Icons.horizontal_rule,
                       size: 15,
                     ),
                   ],
                 ),
                 Text(
-                  tileRequest.form.name,
+                  //TODO
+                  "Consent Not Verified",
                   style: Theme.of(context).textTheme.bodySmall!.copyWith(
                         color: Colors.grey,
                       ),

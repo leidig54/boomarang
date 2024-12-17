@@ -1,4 +1,4 @@
-import 'package:boomarang_shared/models/request.dart';
+import 'package:boomarang_shared/models/consent_request.dart';
 import 'package:flutter/material.dart';
 
 class RequestMeta extends StatelessWidget {
@@ -8,7 +8,7 @@ class RequestMeta extends StatelessWidget {
     required this.inbox,
   });
 
-  final BoomarangRequest selectedRequest;
+  final ConsentRequest selectedRequest;
   final bool inbox;
 
   @override
@@ -43,7 +43,8 @@ class RequestMeta extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           title: Text(
-            selectedRequest.form.name,
+            //TODO
+            "todo",
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -65,9 +66,7 @@ class RequestMeta extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           title: Text(
-            inbox
-                ? selectedRequest.senderEmail ?? "Unknown"
-                : selectedRequest.recipientEmail ?? "Unknown",
+            selectedRequest.subjectEmail ?? "Unknown",
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -76,9 +75,7 @@ class RequestMeta extends StatelessWidget {
         //Organisation ID
         ListTile(
           title: Text(
-            inbox
-                ? selectedRequest.senderOrganisationName ?? "Unknown"
-                : selectedRequest.recipientOrganisationName ?? "Unknown",
+            selectedRequest.formattedSubjectDob,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -200,27 +197,20 @@ class RequestMeta extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         ListTile(
-          title: const Text(
-            "Standard Consent Policy",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: Text(
-            selectedRequest.consentVerified == true
-                ? "Accepted"
-                : "Not Accepted",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          leading: selectedRequest.consentVerified == true
-              ? const Icon(
-                  Icons.verified,
-                )
-              : const Icon(
-                  Icons.warning,
-                ),
-          //generic consent policy highlights in a list
-        ),
+            title: const Text(
+              "Standard Consent Policy",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              //TODO
+              "todo",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            leading:
+                //TODO
+                Icon(Icons.verified)),
         const SizedBox(
           height: 32,
         ),
@@ -237,7 +227,8 @@ class RequestMeta extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           title: Text(
-            selectedRequest.formattedRequestStatus,
+            //TODO
+            "todo",
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

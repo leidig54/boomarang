@@ -38,9 +38,6 @@ class _AdminScreenState extends State<AdminScreen> {
             height: 1,
             thickness: 0.5,
           ),
-          const SizedBox(
-            height: 16,
-          ),
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,6 +98,12 @@ class _AdminScreenState extends State<AdminScreen> {
                             selectedTile = 'users';
                           }),
                         ),
+                        ListTile(
+                          title: Text("Templates"),
+                          subtitle: Text("Customise your consent templates"),
+                          leading: Icon(Icons.description),
+                          onTap: () {},
+                        )
                       ],
                     ),
                   ),

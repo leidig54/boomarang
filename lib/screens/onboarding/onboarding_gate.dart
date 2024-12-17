@@ -4,6 +4,7 @@ import 'package:boomarang/screens/create_org.dart';
 import 'package:boomarang/screens/nav/home.dart';
 import 'package:boomarang/screens/onboarding/enter_email_verification_code.dart';
 import 'package:boomarang/screens/onboarding/resend_email_verification_code.dart';
+import 'package:boomarang/screens/profile.dart';
 import 'package:boomarang/widgets/loading.dart';
 import 'package:boomarang_shared/models/organisation.dart';
 import 'package:boomarang_shared/models/user.dart';
@@ -46,10 +47,9 @@ class _OnboardingGateScreenState extends State<OnboardingGateScreen> {
       return const CreateOrganisation();
     }
 
-    //onboarding - profile
-    // if (!user.profileIsComplete) {
-    //   return const BoomarangProfileScreen();
-    // }
+    if (!user.profileIsComplete) {
+      return const BoomarangProfileScreen();
+    }
 
     return const Home();
   }
