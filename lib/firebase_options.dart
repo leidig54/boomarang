@@ -28,7 +28,10 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -62,14 +65,5 @@ class DefaultFirebaseOptions {
     projectId: 'boomarang-ac130',
     storageBucket: 'boomarang-ac130.appspot.com',
     iosBundleId: 'com.example.boomarang',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAP1dWQpHn1g4eTP6liNU5Gv0SssegLSdU',
-    appId: '1:1053608780921:ios:02bc67a1b93d071dcc20a8',
-    messagingSenderId: '1053608780921',
-    projectId: 'boomarang-ac130',
-    storageBucket: 'boomarang-ac130.appspot.com',
-    iosBundleId: 'com.example.boomarang.RunnerTests',
   );
 }
