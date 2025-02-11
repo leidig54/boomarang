@@ -1,5 +1,4 @@
-import 'package:boomarang/methods/generate_report.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:boomarang/methods/extract_quill_delta_from_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
@@ -11,40 +10,37 @@ class SandboxScreen extends StatefulWidget {
 }
 
 class _SandboxScreenState extends State<SandboxScreen> {
-  TextEditingController requestController = TextEditingController();
-  TextEditingController consultationsController = TextEditingController();
-
+  QuillController requestQuillController = QuillController.basic();
+  QuillController consultationsQuillController = QuillController.basic();
   QuillController reportQuillController = QuillController.basic();
 
+  ScrollController requestScrollController = ScrollController();
+  ScrollController consultationsScrollController = ScrollController();
   ScrollController reportScrollController = ScrollController();
+
   ScrollController stepperScrollController = ScrollController();
 
-  int _currentStep = 2;
-
-  FilePickerResult? requestFile;
-  FilePickerResult? consultationsFile;
-
-  String requestHintText = 'Describe the request...';
-  String requestHelperText =
-      'If you have a request form, you can use the button below to upload a PDF file.';
-
-  String consultationsHintText = 'Copy and paste your consultations here...';
-  String consultationsHelperText =
-      'If you have a file with consultations, you can use the button below to upload it.';
-
   bool isGeneratingReport = false;
+  bool isExtractingRequest = false;
+  bool isExtractingConsultations = false;
 
-  @override
-  void initState() {
-    requestController.addListener(() {
-      setState(() {});
-    });
+  // @override
+  // void initState() {
+  //   requestQuillController.addListener(() {
+  //     setState(() {});
+  //   });
 
-    consultationsController.addListener(() {
-      setState(() {});
-    });
-    super.initState();
-  }
+  //   consultationsQuillController.addListener(() {
+  //     setState(() {});
+  //   });
+
+  //   reportQuillController.addListener(() {
+  //     setState(() {});
+  //   });
+  //   super.initState();
+  // }
+
+  int _currentStep = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -54,222 +50,163 @@ class _SandboxScreenState extends State<SandboxScreen> {
       ),
       body: Container(
         constraints: const BoxConstraints(maxWidth: 1200),
-        child: ScrollConfiguration(
-          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-          child: Stepper(
-            controller: stepperScrollController,
-            type: StepperType.vertical,
-            currentStep: _currentStep,
-            onStepContinue: _currentStep == 2 ||
-                    (_currentStep == 0 &&
-                        (requestFile == null &&
-                            requestController.text.isEmpty)) ||
-                    (_currentStep == 1 &&
-                        (consultationsFile == null &&
-                            consultationsController.text.isEmpty))
-                ? null
-                : () {
-                    setState(() {
-                      _currentStep++;
-                    });
-                  },
-            onStepCancel: _currentStep == 0
-                ? null
-                : () {
-                    setState(() {
-                      _currentStep--;
-                    });
-                  },
-            steps: [
-              Step(
-                title: const Text('Request'),
-                isActive: _currentStep == 0,
-                content: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    TextField(
-                      maxLines: 5,
-                      controller: requestController,
-                      decoration: InputDecoration(
-                        hintText: requestHintText,
-                        helperText: requestHelperText,
-                        alignLabelWithHint: true,
-                        border: const OutlineInputBorder(),
+        child: Stepper(
+          controller: stepperScrollController,
+          type: StepperType.vertical,
+          onStepTapped: (step) {
+            setState(() {
+              _currentStep = step;
+            });
+          },
+          currentStep: _currentStep,
+          onStepContinue: _currentStep == 2
+              ? null
+              : () {
+                  setState(() {
+                    _currentStep++;
+                  });
+                },
+          onStepCancel: _currentStep == 0
+              ? null
+              : () {
+                  setState(() {
+                    _currentStep--;
+                  });
+                },
+          steps: [
+            Step(
+              title: const Text('Request'),
+              isActive: _currentStep == 0,
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  QuillToolbar.simple(
+                    configurations: QuillSimpleToolbarConfigurations(
+                      controller: requestQuillController,
+                      showInlineCode: false,
+                      showColorButton: false,
+                      showCodeBlock: false,
+                      showSubscript: false,
+                      showSuperscript: false,
+                      showLink: false,
+                      showFontFamily: false,
+                      showSearchButton: false,
+                      showClipboardCopy: false,
+                      showClipboardCut: false,
+                      showClipboardPaste: false,
+                      showQuote: false,
+                      showBackgroundColorButton: false,
+                      showStrikeThrough: false,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    height: 300,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.grey,
+                      ),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: QuillEditor.basic(
+                        configurations: QuillEditorConfigurations(
+                          controller: requestQuillController,
+                          showCursor: true,
+                        ),
+                        // scrollController: requestScrollController,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    if (requestFile != null)
-                      Row(
-                        children: [
-                          const SizedBox(
-                            width: 20,
-                          ),
-                          Text(requestFile!.files.single.name),
-                          const SizedBox(width: 20),
-                          TextButton.icon(
-                            iconAlignment: IconAlignment.end,
-                            onPressed: () {
+                  ),
+                  const SizedBox(height: 20),
+                  //export document as json
+
+                  isExtractingRequest
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton.icon(
+                          onPressed: () async {
+                            setState(() {
+                              isExtractingRequest = true;
+                            });
+                            Document? document =
+                                await extractQuillDeltaFromFile(context)
+                                    .whenComplete(() {
                               setState(() {
-                                requestFile = null;
-                                requestHintText = 'Describe the request...';
-                                requestHelperText =
-                                    'If you have a request form, you can use the button below to upload a PDF file.';
+                                isExtractingRequest = false;
                               });
-                            },
-                            icon: const Icon(Icons.delete),
-                            label: const Text('Remove'),
-                          ),
-                        ],
-                      )
-                    else
-                      TextButton.icon(
-                        onPressed: () async {
-                          requestFile = await FilePicker.platform.pickFiles(
-                            allowMultiple: false,
-                            type: FileType.custom,
-                            allowedExtensions: ['pdf'],
-                          );
-                          setState(() {
-                            requestHintText =
-                                'Add any additional context here...';
-                            requestHelperText = 'Request form added.';
-                          });
-                        },
-                        icon: const Icon(Icons.upload_file),
-                        label: const Text('Upload Request'),
-                      ),
-                  ],
-                ),
+                            });
+
+                            if (document != null) {
+                              requestQuillController.document = document;
+                            }
+
+                            setState(() {
+                              isExtractingRequest = false;
+                            });
+                          },
+                          icon: const Icon(Icons.upload_file),
+                          label: const Text('Upload Request'),
+                        ),
+                ],
               ),
-              Step(
-                title: const Text('Consultations'),
-                content: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      maxLines: 5,
-                      controller: consultationsController,
-                      decoration: InputDecoration(
-                        hintText: consultationsHintText,
-                        helperText: consultationsHelperText,
-                        alignLabelWithHint: true,
-                        border: const OutlineInputBorder(),
-                      ),
+            ),
+            Step(
+              title: const Text('Consultations'),
+              content: Column(
+                children: [
+                  const TextField(
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      helperText:
+                          'Copy and paste your consultations, or use the button below to upload a file.',
+                      alignLabelWithHint: true,
+                      border: OutlineInputBorder(),
                     ),
-                    const SizedBox(height: 20),
-                    TextButton.icon(
-                      onPressed: () async {
-                        consultationsFile = await FilePicker.platform.pickFiles(
-                          allowMultiple: false,
-                          type: FileType.custom,
-                          allowedExtensions: ['pdf'],
-                        );
-                        setState(() {
-                          consultationsHintText =
-                              'Add any additional context here...';
-                          consultationsHelperText = 'Consultations added.';
-                        });
-                      },
-                      icon: const Icon(Icons.upload_file),
-                      label: const Text('Upload Consultations'),
+                  ),
+                  const SizedBox(height: 20),
+                  isExtractingConsultations
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton.icon(
+                          onPressed: () async {
+                            setState(() {
+                              isExtractingConsultations = true;
+                            });
+                            Document? document =
+                                await extractQuillDeltaFromFile(context);
+
+                            if (document != null) {
+                              consultationsQuillController.document = document;
+                            }
+                          },
+                          icon: const Icon(Icons.upload_file),
+                          label: const Text('Upload Consultations'),
+                        ),
+                ],
+              ),
+            ),
+            Step(
+              title: const Text('Report'),
+              content: Column(
+                children: [
+                  const TextField(
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      alignLabelWithHint: true,
+                      border: OutlineInputBorder(),
                     ),
-                  ],
-                ),
+                  ),
+                  //download report button
+                  const SizedBox(height: 20),
+                  TextButton.icon(
+                    onPressed: null,
+                    icon: const Icon(Icons.download),
+                    label: const Text('Download Report'),
+                  )
+                ],
               ),
-              Step(
-                title: const Text('Report'),
-                content: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (reportQuillController.document.isEmpty())
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          FloatingActionButton.extended(
-                              icon: const Icon(Icons.create),
-                              onPressed: () async {
-                                setState(() {
-                                  isGeneratingReport = true;
-                                });
-                                reportQuillController.document =
-                                    await generateReport(
-                                  requestData: RequestData(
-                                    text: requestController.text,
-                                    file: requestFile,
-                                  ),
-                                  consultationData: ConsultationData(
-                                    text: consultationsController.text,
-                                    file: consultationsFile,
-                                  ),
-                                ).whenComplete(() {
-                                  setState(() {
-                                    isGeneratingReport = false;
-                                  });
-                                });
-                              },
-                              label: const Text('Generate Report')),
-                        ],
-                      )
-                    else
-                      Column(
-                        children: [
-                          QuillToolbar.simple(
-                            configurations: QuillSimpleToolbarConfigurations(
-                              controller: reportQuillController,
-                              showInlineCode: false,
-                              showColorButton: false,
-                              showCodeBlock: false,
-                              showSubscript: false,
-                              showSuperscript: false,
-                              showLink: false,
-                              showFontFamily: false,
-                              showSearchButton: false,
-                              showClipboardCopy: false,
-                              showClipboardCut: false,
-                              showClipboardPaste: false,
-                              showQuote: false,
-                              showBackgroundColorButton: false,
-                              showStrikeThrough: false,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Container(
-                            height: MediaQuery.of(context).size.height * 0.5,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.grey,
-                              ),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: QuillEditor.basic(
-                                configurations: QuillEditorConfigurations(
-                                  controller: reportQuillController,
-                                  showCursor: true,
-                                ),
-                                // scrollController: requestScrollController,
-                              ),
-                            ),
-                          ),
-                          //download report button
-                          const SizedBox(height: 20),
-                          TextButton.icon(
-                            onPressed: null,
-                            icon: const Icon(Icons.download),
-                            label: const Text('Download Report'),
-                          )
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
